@@ -25,7 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import com.example.busmanager.R
 import com.example.busmanager.data.DefaultDataRepository
-import com.example.busmanager.ui.theme.BusManagerTheme
+import com.example.busmanager.ui.theme.TransNusantaraTheme
 
 @Composable
 fun MainScreen(
@@ -100,6 +100,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MainScreenPreview() {
-  BusManagerTheme { MainScreen(listOf("Android")) }
+  TransNusantaraTheme { MainScreen(listOf("Android")) }
 }
 

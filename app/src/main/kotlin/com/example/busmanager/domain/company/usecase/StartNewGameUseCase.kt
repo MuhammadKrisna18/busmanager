@@ -20,7 +20,7 @@ class StartNewGameUseCase(
     }
 
     companion object {
-        const val DEFAULT_COMPANY_NAME = "PO Bus Nusantara"
+        const val DEFAULT_COMPANY_NAME = "PO TransNusantara"
         val DEFAULT_STARTING_BALANCE = Money.rupiah(1_500_000_000)
     }
 }

@@ -8,15 +8,24 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import com.example.busmanager.ui.theme.BusManagerTheme
+import com.example.busmanager.di.AppContainer
+import com.example.busmanager.ui.theme.TransNusantaraTheme
 
 class MainActivity : ComponentActivity() {
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val appContainer = AppContainer(applicationContext)
 
-    enableEdgeToEdge()
-    setContent {
-      BusManagerTheme { Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) { MainNavigation() } }
+        enableEdgeToEdge()
+        setContent {
+            TransNusantaraTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    MainNavigation(appContainer)
+                }
+            }
+        }
     }
-  }
 }

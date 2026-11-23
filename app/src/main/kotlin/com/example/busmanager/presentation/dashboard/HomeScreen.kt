@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,9 +37,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.BuildConfig
+import com.example.busmanager.presentation.update.UpdateDialog
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -63,6 +67,20 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.checkForUpdates(BuildConfig.VERSION_NAME)
+    }
+
+    if (state.updateInfo != null) {
+        UpdateDialog(
+            updateInfo = state.updateInfo!!,
+            downloadProgress = state.downloadProgress,
+            onUpdateClick = { viewModel.startUpdateDownload(context, state.updateInfo!!) },
+            onDismiss = { viewModel.dismissUpdateDialog() }
+        )
+    }
 
     if (state.isLoading) {
         Box(

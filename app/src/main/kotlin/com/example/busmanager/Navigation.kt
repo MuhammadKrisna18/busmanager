@@ -32,7 +32,8 @@ fun MainNavigation(appContainer: AppContainer) {
                     HomeScreenViewModel(
                         getCompanyUseCase = appContainer.getCompanyUseCase,
                         getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
-                        startNewGameUseCase = appContainer.startNewGameUseCase
+                        startNewGameUseCase = appContainer.startNewGameUseCase,
+                        appUpdateManager = appContainer.appUpdateManager
                     )
                 }
                 HomeScreen(viewModel = viewModel)

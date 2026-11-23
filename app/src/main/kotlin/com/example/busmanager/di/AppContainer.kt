@@ -1,6 +1,7 @@
 package com.example.busmanager.di
 
 import android.content.Context
+import com.example.busmanager.core.update.AppUpdateManager
 import com.example.busmanager.data.local.database.BusManagerDatabase
 import com.example.busmanager.data.repository.ChassisCatalogRepositoryImpl
 import com.example.busmanager.data.repository.CompanyRepositoryImpl
@@ -38,4 +39,6 @@ class AppContainer(context: Context) {
     val getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepository)
     val getShowroomBusesUseCase = GetShowroomBusesUseCase(showroomCatalogRepository)
     val buyBusUseCase = BuyBusUseCase(companyRepository, fleetRepository)
+
+    val appUpdateManager = AppUpdateManager()
 }

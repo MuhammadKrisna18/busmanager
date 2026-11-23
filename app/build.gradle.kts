@@ -16,10 +16,23 @@ android {
     versionName = "1.0"
   }
 
+  signingConfigs {
+    create("release") {
+      storeFile = file("transnusantara.keystore")
+      storePassword = "transnusantara123"
+      keyAlias = "transnusantara"
+      keyPassword = "transnusantara123"
+    }
+  }
+
   buildTypes {
     release {
       isMinifyEnabled = false
+      signingConfig = signingConfigs.getByName("release")
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+    }
+    debug {
+      signingConfig = signingConfigs.getByName("release")
     }
   }
   compileOptions {
@@ -29,7 +42,7 @@ android {
   buildFeatures {
     compose = true
     aidl = false
-    buildConfig = false
+    buildConfig = true
     shaders = false
   }
 
@@ -83,7 +96,8 @@ dependencies {
   implementation(libs.androidx.navigation3.runtime)
   implementation(libs.androidx.lifecycle.viewmodel.navigation3)
 
-  // Room
+  implementation(libs.okhttp)
+
   implementation(libs.androidx.room.runtime)
   implementation(libs.androidx.room.ktx)
   ksp(libs.androidx.room.compiler)

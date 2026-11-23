@@ -1,7 +1,10 @@
 package com.example.busmanager.presentation.dashboard
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.busmanager.core.update.AppUpdateManager
+import com.example.busmanager.core.update.UpdateInfo
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
@@ -15,7 +18,8 @@ import kotlinx.coroutines.launch
 class HomeScreenViewModel(
     private val getCompanyUseCase: GetCompanyUseCase,
     private val getOwnedFleetUseCase: GetOwnedFleetUseCase,
-    private val startNewGameUseCase: StartNewGameUseCase
+    private val startNewGameUseCase: StartNewGameUseCase,
+    private val appUpdateManager: AppUpdateManager = AppUpdateManager()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeScreenUiState())
@@ -43,7 +47,36 @@ class HomeScreenViewModel(
         }
     }
 
+    fun checkForUpdates(currentVersion: String) {
+        viewModelScope.launch {
+            val update = appUpdateManager.checkForUpdate(currentVersion)
+            if (update != null) {
+                _uiState.update { it.copy(updateInfo = update) }
+            }
+        }
+    }
+
+    fun startUpdateDownload(context: Context, updateInfo: UpdateInfo) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(downloadProgress = 0.01f) }
+            val apkFile = appUpdateManager.downloadApk(updateInfo.downloadUrl, context) { progress ->
+                _uiState.update { it.copy(downloadProgress = progress) }
+            }
+            if (apkFile != null && apkFile.exists()) {
+                _uiState.update { it.copy(downloadProgress = null, updateInfo = null) }
+                appUpdateManager.installApk(apkFile, context)
+            } else {
+                _uiState.update { it.copy(downloadProgress = null) }
+            }
+        }
+    }
+
+    fun dismissUpdateDialog() {
+        _uiState.update { it.copy(updateInfo = null, downloadProgress = null) }
+    }
+
     fun togglePlaySimulation() {
         _uiState.update { it.copy(isPlaying = !it.isPlaying) }
     }
 }
+

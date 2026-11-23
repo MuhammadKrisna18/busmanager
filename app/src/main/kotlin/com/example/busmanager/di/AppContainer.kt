@@ -22,6 +22,10 @@ import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.GetShowroomBusesUseCase
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.TerminalRepository
+import com.example.busmanager.domain.route.usecase.CalculateRouteCostUseCase
+import com.example.busmanager.domain.route.usecase.GetAvailableRoutesUseCase
+import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
+import com.example.busmanager.domain.route.usecase.GetRouteTransitStopsUseCase
 
 class AppContainer(context: Context) {
 
@@ -45,6 +49,11 @@ class AppContainer(context: Context) {
     val getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepository)
     val getShowroomBusesUseCase = GetShowroomBusesUseCase(showroomCatalogRepository)
     val buyBusUseCase = BuyBusUseCase(companyRepository, fleetRepository)
+
+    val getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepository)
+    val getAvailableRoutesUseCase = GetAvailableRoutesUseCase(routeRepository)
+    val getRouteTransitStopsUseCase = GetRouteTransitStopsUseCase(routeRepository)
+    val calculateRouteCostUseCase = CalculateRouteCostUseCase()
 
     val appUpdateManager = AppUpdateManager()
 }

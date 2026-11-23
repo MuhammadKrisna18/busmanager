@@ -7,8 +7,7 @@ import androidx.room.PrimaryKey
 data class OwnedBusEntity(
     @PrimaryKey
     val id: String,
-    val plateNumber: String,
-    val nickname: String,
+    val busCode: String,
     val chassisId: String,
     val bodyId: String,
     val engineHealthPercent: Int = 100,

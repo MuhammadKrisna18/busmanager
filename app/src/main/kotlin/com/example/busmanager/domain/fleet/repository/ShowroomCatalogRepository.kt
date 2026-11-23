@@ -7,5 +7,5 @@ import kotlinx.coroutines.flow.Flow
 interface ShowroomCatalogRepository {
     fun getReadyStockBuses(): Flow<List<Bus>>
     fun getCompatibleBodies(chassisId: String): Flow<List<KaroseriBody>>
-    suspend fun createCustomBus(plateNumber: String, nickname: String, chassisId: String, bodyId: String): Bus?
+    suspend fun createCustomBus(busCode: String, chassisId: String, bodyId: String): Bus?
 }

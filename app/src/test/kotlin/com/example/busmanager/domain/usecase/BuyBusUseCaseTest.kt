@@ -67,8 +67,7 @@ class BuyBusUseCaseTest {
         )
         return Bus(
             id = "bus-1",
-            plateNumber = "B 1234 CD",
-            nickname = "Bima",
+            busCode = "TN-01",
             chassis = chassis,
             body = body
         )

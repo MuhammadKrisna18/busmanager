@@ -74,13 +74,11 @@ class CatalogRepositoryTest {
     @Test
     fun createCustomBusWithCompatiblePairSucceeds() = runBlocking {
         val customBus = showroomRepo.createCustomBus(
-            plateNumber = "AA 1234 CD",
-            nickname = "Arjuna",
+            busCode = "TN-99",
             chassisId = "chassis-mercy-1626",
             bodyId = "body-lk-sr3-suites"
         )
         assertNotNull(customBus)
-        assertEquals("AA 1234 CD", customBus?.plateNumber)
-        assertEquals("Arjuna", customBus?.nickname)
+        assertEquals("TN-99", customBus?.busCode)
     }
 }

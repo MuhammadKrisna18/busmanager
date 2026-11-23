@@ -51,8 +51,7 @@ class RoutePlannerViewModelTest {
             val body = KaroseriBodyDataSource().getKaroseriBodyList().first()
             val bus = Bus(
                 id = "bus-1",
-                plateNumber = "L 1234 AB",
-                nickname = "Semeru",
+                busCode = "TN-01",
                 chassis = chassis,
                 body = body
             )

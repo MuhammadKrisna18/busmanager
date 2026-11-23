@@ -11,7 +11,7 @@ import com.example.busmanager.data.local.entity.OwnedBusEntity
 
 @Database(
     entities = [CompanyEntity::class, OwnedBusEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class BusManagerDatabase : RoomDatabase() {
@@ -31,7 +31,7 @@ abstract class BusManagerDatabase : RoomDatabase() {
                     context.applicationContext,
                     BusManagerDatabase::class.java,
                     DATABASE_NAME
-                ).build().also { instance = it }
+                ).fallbackToDestructiveMigration(true).build().also { instance = it }
             }
         }
     }

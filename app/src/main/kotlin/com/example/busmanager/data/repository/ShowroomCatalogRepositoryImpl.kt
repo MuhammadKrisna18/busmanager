@@ -21,13 +21,13 @@ class ShowroomCatalogRepositoryImpl(
         val bodyList = bodyDataSource.getKaroseriBodyList()
 
         val readyStocks = listOf(
-            createPresetBus("stock-1", "B 7101 ABC", "Sembrani", "chassis-hino-rk8", "body-ap-jb3-shd", chassisList, bodyList),
-            createPresetBus("stock-2", "B 7102 ABC", "Gajah Mungkur", "chassis-hino-rm280", "body-tt-avante-h8", chassisList, bodyList),
-            createPresetBus("stock-3", "B 7103 ABC", "Rajawali Mas", "chassis-mercy-1626", "body-lk-sr3-xhd", chassisList, bodyList),
-            createPresetBus("stock-4", "B 7104 ABC", "Nusantara Prima", "chassis-mercy-1626", "body-lk-sr3-suites", chassisList, bodyList),
-            createPresetBus("stock-5", "B 7105 ABC", "Kencana Megah", "chassis-scania-k360", "body-ap-jb5-shd", chassisList, bodyList),
-            createPresetBus("stock-6", "B 7106 ABC", "Garuda Tingkat", "chassis-scania-k410", "body-ap-jb5-sdd", chassisList, bodyList),
-            createPresetBus("stock-7", "B 7107 ABC", "Trans Jawa Express", "chassis-volvo-b11r", "body-lk-sr3-dd", chassisList, bodyList)
+            createPresetBus("stock-1", "TN-01", "chassis-hino-rk8", "body-ap-jb3-shd", chassisList, bodyList),
+            createPresetBus("stock-2", "TN-02", "chassis-hino-rm280", "body-tt-avante-h8", chassisList, bodyList),
+            createPresetBus("stock-3", "TN-03", "chassis-mercy-1626", "body-lk-sr3-xhd", chassisList, bodyList),
+            createPresetBus("stock-4", "TN-04", "chassis-mercy-1626", "body-lk-sr3-suites", chassisList, bodyList),
+            createPresetBus("stock-5", "TN-05", "chassis-scania-k360", "body-ap-jb5-shd", chassisList, bodyList),
+            createPresetBus("stock-6", "TN-06", "chassis-scania-k410", "body-ap-jb5-sdd", chassisList, bodyList),
+            createPresetBus("stock-7", "TN-07", "chassis-volvo-b11r", "body-lk-sr3-dd", chassisList, bodyList)
         ).filterNotNull()
 
         return flowOf(readyStocks)
@@ -44,8 +44,7 @@ class ShowroomCatalogRepositoryImpl(
     }
 
     override suspend fun createCustomBus(
-        plateNumber: String,
-        nickname: String,
+        busCode: String,
         chassisId: String,
         bodyId: String
     ): Bus? {
@@ -58,8 +57,7 @@ class ShowroomCatalogRepositoryImpl(
 
         return Bus(
             id = UUID.randomUUID().toString(),
-            plateNumber = plateNumber,
-            nickname = nickname,
+            busCode = busCode,
             chassis = chassis,
             body = body
         )
@@ -67,8 +65,7 @@ class ShowroomCatalogRepositoryImpl(
 
     private fun createPresetBus(
         id: String,
-        plateNumber: String,
-        nickname: String,
+        busCode: String,
         chassisId: String,
         bodyId: String,
         chassisList: List<com.example.busmanager.domain.fleet.model.Chassis>,
@@ -78,8 +75,7 @@ class ShowroomCatalogRepositoryImpl(
         val body = bodyList.find { it.id == bodyId } ?: return null
         return Bus(
             id = id,
-            plateNumber = plateNumber,
-            nickname = nickname,
+            busCode = busCode,
             chassis = chassis,
             body = body
         )

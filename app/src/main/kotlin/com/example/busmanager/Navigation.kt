@@ -10,6 +10,8 @@ import com.example.busmanager.presentation.dashboard.HomeScreen
 import com.example.busmanager.presentation.dashboard.HomeScreenViewModel
 import com.example.busmanager.presentation.route.RoutePlannerScreen
 import com.example.busmanager.presentation.route.RoutePlannerViewModel
+import com.example.busmanager.presentation.showroom.ShowroomScreen
+import com.example.busmanager.presentation.showroom.ShowroomViewModel
 import com.example.busmanager.presentation.splash.SplashScreen
 
 @Composable
@@ -40,8 +42,27 @@ fun MainNavigation(appContainer: AppContainer) {
                 }
                 HomeScreen(
                     viewModel = viewModel,
+                    onNavigateToShowroom = {
+                        backStack.add(ShowroomRoute)
+                    },
                     onNavigateToRoutes = {
                         backStack.add(RoutePlannerRoute)
+                    }
+                )
+            }
+            entry<ShowroomRoute> {
+                val viewModel: ShowroomViewModel = viewModel {
+                    ShowroomViewModel(
+                        getCompanyUseCase = appContainer.getCompanyUseCase,
+                        getShowroomBusesUseCase = appContainer.getShowroomBusesUseCase,
+                        buyBusUseCase = appContainer.buyBusUseCase,
+                        getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase
+                    )
+                }
+                ShowroomScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        backStack.removeLastOrNull()
                     }
                 )
             }

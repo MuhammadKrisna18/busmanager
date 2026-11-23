@@ -23,8 +23,7 @@ class CalculateRouteCostUseCaseTest {
         val body = KaroseriBodyDataSource().getKaroseriBodyList().first { it.id == "body-ap-jb3-shd" }
         testBus = Bus(
             id = "bus-test-1",
-            plateNumber = "N 1234 TN",
-            nickname = "Arjuna",
+            busCode = "TN-01",
             chassis = chassis,
             body = body
         )

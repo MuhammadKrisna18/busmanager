@@ -4,8 +4,7 @@ import com.example.busmanager.domain.company.model.Money
 
 data class Bus(
     val id: String,
-    val plateNumber: String,
-    val nickname: String,
+    val busCode: String,
     val chassis: Chassis,
     val body: KaroseriBody,
     val condition: BusCondition = BusCondition(),

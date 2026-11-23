@@ -8,8 +8,7 @@ import com.example.busmanager.domain.fleet.model.KaroseriBody
 
 fun OwnedBusEntity.toDomain(chassis: Chassis, body: KaroseriBody): Bus = Bus(
     id = id,
-    plateNumber = plateNumber,
-    nickname = nickname,
+    busCode = busCode,
     chassis = chassis,
     body = body,
     condition = BusCondition(
@@ -22,8 +21,7 @@ fun OwnedBusEntity.toDomain(chassis: Chassis, body: KaroseriBody): Bus = Bus(
 
 fun Bus.toEntity(): OwnedBusEntity = OwnedBusEntity(
     id = id,
-    plateNumber = plateNumber,
-    nickname = nickname,
+    busCode = busCode,
     chassisId = chassis.id,
     bodyId = body.id,
     engineHealthPercent = condition.engineHealthPercent,

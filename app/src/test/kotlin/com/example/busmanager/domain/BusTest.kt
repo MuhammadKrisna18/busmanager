@@ -78,8 +78,7 @@ class BusTest {
     fun totalPriceCombinesChassisAndBody() {
         val bus = Bus(
             id = "bus-1",
-            plateNumber = "B 7001 VGA",
-            nickname = "Arimbi",
+            busCode = "TN-01",
             chassis = createHinoRk8(),
             body = createJetbusShd()
         )
@@ -91,8 +90,7 @@ class BusTest {
     fun doubleDeckerThrowsWhenPairedWithSingleAxle() {
         Bus(
             id = "bus-invalid",
-            plateNumber = "B 7002 VGA",
-            nickname = "Invalid Bus",
+            busCode = "TN-02",
             chassis = createHinoRk8(),
             body = createJetbusDoubleDecker()
         )
@@ -102,8 +100,7 @@ class BusTest {
     fun doubleDeckerSucceedsWhenPairedWithTronton() {
         val bus = Bus(
             id = "bus-valid",
-            plateNumber = "B 7003 VGA",
-            nickname = "Tronton Express",
+            busCode = "TN-03",
             chassis = createScaniaK410(),
             body = createJetbusDoubleDecker()
         )

@@ -39,8 +39,7 @@ class FleetRepositoryTest {
         val body = karoseriRepo.getBodyById("body-ap-jb3-shd")!!
         val bus = Bus(
             id = "bus-test-1",
-            plateNumber = "AA 1836 GA",
-            nickname = "Arimbi",
+            busCode = "TN-01",
             chassis = chassis,
             body = body,
             condition = BusCondition(95, 90, 5000)
@@ -50,8 +49,7 @@ class FleetRepositoryTest {
 
         val retrieved = fleetRepo.getBusById("bus-test-1")
         assertNotNull(retrieved)
-        assertEquals("AA 1836 GA", retrieved?.plateNumber)
-        assertEquals("Arimbi", retrieved?.nickname)
+        assertEquals("TN-01", retrieved?.busCode)
         assertEquals(5000L, retrieved?.condition?.odometerKm)
 
         val list = fleetRepo.getOwnedBuses().first()
@@ -64,8 +62,7 @@ class FleetRepositoryTest {
         val body = karoseriRepo.getBodyById("body-lk-sr3-suites")!!
         val bus = Bus(
             id = "bus-test-2",
-            plateNumber = "AD 1234 EF",
-            nickname = "Gatotkaca",
+            busCode = "TN-02",
             chassis = chassis,
             body = body
         )

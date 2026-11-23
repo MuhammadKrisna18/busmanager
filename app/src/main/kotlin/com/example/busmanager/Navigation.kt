@@ -8,6 +8,8 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.busmanager.di.AppContainer
 import com.example.busmanager.presentation.dashboard.HomeScreen
 import com.example.busmanager.presentation.dashboard.HomeScreenViewModel
+import com.example.busmanager.presentation.route.RoutePlannerScreen
+import com.example.busmanager.presentation.route.RoutePlannerViewModel
 import com.example.busmanager.presentation.splash.SplashScreen
 
 @Composable
@@ -36,7 +38,30 @@ fun MainNavigation(appContainer: AppContainer) {
                         appUpdateManager = appContainer.appUpdateManager
                     )
                 }
-                HomeScreen(viewModel = viewModel)
+                HomeScreen(
+                    viewModel = viewModel,
+                    onNavigateToRoutes = {
+                        backStack.add(RoutePlannerRoute)
+                    }
+                )
+            }
+            entry<RoutePlannerRoute> {
+                val viewModel: RoutePlannerViewModel = viewModel {
+                    RoutePlannerViewModel(
+                        getAvailableTerminalsUseCase = appContainer.getAvailableTerminalsUseCase,
+                        getAvailableRoutesUseCase = appContainer.getAvailableRoutesUseCase,
+                        getRouteTransitStopsUseCase = appContainer.getRouteTransitStopsUseCase,
+                        calculateRouteCostUseCase = appContainer.calculateRouteCostUseCase,
+                        getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
+                        routeRepository = appContainer.routeRepository
+                    )
+                }
+                RoutePlannerScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        backStack.removeLastOrNull()
+                    }
+                )
             }
         }
     )

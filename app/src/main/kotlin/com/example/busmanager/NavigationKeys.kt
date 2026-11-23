@@ -8,3 +8,6 @@ data object SplashRoute : NavKey
 
 @Serializable
 data object HomeRoute : NavKey
+
+@Serializable
+data object RoutePlannerRoute : NavKey

@@ -64,6 +64,7 @@ fun HomeScreen(
     viewModel: HomeScreenViewModel,
     onNavigateToShowroom: () -> Unit = {},
     onNavigateToGarage: () -> Unit = {},
+    onNavigateToRoutes: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -131,6 +132,7 @@ fun HomeScreen(
                 ownedBusCount = state.ownedBuses.size,
                 onNavigateToShowroom = onNavigateToShowroom,
                 onNavigateToGarage = onNavigateToGarage,
+                onNavigateToRoutes = onNavigateToRoutes,
                 modifier = Modifier.weight(1f)
             )
 
@@ -297,6 +299,7 @@ private fun MenuGrid(
     ownedBusCount: Int,
     onNavigateToShowroom: () -> Unit,
     onNavigateToGarage: () -> Unit,
+    onNavigateToRoutes: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -332,8 +335,9 @@ private fun MenuGrid(
                 title = "Rute & Trayek",
                 subtitle = "Jalur Antar Kota",
                 iconEmoji = "🗺️",
-                badgeText = "Segera Hadir",
-                isActive = false
+                badgeText = "Peta Jatim",
+                isActive = true,
+                onClick = onNavigateToRoutes
             )
         }
 

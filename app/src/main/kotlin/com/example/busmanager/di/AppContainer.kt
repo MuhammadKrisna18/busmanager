@@ -7,7 +7,9 @@ import com.example.busmanager.data.repository.ChassisCatalogRepositoryImpl
 import com.example.busmanager.data.repository.CompanyRepositoryImpl
 import com.example.busmanager.data.repository.FleetRepositoryImpl
 import com.example.busmanager.data.repository.KaroseriCatalogRepositoryImpl
+import com.example.busmanager.data.repository.RouteCatalogRepositoryImpl
 import com.example.busmanager.data.repository.ShowroomCatalogRepositoryImpl
+import com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
@@ -18,6 +20,8 @@ import com.example.busmanager.domain.fleet.repository.ShowroomCatalogRepository
 import com.example.busmanager.domain.fleet.usecase.BuyBusUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.GetShowroomBusesUseCase
+import com.example.busmanager.domain.route.repository.RouteRepository
+import com.example.busmanager.domain.route.repository.TerminalRepository
 
 class AppContainer(context: Context) {
 
@@ -26,6 +30,8 @@ class AppContainer(context: Context) {
     val chassisCatalogRepository: ChassisCatalogRepository = ChassisCatalogRepositoryImpl()
     val karoseriCatalogRepository: KaroseriCatalogRepository = KaroseriCatalogRepositoryImpl()
     val showroomCatalogRepository: ShowroomCatalogRepository = ShowroomCatalogRepositoryImpl()
+    val terminalRepository: TerminalRepository = TerminalCatalogRepositoryImpl()
+    val routeRepository: RouteRepository = RouteCatalogRepositoryImpl()
 
     val companyRepository: CompanyRepository = CompanyRepositoryImpl(database.companyDao())
     val fleetRepository: FleetRepository = FleetRepositoryImpl(

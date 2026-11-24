@@ -145,6 +145,67 @@ class RouteScheduleRepositoryTest {
     }
 
     @Test
+    fun assignBusToSchedule_supportsRoundTripOutboundAndReturnWithoutUnassigning() = runBlocking {
+        fakeBusDao.insertBus(
+            OwnedBusEntity(
+                id = "bus-1",
+                busCode = "MK-01",
+                chassisId = "chassis-1",
+                bodyId = "body-1",
+                purchasedAtTimestamp = 1000L
+            )
+        )
+
+        val outbound = RouteSchedule(
+            id = "sched-outbound",
+            routeId = "route-sby-mlg",
+            departureHour = 8,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION
+        )
+        val returnTrip = RouteSchedule(
+            id = "sched-return",
+            routeId = "route-sby-mlg",
+            departureHour = 15,
+            departureMinute = 0,
+            direction = RouteDirection.DESTINATION_TO_ORIGIN
+        )
+
+        scheduleRepository.addSchedule(outbound)
+        scheduleRepository.addSchedule(returnTrip)
+
+        val assignOutboundSuccess = scheduleRepository.assignBusToSchedule("sched-outbound", "bus-1")
+        assertTrue(assignOutboundSuccess)
+
+        val assignReturnSuccess = scheduleRepository.assignBusToSchedule("sched-return", "bus-1")
+        assertTrue(assignReturnSuccess)
+
+        val busSchedules = scheduleRepository.getSchedulesForBus("bus-1")
+        assertEquals(2, busSchedules.size)
+
+        val assignedOutbound = scheduleRepository.getScheduleById("sched-outbound")
+        val assignedReturn = scheduleRepository.getScheduleById("sched-return")
+        assertEquals("bus-1", assignedOutbound?.assignedBusId)
+        assertEquals("bus-1", assignedReturn?.assignedBusId)
+
+        val differentRouteSchedule = RouteSchedule(
+            id = "sched-other",
+            routeId = "route-sby-jbr",
+            departureHour = 10,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION
+        )
+        scheduleRepository.addSchedule(differentRouteSchedule)
+        scheduleRepository.assignBusToSchedule("sched-other", "bus-1")
+
+        val reassignedBusSchedules = scheduleRepository.getSchedulesForBus("bus-1")
+        assertEquals(1, reassignedBusSchedules.size)
+        assertEquals("sched-other", reassignedBusSchedules.first().id)
+        assertNull(scheduleRepository.getScheduleById("sched-outbound")?.assignedBusId)
+        assertNull(scheduleRepository.getScheduleById("sched-return")?.assignedBusId)
+    }
+
+    @Test
     fun deleteScheduleRemovesScheduleSuccessfully() = runBlocking {
         val schedule = RouteSchedule(
             id = "sched-del",
@@ -181,6 +242,16 @@ class RouteScheduleRepositoryTest {
 
         override suspend fun getScheduleByBusId(busId: String): RouteScheduleEntity? {
             return scheduleMap.values.find { it.assignedBusId == busId }
+        }
+
+        override suspend fun getSchedulesByBusId(busId: String): List<RouteScheduleEntity> {
+            return scheduleMap.values.filter { it.assignedBusId == busId }
+        }
+
+        override fun getSchedulesByBusIdFlow(busId: String): Flow<List<RouteScheduleEntity>> {
+            val flow = MutableStateFlow<List<RouteScheduleEntity>>(emptyList())
+            flow.value = scheduleMap.values.filter { it.assignedBusId == busId }
+            return flow
         }
 
         override suspend fun findConflictingSchedule(

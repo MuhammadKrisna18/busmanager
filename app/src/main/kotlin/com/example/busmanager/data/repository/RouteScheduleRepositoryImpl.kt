@@ -35,6 +35,16 @@ class RouteScheduleRepositoryImpl(
         return scheduleDao.getScheduleById(id)?.toDomain()
     }
 
+    override suspend fun getSchedulesForBus(busId: String): List<RouteSchedule> {
+        return scheduleDao.getSchedulesByBusId(busId).map { it.toDomain() }
+    }
+
+    override fun getSchedulesForBusFlow(busId: String): Flow<List<RouteSchedule>> {
+        return scheduleDao.getSchedulesByBusIdFlow(busId).map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
     override suspend fun addSchedule(schedule: RouteSchedule): Result<Unit> {
         val conflict = checkConflict(schedule.routeId, schedule.direction, schedule.departureHour, schedule.departureMinute)
         if (conflict) {
@@ -57,9 +67,16 @@ class RouteScheduleRepositoryImpl(
         val scheduleEntity = scheduleDao.getScheduleById(scheduleId) ?: return false
         val busEntity = busDao.getBusById(busId) ?: return false
 
-        val currentScheduleWithBus = scheduleDao.getScheduleByBusId(busId)
-        if (currentScheduleWithBus != null && currentScheduleWithBus.id != scheduleId) {
-            scheduleDao.updateSchedule(currentScheduleWithBus.copy(assignedBusId = null))
+        val existingSchedulesForBus = scheduleDao.getSchedulesByBusId(busId)
+        for (existing in existingSchedulesForBus) {
+            val isDifferentRoute = existing.routeId != scheduleEntity.routeId
+            val isSameRouteAndSameDirection = existing.routeId == scheduleEntity.routeId &&
+                    existing.direction == scheduleEntity.direction &&
+                    existing.id != scheduleId
+
+            if (isDifferentRoute || isSameRouteAndSameDirection) {
+                scheduleDao.updateSchedule(existing.copy(assignedBusId = null))
+            }
         }
 
         scheduleDao.updateSchedule(scheduleEntity.copy(assignedBusId = busId))

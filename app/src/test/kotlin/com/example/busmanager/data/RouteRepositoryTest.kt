@@ -173,9 +173,17 @@ class RouteRepositoryTest {
 
     private class FakeCustomRouteDao : com.example.busmanager.data.local.dao.CustomRouteDao {
         val list = mutableListOf<com.example.busmanager.data.local.entity.CustomRouteEntity>()
+        private val flow = kotlinx.coroutines.flow.MutableStateFlow<List<com.example.busmanager.data.local.entity.CustomRouteEntity>>(emptyList())
 
-        override fun getAllCustomRoutesFlow(): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.data.local.entity.CustomRouteEntity>> =
-            kotlinx.coroutines.flow.flowOf(list.toList())
+        init {
+            updateFlow()
+        }
+
+        private fun updateFlow() {
+            flow.value = list.toList()
+        }
+
+        override fun getAllCustomRoutesFlow(): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.data.local.entity.CustomRouteEntity>> = flow
 
         override fun getAllCustomRoutesSync(): List<com.example.busmanager.data.local.entity.CustomRouteEntity> = list.toList()
 
@@ -190,21 +198,25 @@ class RouteRepositoryTest {
         override suspend fun insertCustomRoute(route: com.example.busmanager.data.local.entity.CustomRouteEntity) {
             list.removeAll { it.id == route.id }
             list.add(route)
+            updateFlow()
         }
 
         override fun insertCustomRouteSync(route: com.example.busmanager.data.local.entity.CustomRouteEntity) {
             list.removeAll { it.id == route.id }
             list.add(route)
+            updateFlow()
         }
 
         override fun deleteCustomRouteById(id: String): Int {
             val removed = list.removeAll { it.id == id }
+            updateFlow()
             return if (removed) 1 else 0
         }
 
         override fun deleteAllCustomRoutes(): Int {
             val count = list.size
             list.clear()
+            updateFlow()
             return count
         }
     }

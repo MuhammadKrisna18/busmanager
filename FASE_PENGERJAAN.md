@@ -134,10 +134,11 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 2 [Tinggi]: Perbaikan Penugasan Jadwal Pulang-Pergi (PP) & DAO Multi-Schedule
-- Perbaiki logika `assignBusToSchedule` di `RouteScheduleRepositoryImpl` agar mendukung penugasan rute bolak-balik (outbound & return).
-- Perbarui `RouteScheduleDao` agar mendukung multi-schedule per armada.
-- Pengujian unit test & Git Commit Fase 2.
+### ✅ Fase 2 [Tinggi]: Perbaikan Penugasan Jadwal Pulang-Pergi (PP) & DAO Multi-Schedule - SELESAI
+- Logika penugasan armada `assignBusToSchedule` disempurnakan: mendukung satu armada melayani jadwal Berangkat (*Outbound*) dan Pulang (*Return*) pada rute yang sama tanpa saling meng-unassign. (Selesai)
+- Menambahkan query `getSchedulesByBusId` dan `getSchedulesByBusIdFlow` pada `RouteScheduleDao`. (Selesai)
+- Proteksi re-alokasi rute: jika armada dipindahkan ke rute berbeda, jadwal lama otomatis dilepas dengan bersih. (Selesai)
+- Pengujian unit test & Git Commit Fase 2. (Selesai)
 
 ---
 

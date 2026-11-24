@@ -9,6 +9,8 @@ interface RouteScheduleRepository {
     fun getAllSchedules(): Flow<List<RouteSchedule>>
     suspend fun getSchedulesListForRoute(routeId: String): List<RouteSchedule>
     suspend fun getScheduleById(id: String): RouteSchedule?
+    suspend fun getSchedulesForBus(busId: String): List<RouteSchedule> { return emptyList() }
+    fun getSchedulesForBusFlow(busId: String): Flow<List<RouteSchedule>> { return kotlinx.coroutines.flow.emptyFlow() }
     suspend fun addSchedule(schedule: RouteSchedule): Result<Unit>
     suspend fun updateSchedule(schedule: RouteSchedule): Result<Unit>
     suspend fun assignBusToSchedule(scheduleId: String, busId: String): Boolean

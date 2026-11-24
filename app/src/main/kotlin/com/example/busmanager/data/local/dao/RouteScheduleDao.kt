@@ -26,6 +26,12 @@ interface RouteScheduleDao {
     @Query("SELECT * FROM route_schedules WHERE assignedBusId = :busId LIMIT 1")
     suspend fun getScheduleByBusId(busId: String): RouteScheduleEntity?
 
+    @Query("SELECT * FROM route_schedules WHERE assignedBusId = :busId ORDER BY departureHour ASC, departureMinute ASC")
+    suspend fun getSchedulesByBusId(busId: String): List<RouteScheduleEntity>
+
+    @Query("SELECT * FROM route_schedules WHERE assignedBusId = :busId ORDER BY departureHour ASC, departureMinute ASC")
+    fun getSchedulesByBusIdFlow(busId: String): Flow<List<RouteScheduleEntity>>
+
     @Query("SELECT * FROM route_schedules WHERE routeId = :routeId AND direction = :direction AND departureHour = :hour AND departureMinute = :minute LIMIT 1")
     suspend fun findConflictingSchedule(routeId: String, direction: String, hour: Int, minute: Int): RouteScheduleEntity?
 

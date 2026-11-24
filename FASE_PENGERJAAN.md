@@ -23,11 +23,11 @@ Dokumen ini memuat perencanaan rinci perbaikan aplikasi **TransNusantara (Bus Ma
 
 ---
 
-### 🔹 Fase 2 [Interaksi Peta]: Gestur Zoom (Pinch) & Geser Bebas (Pan) di Peta Simulasi
-- [ ] Menambahkan gestur *Pinch-to-Zoom* dan *Drag-to-Pan* pada `EastJavaMapCanvas`.
-- [ ] Menambahkan kontrol tombol UI zoom `[+]`, `[-]`, dan tombol `[🎯 Reset]` di layar peta.
-- [ ] Integrasi transisi kamera yang mulus antara navigasi bebas (pan/zoom) dan mode kuncian kamera (*Track Armada*).
-- [ ] Verifikasi navigasi peta, unit test, dan Git Commit Fase 2.
+### 🔹 Fase 2 [Interaksi Peta]: Gestur Zoom (Pinch) & Geser Bebas (Pan) di Peta Simulasi [SELESAI]
+- [x] Menambahkan gestur *Pinch-to-Zoom* dan *Drag-to-Pan* pada `EastJavaMapCanvas`.
+- [x] Menambahkan kontrol tombol UI zoom `[+]`, `[-]`, tombol fokus armada `[🎯]`, dan tombol `[↺ Reset]` di layar peta.
+- [x] Integrasi transisi kamera yang mulus antara navigasi bebas (pan/zoom) dan mode kuncian kamera (*Track Armada*).
+- [x] Verifikasi navigasi peta, unit test, dan Git Commit Fase 2.
 
 ---
 

@@ -1,4 +1,4 @@
-# TransNusantara - Bus Manager (v2.0.0)
+# TransNusantara - Bus Manager (v2.1.0)
 
 Aplikasi game simulasi manajemen Perusahaan Otobus (PO Bus) Antar Kota Dalam Provinsi (AKDP) Jawa Timur berbasis Android Native modern yang dibangun menggunakan **Kotlin** dan **Jetpack Compose**.
 
@@ -12,6 +12,18 @@ Pemain berperan sebagai pemilik dan direktur operasional PO Bus. Untuk dapat men
 3. **Memiliki Trayek dengan Tarif** (Rute perjalanan yang telah dibuka dan matriks harga tiket antar titik transit telah ditentukan).
 
 Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau dapat diberangkatkan langsung melalui kontrol operasional lapangan.
+
+---
+
+## 🚀 Pembaruan & Penyempurnaan Season 3 (Update v2.1.0)
+
+Rilis v2.1.0 menghadirkan perbaikan operasional, penyederhanaan UI, dan sinkronisasi data menyeluruh:
+1. **Penyatuan Input Tarif Tiket Pulang-Pergi (PP)**: Matriks tarif di Wizard Langkah 3 kini menyajikan 1 baris input harga untuk rute pergi-pulang (`Kota A ⇄ Kota B [PP]`), otomatis tersimpan dua arah.
+2. **Proteksi Penugasan Sopir Ganda & Upah 30%**: Sopir yang sudah berdinas di armada lain diberi badge `Bertugas di MK-XX` dan diproteksi agar tidak bisa ditugaskan ke armada lain. Keterangan upah diselaraskan menjadi `Bagi Hasil: 30% per Rit Dinas`.
+3. **Sinkronisasi Trayek Armada (Garasi vs Play Peta Simulasi)**: Rute kustom tersimpan kini terbaca sempurna di kartu Play ➔ Bus dan tidak lagi tertulis `Trayek: Kosong`.
+4. **Standardisasi Nama Armada**: Format seragam di seluruh layar: `[Merk Sasis] [Model Sasis] - [Karoseri] [Model Bodi]` (Contoh: `Mercedes-Benz OC 500 RF 2542 Tronton - Tentrem Avante D2 Double Decker`).
+5. **Kapasitas Kursi Realistis Sasis & Bodi**: Sleeper Suites Class disesuaikan menjadi 21–24 kursi mewah (bukan 44 kursi), Eksekutif 28–36 kursi, dan Ekonomi 48–60 kursi.
+6. **Pembersihan Spesifikasi Redundan & Bebas Biaya Kelas**: Menghapus info suspensi, tenaga, dan torsi sasis serta tipe dan bagasi bodi karoseri dari Showroom, menghilangkan surcharge biaya interior saat pembelian bus, dan menghapus info kondisi mesin.
 
 ---
 
@@ -76,12 +88,14 @@ Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau
 
 ---
 
-## 🛠️ Roadmap Penyempurnaan & Pembersihan Fitur (In Progress)
+## 🛠️ Status Roadmap Pengerjaan & Penyempurnaan (Completed)
 
-Daftar tahapan perbaikan dan penyederhanaan fitur yang sedang berjalan (merujuk pada `FASE_PENGERJAAN.md`):
-- **Fase 5 [Medium]**: QA Terpadu, Pembersihan Kode (Clean Code + Zero Comments) & Tag Rilis Versi Baru (v2.1.0).
-
-*(Catatan: Seluruh Fase 1 s.d. Fase 4 [Pembersihan Spesifikasi Chassis/Bodi, Biaya Kelas, Kondisi Mesin, Sinkronisasi Rute Garasi vs Play->Bus, Penyatuan Input Tarif PP, Proteksi Ketersediaan Sopir, Skema Upah 30%, Kapasitas Kursi Realistis, dan Standardisasi Format Nama Armada] telah selesai dan terintegrasi).*
+Seluruh tahapan roadmap Season 3 (Fase 1 s.d. Fase 5) telah **100% selesai dan terintegrasi** pada rilis **v2.1.0** (merujuk pada `FASE_PENGERJAAN.md`):
+- ✅ **Fase 1**: Pembersihan Informasi Redundan (Sasis/Bodi), Biaya Kelas Bus, Kondisi Mesin, dan Sinkronisasi Trayek Kustom.
+- ✅ **Fase 2**: Penyatuan Input Tarif Tiket Pulang-Pergi (1 Kolom Harga A-B & B-A) di Wizard Trayek.
+- ✅ **Fase 3**: Proteksi Ketersediaan Sopir (Mencegah Sopir Ganda) & Penyelarasan Skema Upah 30% per Rit Dinas.
+- ✅ **Fase 4**: Penyesuaian Kapasitas Kursi Realistis (Chassis & Bodi) + Standardisasi Format Nama Armada (`[Sasis] - [Bodi]`).
+- ✅ **Fase 5**: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.1.0, dan Publikasi Rilis.
 
 ---
 
@@ -95,7 +109,7 @@ Daftar tahapan perbaikan dan penyederhanaan fitur yang sedang berjalan (merujuk 
   - Navigation Compose & Navigation3
   - Room Database v5 (`buses`, `company`, `drivers`, `route_pricings`, `route_schedules`, `financial_transactions`, `terminal_passenger_records`)
   - Kotlin Coroutines & Reactive StateFlow UI State
-- **Versi Rilis**: v2.0.0 (Build VersionCode: 7)
+- **Versi Rilis**: v2.1.0 (Build VersionCode: 8)
 - **Min SDK**: API 24 (Android 7.0 Nougat)
 - **Target SDK**: API 36 (Android 16)
 - **Java Compatibility**: JDK 17

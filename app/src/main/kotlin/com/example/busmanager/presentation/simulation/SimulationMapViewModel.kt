@@ -218,7 +218,7 @@ class SimulationMapViewModel(
         direction: RouteDirection,
         currentTime: GameCalendar
     ) {
-        dispatchBusUseCase(
+        val trip = dispatchBusUseCase(
             bus = bus,
             route = route,
             direction = direction,
@@ -232,7 +232,7 @@ class SimulationMapViewModel(
             } else {
                 75_000L
             }
-            val passengers = (bus.body.passengerCapacity * 0.85).toInt().coerceAtLeast(1)
+            val passengers = trip.passengerCount
             val ticketEarnings = Money.rupiah(avgTicketPrice * passengers)
 
             val dateText = "${currentTime.dayOfWeekName()}, ${currentTime.formatDate()}"

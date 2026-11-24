@@ -27,7 +27,7 @@ class StartNewGameUseCaseTest {
         val company = startNewGameUseCase("PO Harapan Jaya")
 
         assertEquals("PO Harapan Jaya", company.name)
-        assertEquals(Money.rupiah(1_500_000_000), company.balance)
+        assertEquals(Money.rupiah(50_000_000_000L), company.balance)
     }
 
     @Test

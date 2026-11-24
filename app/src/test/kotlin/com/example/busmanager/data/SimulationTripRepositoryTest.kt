@@ -88,6 +88,32 @@ class SimulationTripRepositoryTest {
     }
 
     @Test
+    fun multiStopRoute_advancingPastTransit_exchangesPassengersAndIncreasesEarnings() {
+        val bus = createTestBus()
+        val multiStopRoute = routeDataSource.getPredefinedRoutes().first { it.segments.size > 1 }
+        val calendar = GameCalendar.initial()
+
+        val initialTrip = repository.dispatchBus(
+            bus = bus,
+            route = multiStopRoute,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            currentTime = calendar
+        )
+
+        assertTrue(initialTrip.passengerCount in 1..bus.body.passengerCapacity)
+        assertEquals(0, initialTrip.visitedTransitStopIndices.size)
+
+        val firstSegmentDuration = multiStopRoute.segments.first().baseDurationMinutes
+        repository.advanceTripsTime(firstSegmentDuration + 1)
+
+        val tripAtTransit = repository.activeTrips.value.first()
+        assertTrue(tripAtTransit.visitedTransitStopIndices.contains(0))
+        assertTrue(tripAtTransit.passengerCount in 0..bus.body.passengerCapacity)
+        assertTrue(tripAtTransit.ticketEarnings.amount >= initialTrip.ticketEarnings.amount)
+        assertTrue(tripAtTransit.totalBoardedPassengers >= initialTrip.passengerCount)
+    }
+
+    @Test
     fun cancelAndClearTrips_removesTrips() {
         val bus = createTestBus()
         val route = routeDataSource.getPredefinedRoutes().first()

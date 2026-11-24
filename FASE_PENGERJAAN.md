@@ -128,7 +128,7 @@ Dokumen perencanaan fitur lanjutan Season 2 mencakup personalisasi armada bertah
 
 ---
 
-### 🟠 Fase 3 [Medium]: Kedinamisan Pasar Penumpang & Naik-Turun Acak di Kota Transit
+### 🟠 Fase 3 [Medium]: Kedinamisan Pasar Penumpang & Naik-Turun Acak di Kota Transit [SELESAI ✅]
 - **Tujuan**: Menghilangkan okupansi statis (85%) agar jumlah penumpang bervariasi secara dinamis dan realistis di setiap titik terminal.
 - **Deliverables**:
   1. **Algoritma Permintaan Acak (*Random Demand Generator*)**:

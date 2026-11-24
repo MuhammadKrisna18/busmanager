@@ -11,6 +11,10 @@ class StartNewGameUseCase(
     suspend operator fun invoke(companyName: String = DEFAULT_COMPANY_NAME): Company {
         val existing = companyRepository.getCompany().first()
         if (existing != null) {
+            if (existing.balance < DEFAULT_STARTING_BALANCE) {
+                companyRepository.addBalance(DEFAULT_STARTING_BALANCE - existing.balance)
+                return companyRepository.getCompany().first() ?: existing
+            }
             return existing
         }
         return companyRepository.createCompany(
@@ -21,6 +25,6 @@ class StartNewGameUseCase(
 
     companion object {
         const val DEFAULT_COMPANY_NAME = "PO TransNusantara"
-        val DEFAULT_STARTING_BALANCE = Money.rupiah(1_500_000_000)
+        val DEFAULT_STARTING_BALANCE = Money.rupiah(50_000_000_000L)
     }
 }

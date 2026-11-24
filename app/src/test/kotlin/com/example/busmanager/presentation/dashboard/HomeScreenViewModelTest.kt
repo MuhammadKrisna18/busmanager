@@ -61,7 +61,7 @@ class HomeScreenViewModelTest {
         val state = viewModel.uiState.first()
         assertFalse(state.isLoading)
         assertEquals("PO TransNusantara", state.company?.name)
-        assertEquals(Money.rupiah(1_500_000_000), state.company?.balance)
+        assertEquals(Money.rupiah(50_000_000_000L), state.company?.balance)
     }
 
     @Test

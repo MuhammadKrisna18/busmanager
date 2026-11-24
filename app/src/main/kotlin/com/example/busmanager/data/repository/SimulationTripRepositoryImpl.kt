@@ -6,6 +6,7 @@ import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.BusMovementInterpolator
 import com.example.busmanager.domain.simulation.model.GameCalendar
+import com.example.busmanager.domain.simulation.model.PassengerDemandGenerator
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.util.UUID
 
-class SimulationTripRepositoryImpl : SimulationTripRepository {
+class SimulationTripRepositoryImpl(
+    private val passengerDemandGenerator: PassengerDemandGenerator = PassengerDemandGenerator()
+) : SimulationTripRepository {
 
     private val _activeTrips = MutableStateFlow<List<ActiveBusTrip>>(emptyList())
     override val activeTrips: StateFlow<List<ActiveBusTrip>> = _activeTrips.asStateFlow()
@@ -25,8 +28,8 @@ class SimulationTripRepositoryImpl : SimulationTripRepository {
         direction: RouteDirection,
         currentTime: GameCalendar
     ): ActiveBusTrip {
-        val passengerLoadFraction = 0.85f
-        val passengerCount = (bus.body.passengerCapacity * passengerLoadFraction).toInt().coerceAtLeast(1)
+        val capacity = bus.body.passengerCapacity
+        val passengerCount = passengerDemandGenerator.generateInitialLoad(capacity)
 
         val farePerKm = 650L
         val earningsAmount = (farePerKm * route.totalDistanceKm.toLong() * passengerCount)
@@ -51,7 +54,11 @@ class SimulationTripRepositoryImpl : SimulationTripRepository {
             currentCoordinate = initialCoord,
             passengerCount = passengerCount,
             ticketEarnings = ticketEarnings,
-            isCompleted = false
+            isCompleted = false,
+            maxCapacity = capacity,
+            visitedTransitStopIndices = emptySet(),
+            totalBoardedPassengers = passengerCount,
+            totalAlightedPassengers = 0
         )
 
         _activeTrips.update { current ->
@@ -77,11 +84,19 @@ class SimulationTripRepositoryImpl : SimulationTripRepository {
                         fraction = 0.0f,
                         direction = flippedDirection
                     )
+                    val returnPassengers = passengerDemandGenerator.generateInitialLoad(trip.maxCapacity)
+                    val farePerKm = 650L
+                    val returnEarnings = Money.rupiah(farePerKm * trip.route.totalDistanceKm.toLong() * returnPassengers)
                     trip.copy(
                         direction = flippedDirection,
                         elapsedMinutes = 0,
                         progressFraction = 0.0f,
-                        currentCoordinate = resetCoord
+                        currentCoordinate = resetCoord,
+                        passengerCount = returnPassengers,
+                        ticketEarnings = returnEarnings,
+                        visitedTransitStopIndices = emptySet(),
+                        totalBoardedPassengers = returnPassengers,
+                        totalAlightedPassengers = trip.passengerCount
                     )
                 } else {
                     val newCoord = BusMovementInterpolator.interpolatePosition(
@@ -89,10 +104,49 @@ class SimulationTripRepositoryImpl : SimulationTripRepository {
                         fraction = newProgress,
                         direction = trip.direction
                     )
+
+                    val segmentsForDirection = if (trip.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                        trip.route.segments
+                    } else {
+                        trip.route.segments.reversed()
+                    }
+
+                    var currentPassengers = trip.passengerCount
+                    var currentEarnings = trip.ticketEarnings
+                    var totalBoarded = trip.totalBoardedPassengers
+                    var totalAlighted = trip.totalAlightedPassengers
+                    val newlyVisitedStops = trip.visitedTransitStopIndices.toMutableSet()
+
+                    if (segmentsForDirection.size > 1) {
+                        var cumulativeMinutes = 0
+                        for (index in 0 until segmentsForDirection.size - 1) {
+                            cumulativeMinutes += segmentsForDirection[index].baseDurationMinutes
+                            if (newElapsed >= cumulativeMinutes && !newlyVisitedStops.contains(index)) {
+                                newlyVisitedStops.add(index)
+                                val alighted = passengerDemandGenerator.calculateTransitAlighting(currentPassengers)
+                                val remaining = (currentPassengers - alighted).coerceAtLeast(0)
+                                val emptySeats = (trip.maxCapacity - remaining).coerceAtLeast(0)
+                                val boarded = passengerDemandGenerator.calculateTransitBoarding(emptySeats)
+                                currentPassengers = (remaining + boarded).coerceIn(0, trip.maxCapacity)
+                                totalBoarded += boarded
+                                totalAlighted += alighted
+
+                                val remainingDistance = segmentsForDirection.drop(index + 1).sumOf { it.distanceKm }
+                                val transitTicketAmount = (650L * remainingDistance.toLong() * boarded).coerceAtLeast(0L)
+                                currentEarnings += Money.rupiah(transitTicketAmount)
+                            }
+                        }
+                    }
+
                     trip.copy(
                         elapsedMinutes = newElapsed,
                         progressFraction = newProgress,
-                        currentCoordinate = newCoord
+                        currentCoordinate = newCoord,
+                        passengerCount = currentPassengers,
+                        ticketEarnings = currentEarnings,
+                        visitedTransitStopIndices = newlyVisitedStops,
+                        totalBoardedPassengers = totalBoarded,
+                        totalAlightedPassengers = totalAlighted
                     )
                 }
             }

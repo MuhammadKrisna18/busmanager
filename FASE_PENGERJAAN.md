@@ -11,19 +11,21 @@ Dokumen ini memuat daftar rencana tahapan perbaikan, penyederhanaan informasi, d
 7. **Sinkronisasi Ketersediaan Sopir di Wizard**: Sopir yang sudah bertugas di armada lain diberi tanda bertugas dan tidak dapat dipilih lagi untuk bus kedua di Langkah 4 Wizard.
 8. **Penyelarasan Teks Upah Sopir di Wizard**: Ubah label dari format harian (`Upah: Rp.../hari`) menjadi format bagi hasil (`Bagi Hasil: 30% per Rit Dinas`).
 9. **Standardisasi Format Nama Armada**: Format nama seragam `[Merk Sasis] [Model Sasis] - [Karoseri] [Model Bodi]` di semua layar, termasuk memunculkan kembali nama bodi karoseri di kartu peta simulasi.
+10. **Sinkronisasi Trayek Armada Antara Garasi & Play ➔ Bus**: Memperbaiki pembacaan rute di `SimulationMapViewModel` agar menggunakan `routeRepository.getAllRoutes()`, sehingga rute kustom yang tersimpan di bus (seperti *Situbondo - Probolinggo*) terbaca sempurna di kartu Play ➔ Bus dan tidak lagi tertulis 'Trayek: Kosong'.
 
 ---
 
 ## 📋 Pembagian Fase Pengerjaan
 
-### 🟢 Fase 1 [Medium]: Pembersihan Informasi Redundan & Penyederhanaan Showroom (Chassis, Bodi, & Kelas)
-- **Tujuan**: Menghapus data spesifikasi yang tidak memiliki fungsi gameplay dan menyederhanakan langkah pemilihan kelas di Showroom.
+### 🟢 Fase 1 [Medium]: Pembersihan Informasi Redundan & Sinkronisasi Trayek (Garasi vs Play->Bus)
+- **Tujuan**: Menghapus data spesifikasi yang tidak memiliki fungsi gameplay, menyederhanakan Showroom, serta menyinkronkan rute bus antara Garasi dan Play ➔ Bus.
 - **Deliverables**:
   1. **Pembersihan Spesifikasi Chassis**: Hapus informasi suspensi, tenaga (HP), dan torsi dari model data sasis serta kartu tampilan Showroom.
   2. **Pembersihan Spesifikasi Bodi**: Hapus informasi tipe bodi dan volume bagasi dari model data bodi serta kartu tampilan Showroom.
   3. **Hapus Biaya Tambahan Kelas**: Pemilihan kelas bus di Showroom Langkah 3 murni menentukan kelas layanan armada tanpa membebankan harga tambahan pada pembelian bus.
   4. **Pembersihan Kondisi Mesin**: Hapus tampilan & atribut kondisi mesin (100% Mesin Sehat) dari Showroom, Garasi, Wizard, dan model Bus.
-  5. **Pengujian & Git Commit Fase 1**.
+  5. **Sinkronisasi Rute Kustom di Play ➔ Bus**: Ubah pemanggilan `routeRepository.getAllPredefinedRoutes()` menjadi `getAllRoutes()` pada `SimulationMapViewModel` agar rute kustom terbaca di kartu armada dan tidak tertulis `Kosong`.
+  6. **Pengujian & Git Commit Fase 1**.
 
 ---
 

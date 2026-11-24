@@ -10,6 +10,8 @@ import com.example.busmanager.presentation.dashboard.HomeScreen
 import com.example.busmanager.presentation.dashboard.HomeScreenViewModel
 import com.example.busmanager.presentation.driver.DriverManagementScreen
 import com.example.busmanager.presentation.driver.DriverManagementViewModel
+import com.example.busmanager.presentation.finance.FinanceScreen
+import com.example.busmanager.presentation.finance.FinanceViewModel
 import com.example.busmanager.presentation.garage.GarageScreen
 import com.example.busmanager.presentation.garage.GarageViewModel
 import com.example.busmanager.presentation.route.wizard.RouteWizardScreen
@@ -63,6 +65,9 @@ fun MainNavigation(appContainer: AppContainer) {
                     },
                     onNavigateToDrivers = {
                         backStack.add(DriverManagementRoute)
+                    },
+                    onNavigateToFinance = {
+                        backStack.add(FinanceRoute)
                     }
                 )
             }
@@ -82,7 +87,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         routePricingRepository = appContainer.routePricingRepository,
                         companyRepository = appContainer.companyRepository,
                         driverRepository = appContainer.driverRepository,
-                        setSimulationSpeedUseCase = appContainer.setSimulationSpeedUseCase
+                        setSimulationSpeedUseCase = appContainer.setSimulationSpeedUseCase,
+                        recordFinancialTransactionUseCase = appContainer.recordFinancialTransactionUseCase
                     )
                 }
                 SimulationMapScreen(
@@ -174,6 +180,22 @@ fun MainNavigation(appContainer: AppContainer) {
                     },
                     onNavigateToRoutes = {
                         backStack.add(RoutePlannerRoute)
+                    }
+                )
+            }
+            entry<FinanceRoute> {
+                val viewModel: FinanceViewModel = viewModel {
+                    FinanceViewModel(
+                        companyRepository = appContainer.companyRepository,
+                        getFinancialTransactionsUseCase = appContainer.getFinancialTransactionsUseCase,
+                        fleetRepository = appContainer.fleetRepository,
+                        routeRepository = appContainer.routeRepository
+                    )
+                }
+                FinanceScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        backStack.removeLastOrNull()
                     }
                 )
             }

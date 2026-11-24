@@ -6,11 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.busmanager.data.local.dao.CompanyDao
 import com.example.busmanager.data.local.dao.DriverDao
+import com.example.busmanager.data.local.dao.FinancialTransactionDao
 import com.example.busmanager.data.local.dao.OwnedBusDao
 import com.example.busmanager.data.local.dao.RoutePricingDao
 import com.example.busmanager.data.local.dao.RouteScheduleDao
 import com.example.busmanager.data.local.entity.CompanyEntity
 import com.example.busmanager.data.local.entity.DriverEntity
+import com.example.busmanager.data.local.entity.FinancialTransactionEntity
 import com.example.busmanager.data.local.entity.OwnedBusEntity
 import com.example.busmanager.data.local.entity.RoutePricingEntity
 import com.example.busmanager.data.local.entity.RouteScheduleEntity
@@ -21,9 +23,10 @@ import com.example.busmanager.data.local.entity.RouteScheduleEntity
         OwnedBusEntity::class,
         DriverEntity::class,
         RoutePricingEntity::class,
-        RouteScheduleEntity::class
+        RouteScheduleEntity::class,
+        FinancialTransactionEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class BusManagerDatabase : RoomDatabase() {
@@ -33,6 +36,7 @@ abstract class BusManagerDatabase : RoomDatabase() {
     abstract fun driverDao(): DriverDao
     abstract fun routePricingDao(): RoutePricingDao
     abstract fun routeScheduleDao(): RouteScheduleDao
+    abstract fun financialTransactionDao(): FinancialTransactionDao
 
     companion object {
         private const val DATABASE_NAME = "bus_manager.db"

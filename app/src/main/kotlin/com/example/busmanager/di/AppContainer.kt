@@ -6,6 +6,7 @@ import com.example.busmanager.data.local.database.BusManagerDatabase
 import com.example.busmanager.data.repository.ChassisCatalogRepositoryImpl
 import com.example.busmanager.data.repository.CompanyRepositoryImpl
 import com.example.busmanager.data.repository.DriverRepositoryImpl
+import com.example.busmanager.data.repository.FinancialTransactionRepositoryImpl
 import com.example.busmanager.data.repository.FleetRepositoryImpl
 import com.example.busmanager.data.repository.KaroseriCatalogRepositoryImpl
 import com.example.busmanager.data.repository.RouteCatalogRepositoryImpl
@@ -23,6 +24,9 @@ import com.example.busmanager.domain.driver.usecase.AssignDriverToBusUseCase
 import com.example.busmanager.domain.driver.usecase.GetAvailableDriversUseCase
 import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.driver.usecase.HireDriverUseCase
+import com.example.busmanager.domain.finance.repository.FinancialTransactionRepository
+import com.example.busmanager.domain.finance.usecase.GetFinancialTransactionsUseCase
+import com.example.busmanager.domain.finance.usecase.RecordFinancialTransactionUseCase
 import com.example.busmanager.domain.fleet.repository.ChassisCatalogRepository
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.fleet.repository.KaroseriCatalogRepository
@@ -89,6 +93,9 @@ class AppContainer(context: Context) {
         database.routeScheduleDao(),
         database.ownedBusDao()
     )
+    val financialTransactionRepository: FinancialTransactionRepository = FinancialTransactionRepositoryImpl(
+        database.financialTransactionDao()
+    )
 
     val startNewGameUseCase = StartNewGameUseCase(companyRepository)
     val getCompanyUseCase = GetCompanyUseCase(companyRepository)
@@ -120,6 +127,8 @@ class AppContainer(context: Context) {
     val deleteRouteScheduleUseCase = DeleteRouteScheduleUseCase(routeScheduleRepository)
 
     val validateBusOperationUseCase = ValidateBusOperationUseCase(driverRepository, routePricingRepository)
+    val getFinancialTransactionsUseCase = GetFinancialTransactionsUseCase(financialTransactionRepository)
+    val recordFinancialTransactionUseCase = RecordFinancialTransactionUseCase(financialTransactionRepository, companyRepository)
 
     val getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepository)
     val toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepository)

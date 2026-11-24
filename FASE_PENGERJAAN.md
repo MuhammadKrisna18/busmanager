@@ -61,7 +61,7 @@ Dokumen ini merangkum rencana tahapan pengerjaan untuk 6 fitur dan penyempurnaan
 
 ---
 
-### 🔴 Fase 4 [Hard]: Sistem Keuangan Dinamis & Layar Buku Kas (Finance Screen)
+### 🔴 Fase 4 [Hard]: Sistem Keuangan Dinamis & Layar Buku Kas (Finance Screen) [SELESAI ✅]
 - **Tujuan**: Menghidupkan ekonomi permainan dengan pencatatan mutasi kas masuk/keluar dan mengaktifkan menu Keuangan.
 - **Deliverables**:
   1. **Pencatatan Transaksi Keuangan (Diskusi 4)**:

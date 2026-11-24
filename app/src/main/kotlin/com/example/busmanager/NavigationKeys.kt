@@ -23,3 +23,6 @@ data object DriverManagementRoute : NavKey
 
 @Serializable
 data object GarageRoute : NavKey
+
+@Serializable
+data object FinanceRoute : NavKey

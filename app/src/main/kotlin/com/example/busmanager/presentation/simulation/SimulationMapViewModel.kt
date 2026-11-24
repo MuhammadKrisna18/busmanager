@@ -6,6 +6,10 @@ import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
 import com.example.busmanager.domain.driver.repository.DriverRepository
+import com.example.busmanager.domain.finance.model.FinancialTransaction
+import com.example.busmanager.domain.finance.model.TransactionCategory
+import com.example.busmanager.domain.finance.model.TransactionType
+import com.example.busmanager.domain.finance.usecase.RecordFinancialTransactionUseCase
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.usecase.BusOperationStatus
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
@@ -46,7 +50,8 @@ class SimulationMapViewModel(
     private val routePricingRepository: RoutePricingRepository? = null,
     private val companyRepository: CompanyRepository? = null,
     private val driverRepository: DriverRepository? = null,
-    private val setSimulationSpeedUseCase: SetSimulationSpeedUseCase? = null
+    private val setSimulationSpeedUseCase: SetSimulationSpeedUseCase? = null,
+    private val recordFinancialTransactionUseCase: RecordFinancialTransactionUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SimulationMapUiState())
@@ -162,6 +167,9 @@ class SimulationMapViewModel(
     private suspend fun handleScheduledDepartures(time: GameCalendar) {
         if (time.day != lastObservedDay) {
             dispatchedSchedulesInCurrentDay.clear()
+            if (lastObservedDay != -1) {
+                deductDailyDriverWages(time)
+            }
             lastObservedDay = time.day
         }
 
@@ -194,6 +202,38 @@ class SimulationMapViewModel(
         }
     }
 
+    private fun deductDailyDriverWages(time: GameCalendar) {
+        val hiredDrivers = _uiState.value.drivers.filter { it.isHired }
+        val buses = _uiState.value.ownedBuses
+        val dateText = "${time.dayOfWeekName()}, ${time.formatDate()}"
+        val timeText = time.formatTime()
+
+        for (driver in hiredDrivers) {
+            val assignedBus = buses.find { it.driverId == driver.id || it.id == driver.assignedBusId }
+            val transaction = FinancialTransaction(
+                id = "tx-wage-${driver.id}-${time.year}-${time.month}-${time.day}",
+                dateText = dateText,
+                timeText = timeText,
+                day = time.day,
+                month = time.month,
+                year = time.year,
+                type = TransactionType.EXPENSE,
+                category = TransactionCategory.DRIVER_WAGE,
+                amount = driver.wagePerDay,
+                busId = assignedBus?.id,
+                busCode = assignedBus?.busCode,
+                description = "Gaji harian: ${driver.name}"
+            )
+            viewModelScope.launch {
+                if (recordFinancialTransactionUseCase != null) {
+                    recordFinancialTransactionUseCase.invoke(transaction)
+                } else {
+                    companyRepository?.deductBalance(driver.wagePerDay)
+                }
+            }
+        }
+    }
+
     private fun executeDispatchAndRevenue(
         bus: Bus,
         route: BusRoute,
@@ -216,13 +256,31 @@ class SimulationMapViewModel(
             }
             val passengers = (bus.body.passengerCapacity * 0.85).toInt().coerceAtLeast(1)
             val ticketEarnings = Money.rupiah(avgTicketPrice * passengers)
-            companyRepository?.addBalance(ticketEarnings)
 
-            val fuelCost = (route.totalDistanceKm * 0.35 * 6800.0).toLong()
-            val toll = route.totalTollFee.amount
-            val retribution = 10_000L
-            val operationalCost = Money.rupiah(fuelCost + toll + retribution)
-            companyRepository?.deductBalance(operationalCost)
+            val dateText = "${currentTime.dayOfWeekName()}, ${currentTime.formatDate()}"
+            val timeText = currentTime.formatTime()
+            val transaction = FinancialTransaction(
+                id = "tx-ticket-${bus.id}-${System.currentTimeMillis()}",
+                dateText = dateText,
+                timeText = timeText,
+                day = currentTime.day,
+                month = currentTime.month,
+                year = currentTime.year,
+                type = TransactionType.INCOME,
+                category = TransactionCategory.TICKET_SALE,
+                amount = ticketEarnings,
+                busId = bus.id,
+                busCode = bus.busCode,
+                routeId = route.id,
+                routeName = route.name,
+                description = "Tiket ${route.name} (${bus.busCode})"
+            )
+
+            if (recordFinancialTransactionUseCase != null) {
+                recordFinancialTransactionUseCase.invoke(transaction)
+            } else {
+                companyRepository?.addBalance(ticketEarnings)
+            }
         }
     }
 

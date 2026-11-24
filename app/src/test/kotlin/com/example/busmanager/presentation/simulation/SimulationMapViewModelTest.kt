@@ -12,6 +12,11 @@ import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
 import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.driver.repository.DriverRepository
+import com.example.busmanager.domain.finance.model.FinancialTransaction
+import com.example.busmanager.domain.finance.model.TransactionCategory
+import com.example.busmanager.domain.finance.model.TransactionType
+import com.example.busmanager.domain.finance.repository.FinancialTransactionRepository
+import com.example.busmanager.domain.finance.usecase.RecordFinancialTransactionUseCase
 import com.example.busmanager.domain.fleet.model.AxleType
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.model.BusBodyType
@@ -449,6 +454,148 @@ class SimulationMapViewModelTest {
 
         val activeTrips = customViewModel.uiState.value.activeTrips
         assertEquals(0, activeTrips.size)
+    }
+
+    @Test
+    fun scheduledDeparture_recordsTicketRevenueTransaction() = runTest {
+        val fakeDriverRepo = FakeDriverRepository()
+        val fakePricingRepo = FakeRoutePricingRepository()
+        val fakeScheduleRepo = FakeRouteScheduleRepository()
+        val fakeTxRepo = FakeFinancialTransactionRepository()
+        val recordTxUseCase = RecordFinancialTransactionUseCase(fakeTxRepo, fakeCompanyRepo)
+        val validateUseCase = ValidateBusOperationUseCase(fakeDriverRepo, fakePricingRepo)
+
+        val route = routeRepo.getAllPredefinedRoutes().first()
+
+        val driver = Driver(
+            id = "driver-1",
+            name = "Bambang",
+            wagePerDay = Money.rupiah(250_000L),
+            isHired = true,
+            assignedBusId = "bus-1"
+        )
+        fakeDriverRepo.saveDriver(driver)
+
+        val bus = createDummyBus("TN-01").copy(
+            id = "bus-1",
+            routeId = route.id,
+            driverId = "driver-1"
+        )
+        fakeFleetRepo.emitBuses(listOf(bus))
+
+        fakePricingRepo.savePricing(
+            RoutePricing(
+                id = "price-tx",
+                routeId = route.id,
+                originTerminalId = route.originTerminal.id,
+                destinationTerminalId = route.destinationTerminal.id,
+                originCity = route.originTerminal.city,
+                destinationCity = route.destinationTerminal.city,
+                price = Money.rupiah(100_000L)
+            )
+        )
+
+        val schedule = RouteSchedule(
+            id = "sched-tx",
+            routeId = route.id,
+            departureHour = 8,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            assignedBusId = "bus-1"
+        )
+        fakeScheduleRepo.addSchedule(schedule)
+
+        val customViewModel = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fakeFleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(simulationTripRepo),
+            validateBusOperationUseCase = validateUseCase,
+            routeScheduleRepository = fakeScheduleRepo,
+            routePricingRepository = fakePricingRepo,
+            companyRepository = fakeCompanyRepo,
+            driverRepository = fakeDriverRepo,
+            recordFinancialTransactionUseCase = recordTxUseCase
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        customViewModel.togglePlay()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val txs = fakeTxRepo.getTransactions()
+        assertTrue(txs.isNotEmpty())
+        assertEquals(TransactionType.INCOME, txs.first().type)
+        assertEquals(TransactionCategory.TICKET_SALE, txs.first().category)
+        assertEquals("bus-1", txs.first().busId)
+    }
+
+    @Test
+    fun dayRollOver_recordsDriverWageExpense() = runTest {
+        val fakeDriverRepo = FakeDriverRepository()
+        val fakePricingRepo = FakeRoutePricingRepository()
+        val fakeScheduleRepo = FakeRouteScheduleRepository()
+        val fakeTxRepo = FakeFinancialTransactionRepository()
+        val recordTxUseCase = RecordFinancialTransactionUseCase(fakeTxRepo, fakeCompanyRepo)
+
+        val driver = Driver(
+            id = "driver-wage-1",
+            name = "Supriadi",
+            wagePerDay = Money.rupiah(200_000L),
+            isHired = true,
+            assignedBusId = "bus-1"
+        )
+        fakeDriverRepo.saveDriver(driver)
+
+        val bus = createDummyBus("TN-01").copy(id = "bus-1", driverId = "driver-wage-1")
+        fakeFleetRepo.emitBuses(listOf(bus))
+
+        val customViewModel = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fakeFleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(simulationTripRepo),
+            companyRepository = fakeCompanyRepo,
+            driverRepository = fakeDriverRepo,
+            recordFinancialTransactionUseCase = recordTxUseCase
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        customViewModel.togglePlay()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        simulationTimeRepo.setTime(GameCalendar(2026, 11, 25, 1, 0))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val txs = fakeTxRepo.getTransactions()
+        val wageTx = txs.find { it.category == TransactionCategory.DRIVER_WAGE }
+        assertNotNull(wageTx)
+        assertEquals(TransactionType.EXPENSE, wageTx?.type)
+        assertEquals(Money.rupiah(200_000L), wageTx?.amount)
+        assertEquals("bus-1", wageTx?.busId)
+    }
+
+    private class FakeFinancialTransactionRepository : FinancialTransactionRepository {
+        private val list = mutableListOf<FinancialTransaction>()
+        private val flow = MutableStateFlow<List<FinancialTransaction>>(emptyList())
+
+        override fun getAllTransactionsFlow(): Flow<List<FinancialTransaction>> = flow
+        override suspend fun getTransactions(): List<FinancialTransaction> = list.toList()
+        override suspend fun recordTransaction(transaction: FinancialTransaction) {
+            list.add(transaction)
+            flow.value = list.toList()
+        }
+        override suspend fun clearTransactions() {
+            list.clear()
+            flow.value = emptyList()
+        }
     }
 
     private class FakeDriverRepository : DriverRepository {

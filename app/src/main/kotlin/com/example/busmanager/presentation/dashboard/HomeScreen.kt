@@ -67,6 +67,7 @@ fun HomeScreen(
     onNavigateToGarage: () -> Unit = {},
     onNavigateToRoutes: () -> Unit = {},
     onNavigateToDrivers: () -> Unit = {},
+    onNavigateToFinance: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -137,6 +138,7 @@ fun HomeScreen(
                 onNavigateToGarage = onNavigateToGarage,
                 onNavigateToRoutes = onNavigateToRoutes,
                 onNavigateToDrivers = onNavigateToDrivers,
+                onNavigateToFinance = onNavigateToFinance,
                 modifier = Modifier.weight(1f)
             )
 
@@ -308,6 +310,7 @@ private fun MenuGrid(
     onNavigateToGarage: () -> Unit,
     onNavigateToRoutes: () -> Unit,
     onNavigateToDrivers: () -> Unit,
+    onNavigateToFinance: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -363,10 +366,11 @@ private fun MenuGrid(
         item {
             MenuCard(
                 title = "Keuangan",
-                subtitle = "Laba Rugi & Kredit",
+                subtitle = "Buku Kas & Laba Rugi",
                 iconEmoji = "📊",
-                badgeText = "Segera Hadir",
-                isActive = false
+                badgeText = "Buku Kas",
+                isActive = true,
+                onClick = onNavigateToFinance
             )
         }
 

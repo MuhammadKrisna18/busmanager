@@ -3,11 +3,16 @@ package com.example.busmanager.presentation.simulation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
+import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
+import com.example.busmanager.domain.simulation.model.ActiveBusTrip
+import com.example.busmanager.domain.simulation.model.RouteDirection
+import com.example.busmanager.domain.simulation.usecase.DispatchBusUseCase
+import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +28,9 @@ class SimulationMapViewModel(
     private val getCompanyUseCase: GetCompanyUseCase,
     private val getOwnedFleetUseCase: GetOwnedFleetUseCase,
     private val getAvailableTerminalsUseCase: GetAvailableTerminalsUseCase,
-    private val routeRepository: RouteRepository
+    private val routeRepository: RouteRepository,
+    private val getActiveTripsUseCase: GetActiveTripsUseCase,
+    private val dispatchBusUseCase: DispatchBusUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SimulationMapUiState())
@@ -32,6 +39,7 @@ class SimulationMapViewModel(
     init {
         observeSimulationEngine()
         observeCompanyAndFleet()
+        observeActiveTrips()
         loadMapData()
     }
 
@@ -69,6 +77,20 @@ class SimulationMapViewModel(
         }
     }
 
+    private fun observeActiveTrips() {
+        viewModelScope.launch {
+            getActiveTripsUseCase().collect { trips ->
+                _uiState.update { current ->
+                    current.copy(
+                        activeTrips = trips,
+                        activeBusCount = trips.size,
+                        selectedTrip = current.selectedTrip?.let { sel -> trips.find { it.id == sel.id } }
+                    )
+                }
+            }
+        }
+    }
+
     private fun loadMapData() {
         viewModelScope.launch {
             val terminals = getAvailableTerminalsUseCase()
@@ -97,7 +119,8 @@ class SimulationMapViewModel(
                 val matchingRoute = current.routes.firstOrNull { it.containsTerminal(terminal.id) }
                 current.copy(
                     selectedTerminal = terminal,
-                    selectedRoute = matchingRoute
+                    selectedRoute = matchingRoute,
+                    selectedTrip = null
                 )
             }
         }
@@ -124,8 +147,33 @@ class SimulationMapViewModel(
             current.copy(
                 selectedRoute = route,
                 selectedTerminal = route.originTerminal,
+                selectedTrip = null,
                 activeBottomSheet = SimulationBottomSheetType.NONE
             )
         }
+    }
+
+    fun onTripClick(trip: ActiveBusTrip) {
+        _uiState.update { current ->
+            current.copy(
+                selectedTrip = trip,
+                selectedRoute = trip.route,
+                selectedTerminal = null
+            )
+        }
+    }
+
+    fun clearSelectedTrip() {
+        _uiState.update { it.copy(selectedTrip = null) }
+    }
+
+    fun dispatchBus(bus: Bus, route: BusRoute) {
+        dispatchBusUseCase(
+            bus = bus,
+            route = route,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            currentTime = _uiState.value.currentTime
+        )
+        _uiState.update { it.copy(activeBottomSheet = SimulationBottomSheetType.NONE) }
     }
 }

@@ -28,6 +28,7 @@ import com.example.busmanager.domain.route.model.MapCoordinate
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.IceBlue
@@ -46,7 +47,9 @@ fun EastJavaMapCanvas(
     selectedOrigin: Terminal? = null,
     selectedDestination: Terminal? = null,
     transitTerminals: List<Terminal> = emptyList(),
-    onTerminalClick: (Terminal) -> Unit = {}
+    activeTrips: List<ActiveBusTrip> = emptyList(),
+    onTerminalClick: (Terminal) -> Unit = {},
+    onTripClick: (ActiveBusTrip) -> Unit = {}
 ) {
     BoxWithConstraints(
         modifier = modifier
@@ -104,6 +107,22 @@ fun EastJavaMapCanvas(
                     terminal = terminal,
                     role = role,
                     onClick = { onTerminalClick(terminal) }
+                )
+            }
+        }
+
+        activeTrips.forEach { trip ->
+            val xPx = (trip.currentCoordinate.x * canvasWidth) - 20.dp.value
+            val yPx = (trip.currentCoordinate.y * canvasHeight) - 24.dp.value
+
+            Box(
+                modifier = Modifier.offset {
+                    IntOffset(xPx.roundToInt(), yPx.roundToInt())
+                }
+            ) {
+                MovingBusMarker(
+                    trip = trip,
+                    onClick = { onTripClick(trip) }
                 )
             }
         }

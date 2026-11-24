@@ -4,6 +4,7 @@ import com.example.busmanager.data.local.datasource.RouteDataSource
 import com.example.busmanager.data.local.datasource.TerminalDataSource
 import com.example.busmanager.data.repository.RouteCatalogRepositoryImpl
 import com.example.busmanager.data.repository.SimulationTimeRepositoryImpl
+import com.example.busmanager.data.repository.SimulationTripRepositoryImpl
 import com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl
 import com.example.busmanager.domain.company.model.Company
 import com.example.busmanager.domain.company.model.Money
@@ -24,6 +25,8 @@ import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
 import com.example.busmanager.domain.simulation.model.GameCalendar
+import com.example.busmanager.domain.simulation.usecase.DispatchBusUseCase
+import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
 import kotlinx.coroutines.Dispatchers
@@ -48,6 +51,7 @@ class SimulationMapViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var simulationTimeRepo: SimulationTimeRepositoryImpl
+    private lateinit var simulationTripRepo: SimulationTripRepositoryImpl
     private lateinit var fakeCompanyRepo: FakeCompanyRepository
     private lateinit var fakeFleetRepo: FakeFleetRepository
     private lateinit var viewModel: SimulationMapViewModel
@@ -60,8 +64,10 @@ class SimulationMapViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
+        simulationTripRepo = SimulationTripRepositoryImpl()
         simulationTimeRepo = SimulationTimeRepositoryImpl(
-            initialTime = GameCalendar(2026, 11, 24, 8, 0)
+            initialTime = GameCalendar(2026, 11, 24, 8, 0),
+            simulationTripRepository = simulationTripRepo
         )
         fakeCompanyRepo = FakeCompanyRepository()
         fakeFleetRepo = FakeFleetRepository()
@@ -71,6 +77,8 @@ class SimulationMapViewModelTest {
         val getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo)
         val getOwnedFleetUseCase = GetOwnedFleetUseCase(fakeFleetRepo)
         val getTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo)
+        val getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepo)
+        val dispatchBusUseCase = DispatchBusUseCase(simulationTripRepo)
 
         viewModel = SimulationMapViewModel(
             getTimeUseCase,
@@ -78,7 +86,9 @@ class SimulationMapViewModelTest {
             getCompanyUseCase,
             getOwnedFleetUseCase,
             getTerminalsUseCase,
-            routeRepo
+            routeRepo,
+            getActiveTripsUseCase,
+            dispatchBusUseCase
         )
     }
 
@@ -103,6 +113,8 @@ class SimulationMapViewModelTest {
         assertEquals("08:00 WIB", state.formattedTime)
         assertFalse(state.hasActiveFleet)
         assertEquals(SimulationBottomSheetType.NONE, state.activeBottomSheet)
+        assertTrue(state.activeTrips.isEmpty())
+        assertNull(state.selectedTrip)
     }
 
     @Test
@@ -170,6 +182,42 @@ class SimulationMapViewModelTest {
         assertEquals(route.id, viewModel.uiState.value.selectedRoute?.id)
         assertEquals(route.originTerminal.id, viewModel.uiState.value.selectedTerminal?.id)
         assertEquals(SimulationBottomSheetType.NONE, viewModel.uiState.value.activeBottomSheet)
+    }
+
+    @Test
+    fun dispatchBus_createsActiveTripAndUpdatesState() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val bus = createDummyBus("TN-01")
+        val route = viewModel.uiState.value.routes.first()
+
+        viewModel.dispatchBus(bus, route)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.activeTrips.size)
+        assertEquals(1, state.activeBusCount)
+        assertTrue(state.hasActiveFleet)
+        assertEquals(bus.busCode, state.activeTrips.first().busCode)
+    }
+
+    @Test
+    fun onTripClickAndClear_handlesTripSelection() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val bus = createDummyBus("TN-01")
+        val route = viewModel.uiState.value.routes.first()
+        viewModel.dispatchBus(bus, route)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val trip = viewModel.uiState.value.activeTrips.first()
+        viewModel.onTripClick(trip)
+
+        assertEquals(trip.id, viewModel.uiState.value.selectedTrip?.id)
+        assertEquals(route.id, viewModel.uiState.value.selectedRoute?.id)
+
+        viewModel.clearSelectedTrip()
+        assertNull(viewModel.uiState.value.selectedTrip)
     }
 
     @Test

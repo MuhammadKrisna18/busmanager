@@ -11,11 +11,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -34,7 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.fleet.model.Bus
-import com.example.busmanager.ui.theme.AccentBlue
+import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
 import com.example.busmanager.ui.theme.CardBorder
@@ -44,13 +42,15 @@ import com.example.busmanager.ui.theme.SuccessGreen
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextMuted
-import com.example.busmanager.ui.theme.WarningAmber
 import com.example.busmanager.ui.theme.WarningAmberLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FleetOverviewBottomSheet(
     buses: List<Bus>,
+    activeTrips: List<ActiveBusTrip>,
+    availableRoutes: List<BusRoute>,
+    onDispatchBus: (Bus, BusRoute) -> Unit,
     onDismiss: () -> Unit,
     onNavigateToShowroom: () -> Unit
 ) {
@@ -80,7 +80,7 @@ fun FleetOverviewBottomSheet(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Total: ${buses.size} Unit • ${buses.count { it.isOperating }} Beroperasi",
+                        text = "Total: ${buses.size} Unit • ${activeTrips.size} Beroperasi",
                         color = TextMuted,
                         fontSize = 12.sp
                     )
@@ -137,7 +137,13 @@ fun FleetOverviewBottomSheet(
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
                     items(buses, key = { it.id }) { bus ->
-                        FleetBusItemCard(bus = bus)
+                        val activeTrip = activeTrips.find { it.busId == bus.id }
+                        FleetBusItemCard(
+                            bus = bus,
+                            activeTrip = activeTrip,
+                            availableRoutes = availableRoutes,
+                            onDispatch = { route -> onDispatchBus(bus, route) }
+                        )
                     }
                 }
             }
@@ -146,7 +152,14 @@ fun FleetOverviewBottomSheet(
 }
 
 @Composable
-private fun FleetBusItemCard(bus: Bus) {
+private fun FleetBusItemCard(
+    bus: Bus,
+    activeTrip: ActiveBusTrip?,
+    availableRoutes: List<BusRoute>,
+    onDispatch: (BusRoute) -> Unit
+) {
+    val isOperating = activeTrip != null
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AppDimens.radiusMedium),
@@ -181,12 +194,12 @@ private fun FleetBusItemCard(bus: Bus) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(AppDimens.radiusPill))
-                        .background(if (bus.isOperating) SuccessGreen.copy(alpha = 0.15f) else WarningAmberLight)
+                        .background(if (isOperating) SuccessGreen.copy(alpha = 0.15f) else WarningAmberLight)
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (bus.isOperating) "● Beroperasi" else "Standby di Garasi",
-                        color = if (bus.isOperating) SuccessGreen else Color(0xFFB45309),
+                        text = if (activeTrip != null) "● Beroperasi (${(activeTrip.progressFraction * 100).toInt()}%)" else "Standby di Garasi",
+                        color = if (isOperating) SuccessGreen else Color(0xFFB45309),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -211,19 +224,30 @@ private fun FleetBusItemCard(bus: Bus) {
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "💺 ${bus.body.passengerCapacity} Kursi",
-                    color = TextDark,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = "🔧 Mesin: ${bus.condition.engineHealthPercent}% • Bodi: ${bus.condition.bodyHealthPercent}%",
+                    text = "💺 ${bus.body.passengerCapacity} Kursi • 🔧 Mesin: ${bus.condition.engineHealthPercent}%",
                     color = TextMuted,
                     fontSize = 11.sp
                 )
+
+                if (!isOperating && availableRoutes.isNotEmpty()) {
+                    Button(
+                        onClick = { onDispatch(availableRoutes.first()) },
+                        shape = RoundedCornerShape(AppDimens.radiusPill),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "Tugaskan",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.example.busmanager.data.repository
 
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
+import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,7 +18,8 @@ class SimulationTimeRepositoryImpl(
     initialTime: GameCalendar = GameCalendar.initial(),
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default),
     private val tickIntervalMillis: Long = 1000L,
-    private val minutesPerTick: Int = 10
+    private val minutesPerTick: Int = 10,
+    private val simulationTripRepository: SimulationTripRepository? = null
 ) : SimulationTimeRepository {
 
     private val _currentTime = MutableStateFlow(initialTime)
@@ -46,6 +48,7 @@ class SimulationTimeRepositoryImpl(
 
     override fun advanceMinutes(minutes: Int) {
         _currentTime.update { it.advanceMinutes(minutes) }
+        simulationTripRepository?.advanceTripsTime(minutes)
     }
 
     override fun setTime(calendar: GameCalendar) {

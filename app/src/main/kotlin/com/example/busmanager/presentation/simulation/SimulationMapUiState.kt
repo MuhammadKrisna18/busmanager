@@ -4,6 +4,7 @@ import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.GameCalendar
 
 enum class SimulationBottomSheetType {
@@ -20,11 +21,13 @@ data class SimulationMapUiState(
     val ownedBusCount: Int = 0,
     val activeBusCount: Int = 0,
     val ownedBuses: List<Bus> = emptyList(),
+    val activeTrips: List<ActiveBusTrip> = emptyList(),
     val terminals: List<Terminal> = emptyList(),
     val allSegments: List<RouteSegment> = emptyList(),
     val routes: List<BusRoute> = emptyList(),
     val selectedTerminal: Terminal? = null,
     val selectedRoute: BusRoute? = null,
+    val selectedTrip: ActiveBusTrip? = null,
     val activeBottomSheet: SimulationBottomSheetType = SimulationBottomSheetType.NONE,
     val isLoading: Boolean = false
 ) {

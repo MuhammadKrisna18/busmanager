@@ -63,7 +63,9 @@ fun MainNavigation(appContainer: AppContainer) {
                         getCompanyUseCase = appContainer.getCompanyUseCase,
                         getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
                         getAvailableTerminalsUseCase = appContainer.getAvailableTerminalsUseCase,
-                        routeRepository = appContainer.routeRepository
+                        routeRepository = appContainer.routeRepository,
+                        getActiveTripsUseCase = appContainer.getActiveTripsUseCase,
+                        dispatchBusUseCase = appContainer.dispatchBusUseCase
                     )
                 }
                 SimulationMapScreen(

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
 import com.example.busmanager.presentation.route.components.RouteMapLegend
+import com.example.busmanager.presentation.simulation.components.BusLiveTrackingCard
 import com.example.busmanager.presentation.simulation.components.FleetOverviewBottomSheet
 import com.example.busmanager.presentation.simulation.components.RoutesOverviewBottomSheet
 import com.example.busmanager.ui.theme.AccentBlue
@@ -100,12 +101,20 @@ fun SimulationMapScreen(
                     selectedRoute = state.selectedRoute,
                     selectedOrigin = state.selectedTerminal,
                     transitTerminals = state.selectedRoute?.transitTerminals ?: emptyList(),
-                    onTerminalClick = { terminal -> viewModel.onTerminalClick(terminal) }
+                    activeTrips = state.activeTrips,
+                    onTerminalClick = { terminal -> viewModel.onTerminalClick(terminal) },
+                    onTripClick = { trip -> viewModel.onTripClick(trip) }
                 )
             }
 
             Column {
-                if (state.selectedTerminal != null) {
+                if (state.selectedTrip != null) {
+                    BusLiveTrackingCard(
+                        trip = state.selectedTrip!!,
+                        onClose = { viewModel.clearSelectedTrip() }
+                    )
+                    Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+                } else if (state.selectedTerminal != null) {
                     TerminalInspectionCard(
                         terminal = state.selectedTerminal!!,
                         routeName = state.selectedRoute?.name,
@@ -131,6 +140,9 @@ fun SimulationMapScreen(
         SimulationBottomSheetType.BUSES -> {
             FleetOverviewBottomSheet(
                 buses = state.ownedBuses,
+                activeTrips = state.activeTrips,
+                availableRoutes = state.routes,
+                onDispatchBus = { bus, route -> viewModel.dispatchBus(bus, route) },
                 onDismiss = { viewModel.dismissBottomSheet() },
                 onNavigateToShowroom = onNavigateToBuses
             )

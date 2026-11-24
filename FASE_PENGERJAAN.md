@@ -66,9 +66,9 @@ Dokumen ini memuat detail perencanaan perbaikan arsitektural, logika simulasi, d
     - **Masalah:** Teks nama rute, jarak, dan jenis jalur pada kartu koridor saling bertumpuk dan tidak rapi.
     - **Solusi:** Menata ulang tata letak kartu koridor dengan tipografi proporsional, badge tol/arteri yang elegan, dan jarak/estimasi waktu yang rapi tanpa teks terpotong.
 
-15. **Diskusi 15: Sembunyikan Driver yang Sudah Bertugas dari Bursa Rekrutmen**
-    - **Kebutuhan:** Mencegah bursa pelamar dipenuhi oleh sopir yang sudah dipekerjakan.
-    - **Solusi:** Memfilter bursa pelamar secara reaktif agar hanya menampilkan kandidat sopir yang masih berstatus bebas tugas / siap rekrut.
+15. **Diskusi 15: Sembunyikan Bus & Driver yang Sudah Bertugas saat Membuat Trayek Baru**
+    - **Kebutuhan:** Saat pemain membuat trayek baru di Langkah 4 Wizard, wajib memilih bus dan sopir. Bus yang sudah memiliki trayek serta sopir yang sudah bertugas jangan ditampilkan dalam keadaan abu-abu/disabled, melainkan dihilangkan sepenuhnya dari daftar agar layar tidak penuh dan pemain hanya melihat pilihan yang benar-benar siap beroperasi.
+    - **Solusi:** Memfilter daftar seleksi bus dan sopir di Slide 4 Wizard secara bersih sehingga hanya menampilkan bus yang tersedia di garasi dan sopir yang berstatus siap dinas.
 
 16. **Diskusi 16: Perbaikan Glitch Loncat Posisi Bus saat Tracking Kamera Aktif**
     - **Masalah:** Saat mengunci/melacak armada bus di peta, posisi bus sempat meloncat dan baru normal kembali setelah dilepas.
@@ -111,9 +111,9 @@ Dokumen ini memuat detail perencanaan perbaikan arsitektural, logika simulasi, d
 
 ---
 
-### 🔹 Fase 5 [Medium]: Manajemen Kru & Ekosistem Keuangan
+### 🔹 Fase 5 [Medium]: Manajemen Kru, Seleksi Bersih Wizard Rute & Ekosistem Keuangan
 - Penambahan 94 kandidat sopir baru (total 100 pengemudi di bursa pelamar) (Fix Diskusi 13).
-- Penyaringan otomatis bursa pelamar sopir: sembunyikan sopir yang sudah bertugas agar bursa tetap bersih (Fix Diskusi 15).
+- Seleksi bersih saat membuat trayek (Slide 4 Wizard): hilangkan bus dan sopir yang sudah bertugas / tidak bisa dipilih, sehingga hanya menampilkan pilihan yang benar-benar siap beroperasi (Fix Diskusi 15).
 - Pembersihan filter rute di Buku Kas Keuangan `FinanceScreen` (Fix Diskusi 3).
 - Pembersihan HomeScreen: hapus info reputasi dan sinkronkan jam operasional langsung dengan jam simulasi Play (Fix Diskusi 8).
 - Pengujian unit test & Git Commit Fase 5.

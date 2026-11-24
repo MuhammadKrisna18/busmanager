@@ -142,9 +142,11 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 3 [Tinggi]: Sinkronisasi & Auto-Recovery Status Operasi Armada (State Reconciliation)
-- Engine pemulihan armada tersangkut: jika aplikasi ditutup paksa saat bus di jalan, pulihkan status bus standby di terminal terakhir.
-- Pengujian unit test & Git Commit Fase 3.
+### ✅ Fase 3 [Tinggi]: Sinkronisasi & Auto-Recovery Status Operasi Armada (State Reconciliation) - SELESAI
+- Engine pemulihan armada `ReconcileBusOperatingStateUseCase`: secara otomatis mendeteksi dan memulihkan armada yang tersangkut `isOperating = true` di database Room jika aplikasi ditutup paksa / di-kill tanpa adanya active trip aktif di memori. (Selesai)
+- Integrasi rekonsiliasi otomatis pada inisialisasi `HomeScreenViewModel`, `GarageViewModel`, dan proteksi `SellBusUseCase`. (Selesai)
+- Penyempurnaan penyajian status di garasi: armada hanya berstatus "Berdinas" di UI jika benar-benar memiliki perjalanan aktif yang sedang berjalan di jalan raya. (Selesai)
+- Pengujian unit test & Git Commit Fase 3. (Selesai)
 
 ---
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.repository.FleetRepository
+import com.example.busmanager.domain.fleet.usecase.ReconcileBusOperatingStateUseCase
 import com.example.busmanager.domain.fleet.usecase.SellBusResult
 import com.example.busmanager.domain.fleet.usecase.SellBusUseCase
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
@@ -26,7 +27,8 @@ class GarageViewModel(
     private val routePricingRepository: RoutePricingRepository,
     private val companyRepository: CompanyRepository,
     private val getActiveTripsUseCase: GetActiveTripsUseCase? = null,
-    private val sellBusUseCase: SellBusUseCase? = null
+    private val sellBusUseCase: SellBusUseCase? = null,
+    private val reconcileBusOperatingStateUseCase: ReconcileBusOperatingStateUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GarageUiState(isLoading = true))
@@ -38,6 +40,7 @@ class GarageViewModel(
 
     private fun observeGarageData() {
         viewModelScope.launch {
+            reconcileBusOperatingStateUseCase?.invoke()
             val activeTripsFlow: Flow<List<ActiveBusTrip>> = getActiveTripsUseCase?.invoke() ?: MutableStateFlow(emptyList())
             combine(
                 fleetRepository.getOwnedBuses(),

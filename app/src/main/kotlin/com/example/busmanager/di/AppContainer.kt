@@ -37,6 +37,7 @@ import com.example.busmanager.domain.fleet.repository.ShowroomCatalogRepository
 import com.example.busmanager.domain.fleet.usecase.BuyBusUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.GetShowroomBusesUseCase
+import com.example.busmanager.domain.fleet.usecase.ReconcileBusOperatingStateUseCase
 import com.example.busmanager.domain.fleet.usecase.SellBusUseCase
 import com.example.busmanager.domain.fleet.usecase.ValidateBusOperationUseCase
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
@@ -132,6 +133,11 @@ class AppContainer(context: Context) {
     val getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepository)
     val getShowroomBusesUseCase = GetShowroomBusesUseCase(showroomCatalogRepository)
     val buyBusUseCase = BuyBusUseCase(companyRepository, fleetRepository)
+    val reconcileBusOperatingStateUseCase = ReconcileBusOperatingStateUseCase(
+        fleetRepository = fleetRepository,
+        simulationTripRepository = simulationTripRepository,
+        routeRepository = routeRepository
+    )
     val sellBusUseCase = SellBusUseCase(
         fleetRepository = fleetRepository,
         companyRepository = companyRepository,

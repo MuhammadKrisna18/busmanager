@@ -9,15 +9,11 @@ import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.TerminalRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 class RouteCatalogRepositoryImpl(
     private val dataSource: RouteDataSource = RouteDataSource(),
     private val customRouteDao: CustomRouteDao? = null,
-    private val terminalRepository: TerminalRepository? = null,
-    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
+    private val terminalRepository: TerminalRepository? = null
 ) : RouteRepository {
 
     private val segmentMap = dataSource.getAllSegments().associateBy { it.id }
@@ -39,20 +35,6 @@ class RouteCatalogRepositoryImpl(
                     customRoutes.addAll(loadedRoutes)
                 }
             } catch (_: Exception) {}
-
-            coroutineScope.launch {
-                try {
-                    customRouteDao.getAllCustomRoutesFlow().collect { entities ->
-                        val loadedRoutes = entities.mapNotNull { entity ->
-                            entity.toDomain(terminalRepository) { segmentMap[it] }
-                        }
-                        synchronized(customRoutes) {
-                            customRoutes.clear()
-                            customRoutes.addAll(loadedRoutes)
-                        }
-                    }
-                } catch (_: Exception) {}
-            }
         }
     }
 

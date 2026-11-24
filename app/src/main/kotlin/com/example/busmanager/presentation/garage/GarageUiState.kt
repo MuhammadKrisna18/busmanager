@@ -1,6 +1,9 @@
 package com.example.busmanager.presentation.garage
 
+import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.fleet.model.Bus
+import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.simulation.model.RouteDirection
 
 enum class GarageFilter(val displayName: String) {
     ALL("Semua"),
@@ -14,6 +17,24 @@ data class GarageScheduleTarget(
     val currentHeadwayMinutes: Int = 60,
     val currentTransitDwellMinutes: Int = 10
 )
+
+data class QuickAssignState(
+    val bus: Bus,
+    val availableRoutes: List<BusRoute> = emptyList(),
+    val selectedRoute: BusRoute? = null,
+    val availableDrivers: List<Driver> = emptyList(),
+    val selectedDriver: Driver? = null,
+    val departureHour: Int = 7,
+    val departureMinute: Int = 0,
+    val direction: RouteDirection = RouteDirection.ORIGIN_TO_DESTINATION,
+    val headwayMinutes: Int = 60,
+    val transitDwellMinutes: Int = 10,
+    val conflictError: String? = null,
+    val isSubmitting: Boolean = false
+) {
+    val canSubmit: Boolean
+        get() = selectedRoute != null && selectedDriver != null && conflictError == null && !isSubmitting
+}
 
 data class GarageBusItem(
     val bus: Bus,
@@ -50,5 +71,7 @@ data class GarageUiState(
     val standbyBusCount: Int = 0,
     val isLoading: Boolean = false,
     val companyName: String = "PO TransNusantara",
-    val editingScheduleTarget: GarageScheduleTarget? = null
+    val editingScheduleTarget: GarageScheduleTarget? = null,
+    val quickAssignState: QuickAssignState? = null,
+    val userMessage: String? = null
 )

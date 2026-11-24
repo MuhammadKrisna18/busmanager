@@ -202,7 +202,10 @@ fun MainNavigation(appContainer: AppContainer) {
                         getActiveTripsUseCase = appContainer.getActiveTripsUseCase,
                         sellBusUseCase = appContainer.sellBusUseCase,
                         reconcileBusOperatingStateUseCase = appContainer.reconcileBusOperatingStateUseCase,
-                        routeScheduleRepository = appContainer.routeScheduleRepository
+                        routeScheduleRepository = appContainer.routeScheduleRepository,
+                        assignBusToActiveRouteUseCase = appContainer.assignBusToActiveRouteUseCase,
+                        validateScheduleConflictUseCase = appContainer.validateScheduleConflictUseCase,
+                        getRouteOperationalStatusUseCase = appContainer.getRouteOperationalStatusUseCase
                     )
                 }
                 GarageScreen(

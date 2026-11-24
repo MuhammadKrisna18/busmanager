@@ -173,6 +173,13 @@ class AppContainer(context: Context) {
     val assignBusToScheduleUseCase = AssignBusToScheduleUseCase(routeScheduleRepository)
     val deleteRouteScheduleUseCase = DeleteRouteScheduleUseCase(routeScheduleRepository)
     val validateScheduleConflictUseCase = com.example.busmanager.domain.route.usecase.ValidateScheduleConflictUseCase(routeScheduleRepository, routeRepository)
+    val assignBusToActiveRouteUseCase = com.example.busmanager.domain.route.usecase.AssignBusToActiveRouteUseCase(
+        fleetRepository = fleetRepository,
+        routeRepository = routeRepository,
+        driverRepository = driverRepository,
+        routeScheduleRepository = routeScheduleRepository,
+        validateScheduleConflictUseCase = validateScheduleConflictUseCase
+    )
 
     val validateBusOperationUseCase = ValidateBusOperationUseCase(driverRepository, routePricingRepository)
     val getRouteOperationalStatusUseCase = GetRouteOperationalStatusUseCase(

@@ -195,6 +195,14 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
 
+            ActiveRoutesSummarySection(
+                activeRoutes = state.routeOperationalList.filter { it.isActive },
+                onOpenRouteInfo = onNavigateToRouteInfo,
+                onNavigateToGarage = onNavigateToGarage
+            )
+
+            Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+
             Text(
                 text = "Menu Manajemen",
                 color = TextDark,
@@ -988,6 +996,138 @@ private fun OfflineProgressionDialog(
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
                 ) {
                     Text(text = "Klaim & Lanjutkan", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActiveRoutesSummarySection(
+    activeRoutes: List<RouteOperationalInfo>,
+    onOpenRouteInfo: () -> Unit,
+    onNavigateToGarage: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppDimens.radiusMedium),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "🛣️", fontSize = 16.sp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Trayek Aktif Beroperasi",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextDark
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(if (activeRoutes.isNotEmpty()) SuccessGreenLight else Color(0xFFF1F5F9))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "${activeRoutes.size} Trayek",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (activeRoutes.isNotEmpty()) SuccessGreen else TextMuted
+                        )
+                    }
+                }
+
+                Text(
+                    text = "Lihat Detail ➔",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryBlue,
+                    modifier = Modifier.clickable(onClick = onOpenRouteInfo)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (activeRoutes.isEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFF8FAFC))
+                        .padding(10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Belum ada trayek aktif beroperasi.",
+                        fontSize = 11.sp,
+                        color = TextMuted
+                    )
+                    Text(
+                        text = "Tugaskan di Garasi",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark,
+                        modifier = Modifier.clickable(onClick = onNavigateToGarage)
+                    )
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    activeRoutes.take(3).forEach { item ->
+                        val corridor = if (item.route.pathType == com.example.busmanager.domain.route.model.RoutePathType.TOLL) "Tol" else "Non-Tol"
+                        val busCodes = item.assignedBuses.joinToString { it.busCode }.ifEmpty { "Siap Berdinas" }
+                        val schedText = item.departureSchedules.firstOrNull() ?: "Jadwal Reguler"
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF8FAFC))
+                                .clickable(onClick = onOpenRouteInfo)
+                                .padding(8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "${item.route.originTerminal.city} ➔ ${item.route.destinationTerminal.city}",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TextDark
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(if (item.route.pathType == com.example.busmanager.domain.route.model.RoutePathType.TOLL) PrimaryBlue else Color(0xFF64748B))
+                                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                                    ) {
+                                        Text(text = corridor, fontSize = 9.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                                Text(
+                                    text = "Armada: $busCodes • $schedText",
+                                    fontSize = 11.sp,
+                                    color = TextMuted
+                                )
+                            }
+                            Text(
+                                text = "● Aktif",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = SuccessGreen
+                            )
+                        }
+                    }
                 }
             }
         }

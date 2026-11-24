@@ -53,11 +53,11 @@ Dokumen ini memuat perencanaan rinci perbaikan aplikasi **TransNusantara (Bus Ma
 
 ---
 
-### 🔹 Fase 6 [UI & Alur]: Dialog Penugasan Cepat di Garasi & Ringkasan Trayek di HomeScreen
-- [ ] Menambahkan tombol aksi `[Tugaskan ke Trayek]` pada kartu bus di Garasi Armada.
-- [ ] Membuat modal dialog penugasan cepat: memilih trayek aktif, memilih sopir siap dinas, dan mengatur jam keberangkatan.
-- [ ] Menampilkan ringkasan status trayek aktif yang sedang beroperasi di menu HomeScreen.
-- [ ] Verifikasi alur UI penugasan cepat di Garasi dan HomeScreen, lalu Git Commit Fase 6.
+### 🔹 Fase 6 [UI & Alur]: Dialog Penugasan Cepat di Garasi & Ringkasan Trayek di HomeScreen [SELESAI]
+- [x] Menambahkan tombol aksi `[⚡ Tugaskan ke Trayek]` pada kartu bus di Garasi Armada.
+- [x] Membuat modal dialog penugasan cepat: memilih trayek aktif, memilih sopir siap dinas, dan mengatur jam keberangkatan dengan validasi anti-konflik real-time.
+- [x] Menampilkan ringkasan status trayek aktif yang sedang beroperasi di menu HomeScreen (`ActiveRoutesSummarySection`).
+- [x] Verifikasi alur UI penugasan cepat di Garasi dan HomeScreen, lalu Git Commit Fase 6.
 
 ---
 

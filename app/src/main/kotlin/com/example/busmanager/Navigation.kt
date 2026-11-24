@@ -10,8 +10,8 @@ import com.example.busmanager.presentation.dashboard.HomeScreen
 import com.example.busmanager.presentation.dashboard.HomeScreenViewModel
 import com.example.busmanager.presentation.driver.DriverManagementScreen
 import com.example.busmanager.presentation.driver.DriverManagementViewModel
-import com.example.busmanager.presentation.route.RoutePlannerScreen
-import com.example.busmanager.presentation.route.RoutePlannerViewModel
+import com.example.busmanager.presentation.route.wizard.RouteWizardScreen
+import com.example.busmanager.presentation.route.wizard.RouteWizardViewModel
 import com.example.busmanager.presentation.showroom.ShowroomScreen
 import com.example.busmanager.presentation.showroom.ShowroomViewModel
 import com.example.busmanager.presentation.simulation.SimulationMapScreen
@@ -109,28 +109,29 @@ fun MainNavigation(appContainer: AppContainer) {
                 )
             }
             entry<RoutePlannerRoute> {
-                val viewModel: RoutePlannerViewModel = viewModel {
-                    RoutePlannerViewModel(
-                        getAvailableTerminalsUseCase = appContainer.getAvailableTerminalsUseCase,
-                        getAvailableRoutesUseCase = appContainer.getAvailableRoutesUseCase,
-                        getRouteTransitStopsUseCase = appContainer.getRouteTransitStopsUseCase,
-                        calculateRouteCostUseCase = appContainer.calculateRouteCostUseCase,
-                        getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
+                val viewModel: RouteWizardViewModel = viewModel {
+                    RouteWizardViewModel(
+                        terminalRepository = appContainer.terminalRepository,
                         routeRepository = appContainer.routeRepository,
-                        getRoutePricingsUseCase = appContainer.getRoutePricingsUseCase,
-                        saveRoutePricingUseCase = appContainer.saveRoutePricingUseCase,
-                        initializeDefaultRoutePricingsUseCase = appContainer.initializeDefaultRoutePricingsUseCase,
-                        getRouteSchedulesUseCase = appContainer.getRouteSchedulesUseCase,
-                        addRouteScheduleUseCase = appContainer.addRouteScheduleUseCase,
-                        assignBusToScheduleUseCase = appContainer.assignBusToScheduleUseCase,
-                        deleteRouteScheduleUseCase = appContainer.deleteRouteScheduleUseCase,
-                        getHiredDriversUseCase = appContainer.getHiredDriversUseCase
+                        findAvailablePathsUseCase = appContainer.findAvailablePathsUseCase,
+                        buildCustomRouteUseCase = appContainer.buildCustomRouteUseCase,
+                        saveCustomRouteUseCase = appContainer.saveCustomRouteUseCase,
+                        routePricingRepository = appContainer.routePricingRepository,
+                        routeScheduleRepository = appContainer.routeScheduleRepository,
+                        driverRepository = appContainer.driverRepository,
+                        fleetRepository = appContainer.fleetRepository
                     )
                 }
-                RoutePlannerScreen(
+                RouteWizardScreen(
                     viewModel = viewModel,
                     onNavigateBack = {
                         backStack.removeLastOrNull()
+                    },
+                    onRouteLaunched = {
+                        backStack.removeLastOrNull()
+                        if (backStack.lastOrNull() != SimulationMapRoute) {
+                            backStack.add(SimulationMapRoute)
+                        }
                     }
                 )
             }

@@ -17,7 +17,24 @@ Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau
 
 ## 🌟 Fitur Utama
 
-### 1. Showroom & Perakitan Bus (Custom Bus Builder)
+### 1. Wizard Atur Trayek 4-Slide & Custom Route Builder (New v1.4.0)
+Alur pembukaan trayek dan penugasan armada bertahap dengan model **Wizard Step-by-Step 4 Slide**:
+- **Slide 1 (Pilih Asal & Tujuan)**: Pemain bebas memilih Terminal Awal (Titik A) dan Terminal Akhir (Titik B) di peta Jawa Timur.
+- **Slide 2 (Rangkai Jalur & Titik Singgah Bebas)**:
+  - Berbasis **Graf Jaringan Jalan Jawa Timur**: Pemain bebas memilih koridor jalan (misal Pantura vs Jalur Selatan Jember).
+  - Sistem memastikan rute tersambung secara kontinu tanpa terputus (tidak bisa lompat fiktif ke luar rute jalan).
+  - Checkbox penentuan halte naik-turun penumpang di kota transit.
+  - Pemilihan jenis jalan per segmen: **Tol Cepat** vs **Arteri (Gratis)**.
+- **Slide 3 (Matriks Tarif Tiket Dinamis)**:
+  - Perhitungan tiket otomatis **Rp 50.000 per lompatan kota/terminal (Hop)** untuk kedua arah perjalanan.
+  - Dialog modal edit tarif fleksibel dengan tombol quick increment (+10 rb, +25 rb, -10 rb).
+- **Slide 4 (Pilih Bus, Sopir, & Jam Berangkat)**:
+  - Memilih armada bus yang menganggur di garasi.
+  - Memilih sopir aktif berlisensi yang siap dinas.
+  - Mengatur jam keberangkatan (WIB) dengan validasi anti-bentrok jadwal.
+- **Tombol Utama "Jalankan & Simpan"**: Sekali klik, sistem serentak menyimpan rute baru, menyimpan daftar harga tiket, menugaskan sopir ke bus, memasang armada ke rute, mendaftarkan jadwal keberangkatan, dan armada langsung siap berdinas mencari pemasukan!
+
+### 2. Showroom & Perakitan Bus (Custom Bus Builder)
 - **Pilihan Sasis Terpercaya**:
   - **Hino**: AK8 (Front Engine), RK8 / R260, RN285 (Air Suspension), RM280 (Space Frame).
   - **Mercedes-Benz**: OH 1526, OH 1626 (Air Suspension), O 500 RS 1836, OC 500 RF 2542 (Tronton 3-Axle).
@@ -28,18 +45,11 @@ Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau
   - **Tentrem**: Avante H8 & H9 Grand Captain.
 - **Kelas Layanan**: Ekonomi, Bisnis AC, VIP, Eksekutif, Super Eksekutif, hingga Sleeper Suite dengan kapasitas kursi dan harga dasar berbeda.
 
-### 2. Manajemen Kru & Sopir (Driver Management)
+### 3. Manajemen Kru & Sopir (Driver Management)
 - **Bursa Rekrutmen Sopir**: Jelajahi calon pengemudi dengan lisensi SIM B1 Umum atau SIM B2 Umum, level keahlian (skill), dan kondisi fisik/kelelahan.
 - **Sistem Gaji & Kontrak**: Pengemudi menerima upah harian transparan yang dipotong dari kas perusahaan.
 - **Penugasan Bus**: Integrasi penugasan sopir ke armada yang tersedia secara fleksibel.
 - **Manajemen Karyawan**: Fitur pelepasan tugas armada dan Pemutusan Hubungan Kerja (PHK).
-
-### 3. Buka Trayek & Matriks Tarif Tiket (Route & Pricing Matrix)
-- **Jaringan Terminal Jawa Timur**: Surabaya (Purabaya), Pasuruan (Untung Suropati), Probolinggo (Bayuangga), Jember (Tawangalun), Banyuwangi (Ketapang), Malang (Arjosari).
-- **Perhitungan Tarif Berbasis Lompatan (Hop-Based Pricing)**:
-  - Tarif dasar tiket dihitung otomatis Rp 50.000 per lompatan kota/terminal yang dilewati (contoh: Jember - Probolinggo = Rp 50.000, Jember - Surabaya = Rp 100.000).
-- **Kustomisasi Tarif Tiket**: Pengguna dapat mengubah dan menyesuaikan harga tiket untuk setiap kombinasi titik naik dan titik turun penumpang.
-- **Tanpa Terminal Transit Wajib**: Penumpang dapat naik dan turun di kota manapun yang berada di sepanjang rute yang dilewati armada.
 
 ### 4. Penjadwalan Keberangkatan Anti-Bentrok (Route Scheduling)
 - **Penjadwalan Dua Arah**: Pengaturan jam keberangkatan dari Terminal Asal ke Terminal Tujuan (A ➔ B) serta sebaliknya (B ➔ A).
@@ -72,7 +82,7 @@ Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau
   - Navigation Compose & Navigation3
   - Room Database v3 (Entity: Bus, Company, Driver, RoutePricing, RouteSchedule)
   - Kotlin Coroutines & Flow (Reactive StateFlow UI State)
-- **Versi Rilis**: v1.3.0 (Build VersionCode: 4)
+- **Versi Rilis**: v1.4.0 (Build VersionCode: 5)
 - **Min SDK**: API 24 (Android 7.0 Nougat)
 - **Target SDK**: API 36 (Android 16)
 - **Java Compatibility**: JDK 17
@@ -92,4 +102,4 @@ Berkas APK release siap instal berada di:
 ```bash
 ./gradlew testDebugUnitTest
 ```
-Seluruh 160+ unit test memverifikasi use case finansial, showroom bus, manajemen supir, validasi jadwal anti-bentrok, perhitungan matriks tarif, dan dispatcher operasional.
+Seluruh 179+ unit test memverifikasi use case finansial, showroom bus, manajemen supir, validasi jadwal anti-bentrok, graf jaringan jalan, custom route builder, kalkulasi matriks tarif, dan dispatcher operasional.

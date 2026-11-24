@@ -1,6 +1,10 @@
 package com.example.busmanager.presentation.simulation
 
+import com.example.busmanager.data.local.datasource.RouteDataSource
+import com.example.busmanager.data.local.datasource.TerminalDataSource
+import com.example.busmanager.data.repository.RouteCatalogRepositoryImpl
 import com.example.busmanager.data.repository.SimulationTimeRepositoryImpl
+import com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl
 import com.example.busmanager.domain.company.model.Company
 import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.company.repository.CompanyRepository
@@ -18,6 +22,7 @@ import com.example.busmanager.domain.fleet.model.SuspensionType
 import com.example.busmanager.domain.fleet.model.TransmissionType
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
+import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
@@ -32,6 +37,8 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -44,6 +51,11 @@ class SimulationMapViewModelTest {
     private lateinit var fakeCompanyRepo: FakeCompanyRepository
     private lateinit var fakeFleetRepo: FakeFleetRepository
     private lateinit var viewModel: SimulationMapViewModel
+
+    private val terminalDataSource = TerminalDataSource()
+    private val routeDataSource = RouteDataSource(terminalDataSource)
+    private val terminalRepo = TerminalCatalogRepositoryImpl(terminalDataSource)
+    private val routeRepo = RouteCatalogRepositoryImpl(routeDataSource)
 
     @Before
     fun setUp() {
@@ -58,12 +70,15 @@ class SimulationMapViewModelTest {
         val togglePlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepo)
         val getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo)
         val getOwnedFleetUseCase = GetOwnedFleetUseCase(fakeFleetRepo)
+        val getTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo)
 
         viewModel = SimulationMapViewModel(
             getTimeUseCase,
             togglePlayUseCase,
             getCompanyUseCase,
-            getOwnedFleetUseCase
+            getOwnedFleetUseCase,
+            getTerminalsUseCase,
+            routeRepo
         )
     }
 
@@ -87,6 +102,44 @@ class SimulationMapViewModelTest {
         assertEquals("Selasa, 24 November 2026", state.formattedDate)
         assertEquals("08:00 WIB", state.formattedTime)
         assertFalse(state.hasActiveFleet)
+    }
+
+    @Test
+    fun mapData_loadsTerminalsSegmentsAndRoutes() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.terminals.isNotEmpty())
+        assertTrue(state.allSegments.isNotEmpty())
+        assertTrue(state.routes.isNotEmpty())
+    }
+
+    @Test
+    fun onTerminalClick_selectsAndDeselectsTerminal() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val purabaya = viewModel.uiState.value.terminals.first { it.id == "term_purabaya" }
+
+        viewModel.onTerminalClick(purabaya)
+        assertEquals("term_purabaya", viewModel.uiState.value.selectedTerminal?.id)
+        assertNotNull(viewModel.uiState.value.selectedRoute)
+
+        viewModel.onTerminalClick(purabaya)
+        assertNull(viewModel.uiState.value.selectedTerminal)
+        assertNull(viewModel.uiState.value.selectedRoute)
+    }
+
+    @Test
+    fun clearSelectedTerminal_resetsSelection() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val purabaya = viewModel.uiState.value.terminals.first { it.id == "term_purabaya" }
+        viewModel.onTerminalClick(purabaya)
+        assertNotNull(viewModel.uiState.value.selectedTerminal)
+
+        viewModel.clearSelectedTerminal()
+        assertNull(viewModel.uiState.value.selectedTerminal)
+        assertNull(viewModel.uiState.value.selectedRoute)
     }
 
     @Test

@@ -34,6 +34,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
+import com.example.busmanager.presentation.route.components.RouteMapLegend
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -89,47 +92,40 @@ fun SimulationMapScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(vertical = AppDimens.paddingSmall)
-                    .clip(RoundedCornerShape(AppDimens.radiusMedium))
-                    .background(Color(0xFFE2E8F0).copy(alpha = 0.4f))
-                    .border(1.dp, CardBorder, RoundedCornerShape(AppDimens.radiusMedium)),
+                    .padding(vertical = AppDimens.paddingSmall),
                 contentAlignment = Alignment.Center
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(AppDimens.paddingLarge)
-                ) {
-                    Text(
-                        text = "🗺️",
-                        fontSize = 44.sp
-                    )
-                    Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
-                    Text(
-                        text = "Peta Simulasi Jawa Timur",
-                        color = TextDark,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = if (state.ownedBusCount == 0) {
-                            "Belum ada armada atau rute aktif.\nBeli armada di Showroom dan rencanakan rute untuk memulai operasi."
-                        } else {
-                            "Armada siap beroperasi di koridor antarkota Jawa Timur."
-                        },
-                        color = TextMuted,
-                        fontSize = 13.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
+                EastJavaMapCanvas(
+                    terminals = state.terminals,
+                    allSegments = state.allSegments,
+                    modifier = Modifier.fillMaxSize(),
+                    selectedRoute = state.selectedRoute,
+                    selectedOrigin = state.selectedTerminal,
+                    transitTerminals = state.selectedRoute?.transitTerminals ?: emptyList(),
+                    onTerminalClick = { terminal -> viewModel.onTerminalClick(terminal) }
+                )
             }
 
-            SimulationBottomBar(
-                ownedBusCount = state.ownedBusCount,
-                onNavigateToBuses = onNavigateToBuses,
-                onNavigateToRoutes = onNavigateToRoutes
-            )
+            Column {
+                if (state.selectedTerminal != null) {
+                    TerminalInspectionCard(
+                        terminal = state.selectedTerminal!!,
+                        routeName = state.selectedRoute?.name,
+                        onClose = { viewModel.clearSelectedTerminal() }
+                    )
+                    Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+                } else {
+                    RouteMapLegend()
+                    Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+                }
+
+                SimulationBottomBar(
+                    ownedBusCount = state.ownedBusCount,
+                    routeCount = state.routes.size,
+                    onNavigateToBuses = onNavigateToBuses,
+                    onNavigateToRoutes = onNavigateToRoutes
+                )
+            }
         }
     }
 }
@@ -252,8 +248,76 @@ private fun SimulationStatusBanner(
 }
 
 @Composable
+private fun TerminalInspectionCard(
+    terminal: Terminal,
+    routeName: String?,
+    onClose: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppDimens.radiusMedium),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppDimens.paddingMedium),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "🚏 ${terminal.name}",
+                        color = TextDark,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "${terminal.city} • Tipe ${terminal.type.name}",
+                    color = TextMuted,
+                    fontSize = 12.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = if (routeName != null) {
+                        "Trayek Terkait: $routeName (Status: Standby)"
+                    } else {
+                        "Status: Standby 0 Armada | Tidak ada bus beroperasi"
+                    },
+                    color = PrimaryBlueDark,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE2E8F0))
+                    .clickable(onClick = onClose),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "✕",
+                    color = TextDark,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun SimulationBottomBar(
     ownedBusCount: Int,
+    routeCount: Int,
     onNavigateToBuses: () -> Unit,
     onNavigateToRoutes: () -> Unit
 ) {
@@ -313,7 +377,7 @@ private fun SimulationBottomBar(
                         fontSize = 14.sp
                     )
                     Text(
-                        text = "Jalur & Tarif",
+                        text = "$routeCount Rute",
                         color = TextMuted,
                         fontSize = 11.sp
                     )

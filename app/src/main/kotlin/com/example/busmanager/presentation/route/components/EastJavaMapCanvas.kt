@@ -39,7 +39,9 @@ import kotlin.math.roundToInt
 fun EastJavaMapCanvas(
     terminals: List<Terminal>,
     allSegments: List<RouteSegment>,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
+        .fillMaxWidth()
+        .height(290.dp),
     selectedRoute: BusRoute? = null,
     selectedOrigin: Terminal? = null,
     selectedDestination: Terminal? = null,
@@ -48,8 +50,6 @@ fun EastJavaMapCanvas(
 ) {
     BoxWithConstraints(
         modifier = modifier
-            .fillMaxWidth()
-            .height(290.dp)
             .clip(RoundedCornerShape(AppDimens.radiusLarge))
             .background(Color(0xFFE8F3FC))
             .border(1.dp, CardBorder, RoundedCornerShape(AppDimens.radiusLarge))

@@ -1,164 +1,64 @@
-# TransNusantara - Bus Manager (v2.4.0)
+# TransNusantara - Bus Manager
 
-Aplikasi game simulasi manajemen Perusahaan Otobus (PO Bus) Antar Kota Dalam Provinsi (AKDP) Jawa Timur berbasis Android Native modern yang dibangun menggunakan **Kotlin** dan **Jetpack Compose**.
+**TransNusantara** adalah game simulasi manajemen Perusahaan Otobus (PO Bus) Antar Kota Dalam Provinsi (AKDP) di wilayah Jawa Timur. Di dalam game ini, Anda berperan sebagai pemilik sekaligus direktur operasional PO Bus yang bertanggung jawab membangun dan mengembangkan bisnis transportasi bus dari awal hingga menjadi perusahaan otobus terbesar dan terpercaya.
 
----
-
-## 🎮 Inti Permainan (Core Gameplay)
-
-Pemain berperan sebagai pemilik dan direktur operasional PO Bus. Untuk dapat menjalankan operasional dan meraup keuntungan, pemain harus memenuhi **3 Syarat Mutlak Operasi**:
-1. **Memiliki Bus** (Sasis dan Bodi pilihan sesuai kelas layanan).
-2. **Memiliki Sopir** (Pengemudi aktif berlisensi yang ditugaskan ke armada).
-3. **Memiliki Trayek dengan Tarif** (Rute perjalanan yang telah dibuka dan matriks harga tiket antar titik transit telah ditentukan).
-
-Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau dapat diberangkatkan langsung melalui kontrol operasional lapangan.
+Kelola pembelian armada bus, rekrut pengemudi andal, rancang rute trayek antarkota, tentukan tarif tiket, dan pantau perjalanan bus Anda secara langsung di peta operasional Jawa Timur.
 
 ---
 
-## 🚀 Pembaruan & Penyempurnaan Season 3 (Update v2.1.0)
+## 🎮 Cara Bermain & Syarat Beroperasi
 
-Rilis v2.1.0 menghadirkan perbaikan operasional, penyederhanaan UI, dan sinkronisasi data menyeluruh:
-1. **Penyatuan Input Tarif Tiket Pulang-Pergi (PP)**: Matriks tarif di Wizard Langkah 3 kini menyajikan 1 baris input harga untuk rute pergi-pulang (`Kota A ⇄ Kota B [PP]`), otomatis tersimpan dua arah.
-2. **Proteksi Penugasan Sopir Ganda & Upah 30%**: Sopir yang sudah berdinas di armada lain diberi badge `Bertugas di MK-XX` dan diproteksi agar tidak bisa ditugaskan ke armada lain. Keterangan upah diselaraskan menjadi `Bagi Hasil: 30% per Rit Dinas`.
-3. **Sinkronisasi Trayek Armada (Garasi vs Play Peta Simulasi)**: Rute kustom tersimpan kini terbaca sempurna di kartu Play ➔ Bus dan tidak lagi tertulis `Trayek: Kosong`.
-4. **Standardisasi Nama Armada**: Format seragam di seluruh layar: `[Merk Sasis] [Model Sasis] - [Karoseri] [Model Bodi]` (Contoh: `Mercedes-Benz OC 500 RF 2542 Tronton - Tentrem Avante D2 Double Decker`).
-5. **Kapasitas Kursi Realistis Sasis & Bodi**: Sleeper Suites Class disesuaikan menjadi 21–24 kursi mewah (bukan 44 kursi), Eksekutif 28–36 kursi, dan Ekonomi 48–60 kursi.
-6. **Pembersihan Spesifikasi Redundan & Bebas Biaya Kelas**: Menghapus info suspensi, tenaga, dan torsi sasis serta tipe dan bagasi bodi karoseri dari Showroom, menghilangkan surcharge biaya interior saat pembelian bus, dan menghapus info kondisi mesin.
+Agar bus Anda dapat mulai melayani penumpang dan menghasilkan keuntungan, Anda harus melengkapi **3 Syarat Utama**:
+1. **Memiliki Bus**: Membeli armada bus pilihan di Showroom Bus.
+2. **Memiliki Sopir**: Merekrut dan menugaskan pengemudi aktif ke armada bus.
+3. **Memiliki Trayek & Tarif**: Membuka rute perjalanan antarkota dan menetapkan harga tiket perjalanannya.
 
----
-
-## 🚀 Fitur Baru Season 2 (Update Major v2.0.0)
-
-### 1. Perakitan Bus Modular 4-Langkah (Custom Bus Builder)
-- **Langkah 1 (Pilih Sasis)**: Hino (AK8, RK8, RN285, RM280), Mercedes-Benz (OH 1526, OH 1626, O 500 RS 1836, OC 500 RF 2542 Tronton), dan Scania (K360IB, K410IB Opticruise) lengkap dengan horsepower, kapasitas muatan, dan harga sasis.
-- **Langkah 2 (Pilih Bodi Karoseri)**: Adiputro (Jetbus 3+ & Jetbus 5), Laksana (Legacy SR2 & SR3 Suites Class/Sleeper), dan Tentrem (Avante H8 & H9 Grand Captain) yang terintegrasi secara modular.
-- **Langkah 3 (Pilih Kelas Layanan & Interior)**: Ekonomi, Bisnis AC, VIP, Eksekutif, Super Eksekutif, hingga Sleeper Suite (menentukan kapasitas kursi, kenyamanan, dan batas tarif).
-- **Langkah 4 (Review & Penamaan Armada)**: Menentukan plat nomor/kode armada (misal: TN-01), ringkasan harga total sasis + bodi, dan konfirmasi transaksi pemotongan kas.
-
-### 2. Smooth Minute-by-Minute Real-Time Clock
-- Jam simulasi berjalan halus menit demi menit layaknya jam normal (`12:00 -> 12:01 -> 12:02 -> ...`).
-- Kecepatan simulasi fleksibel:
-  - **1x**: 1 menit game per 1 detik dunia nyata.
-  - **3x**: 3 menit game per 1 detik dunia nyata.
-  - **5x**: 5 menit game per 1 detik dunia nyata.
-
-### 3. Skema Bagi Hasil Sopir 30% (Anti-Boncos) & Modal Awal 50M
-- Gaji sopir dihitung otomatis sebesar **30% dari omzet tiket bus** yang dihasilkannya saat berdinas (perjalanan PP / rute).
-- Perusahaan mengantongi **70% laba kotor tiket**.
-- Kas perusahaan tidak lagi terpotong flat saat armada menganggur di garasi, menjamin arus kas PO bus tetap sehat dan selalu menguntungkan.
-- Modal kas awal perusahaan disetel sebesar **Rp 50.000.000.000 (50 Miliar)** untuk keleluasaan pengembangan rute dan ekspansi armada.
-
-### 4. Kedinamisan Pasar Penumpang & Naik-Turun Acak di Terminal Transit
-- Okupansi penumpang di terminal awal bersifat dinamis dan acak (40% - 95%) berdasarkan kelas layanan dan reputasi perusahaan.
-- Saat bus singgah di terminal transit, terjadi simulasi naik-turun acak realistis: sebagian penumpang turun dan penumpang baru naik mengisi kursi yang kosong.
-- Dilengkapi proteksi kapasitas mutlak: penumpang yang naik tidak akan pernah melebihi sisa kursi kosong armada (`passengerCount <= capacity`).
-
-### 5. Peta Multi-Rute Berwarna Unik & Mode "Track Bus" ala Google Maps
-- **Garis Rute Permanen Berwarna-Warni**: Setiap koridor trayek yang sudah dibuka digambar permanen di peta Jawa Timur dengan warna garis unik (misal: Surabaya-Probolinggo, Surabaya-Jember, Surabaya-Malang).
-- **Mode Track Bus Realistis**:
-  - Kamera peta mengunci dan menyorot posisi bus di lapangan.
-  - Jalur rute spesifik yang dilewati armada menyala tebal (*highlighted polyline navigation*).
-  - **Floating ETA Callout Bubble**: Balon info melayang di dekat bus menampilkan kota tujuan, tarif tiket, dan estimasi sisa waktu tempuh (ETA) persis seperti antarmuka navigasi Google Maps.
-
-### 6. Layar Laporan Terminal Harian & Rincian Armada (`TerminalReportScreen`)
-- **Tabel Log Room Database v5 (`terminal_passenger_records`)**: Menyimpan riwayat setiap aktivitas naik-turun penumpang di seluruh terminal Jawa Timur.
-- **Filter Berdasarkan Terminal & Tanggal**: Pilihan terminal kota dan navigasi hari game (`Hari Sebelumnya` / `Hari Berikutnya`).
-- **Kartu Ringkasan Kinerja Terminal**: Total penumpang yang naik dan total penumpang yang turun pada hari yang dipilih.
-- **Modal Dialog "🔍 Rincian Naik/Turun per Armada"**: Menampilkan rincian performa setiap armada yang singgah di terminal tersebut, mencakup jumlah trip, total penumpang naik, dan total penumpang turun.
-- Terintegrasi langsung di menu dashboard utama (**Laporan Terminal**).
+Setelah ketiga syarat terpenuhi, bus akan otomatis bersiap dan berangkat melayani penumpang tepat saat jam jadwal keberangkatan tiba.
 
 ---
 
-## 🌟 Fitur Manajemen & Operasional Lainnya
+## ✨ Fitur-Fitur Utama
 
-### Garasi Armada & Inspeksi Kesiapan 3 Syarat
-- Status armada lengkap: sasis, bodi, kelas layanan, sopir penugasan, dan rute dinas aktif real-time.
-- Validasi visual instan 3 syarat: Trayek, Sopir, dan Tarif.
+### 1. Showroom & Perakitan Bus Impian
+- **Pilihan Sasis Ternama**: Pilih sasis tangguh dari berbagai pabrikan terkemuka seperti Hino, Mercedes-Benz, dan Scania.
+- **Pilihan Karoseri Bodi Modern**: Pasangkan bodi bus mewah dari karoseri populer Indonesia seperti Adiputro (Jetbus), Laksana (Legacy Suites Class), dan Tentrem (Avante).
+- **Beragam Kelas Layanan**: Sediakan berbagai pilihan kelas perjalanan, mulai dari Ekonomi, Bisnis AC, VIP, Eksekutif, Super Eksekutif, hingga kelas mewah Sleeper Suite dengan kapasitas kursi yang realistis.
+- **Identitas Armada Sendiri**: Tentukan kode armada (misalnya TN-01) dan plat nomor kendaraan bus sesuai keinginan Anda.
 
-### Penjadwalan Pulang-Pergi (A-B & B-A) & Validasi Jeda 1 Jam
-- Dukungan jadwal round-trip otomatis bolak-balik dalam satu klik.
-- Validasi jeda istirahat armada dan kru minimal 1 jam sebelum keberangkatan kepulangan.
+### 2. Garasi & Manajemen Armada
+- **Status Armada yang Jelas**:
+  - **Berdinas**: Menampilkan armada yang sedang aktif melayani perjalanan di jalan raya atau sedang menunggu jam jadwal keberangkatan berikutnya.
+  - **Di Garasi**: Menampilkan armada yang sedang menganggur dan siap untuk diberi penugasan rute baru.
+- **Pemeriksaan Kesiapan Operasional**: Cek kelengkapan bus, sopir, dan rute secara cepat dan mudah.
+- **Jual Armada**: Fitur menjual kembali bus yang tidak lagi digunakan untuk menambah kas modal usaha dan meremajakan armada.
 
-### Sistem Keuangan & Layar Buku Kas (`FinanceScreen`)
-- Pencatatan mutasi kas masuk (tiket penumpang) dan uang keluar (komisi sopir) secara transparan.
-- Filter transaksi berdasarkan tipe, armada bus, dan rute trayek.
+### 3. Manajemen Pengemudi (Sopir)
+- **Sistem Bagi Hasil Adil**: Pengemudi mendapatkan upah bagi hasil sebesar 30% dari omzet tiket perjalanan yang dihasilkannya, sementara perusahaan mengantongi 70% laba bersih tiket.
+- **Proteksi Penugasan Ganda**: Mencegah satu sopir ditugaskan ke lebih dari satu armada pada saat bersamaan.
+- **Pantauan Performa**: Lihat informasi lisensi, status kesiapan dinas, armada yang dibawa, serta riwayat perjalanan masing-masing sopir.
 
-### Wizard Pembuatan Trayek Kustom 4-Slide
-- Rangkai rute antarkota Jawa Timur, titik singgah transit, seleksi jalan tol vs arteri, matriks tarif otomatis Rp 50.000 per hop, dan penugasan armada/sopir.
+### 4. Perancangan Trayek Antarkota (Wizard Rute)
+- **Konektivitas Kota Jawa Timur**: Rangkai trayek perjalanan yang menghubungkan kota-kota di Jawa Timur, baik melalui jalan tol maupun jalan arteri.
+- **Terminal Transit**: Tentukan titik singgah di berbagai terminal kota untuk menaikkan dan menurunkan penumpang.
+- **Pengaturan Tarif Pulang-Pergi (PP)**: Masukkan tarif tiket satu kali untuk berlaku otomatis dua arah.
+- **Jadwal Keberangkatan Terstruktur**: Atur jam keberangkatan pergi dan pulang dengan susunan yang rapi dan mudah dibaca (contoh: *Jam 08:00 WIB menuju Malang dari Surabaya*).
 
----
+### 5. Peta Simulasi & Pelacakan Bus Langsung (Live Tracking)
+- **Peta Interaktif Berwarna**: Jalur setiap trayek yang aktif digambarkan di peta Jawa Timur dengan warna garis yang unik dan menarik.
+- **Pelacakan Perjalanan Real-Time**: Ikuti pergerakan bus di jalan raya lengkap dengan perkiraan waktu tiba di terminal tujuan (ETA) dan tarif tiket.
+- **Keberangkatan Otomatis**: Bus akan berangkat dengan sendirinya begitu waktu jadwal keberangkatan tiba tanpa perlu menekan tombol manual.
+- **Dinamika Penumpang Nyata**: Penumpang naik dan turun secara acak di setiap terminal kota yang dilalui sesuai dengan ketersediaan kursi kosong armada.
 
-## 📋 Roadmap Pengerjaan Season 4 (Business Rules Hardening, Data Synchronization & Offline Simulation)
+### 6. Waktu Permainan Halus & Penghasilan Luar Jaringan (Offline Earnings)
+- **Jam Bergerak Halus**: Simulasi jam operasional berjalan halus menit demi menit dengan pilihan percepatan waktu (1x, 3x, dan 5x).
+- **Bisnis Tetap Berjalan Saat Aplikasi Ditutup**: Ketika game ditutup, armada yang bertugas akan terus berjalan sesuai jadwal. Saat Anda membuka game kembali, Anda akan disambut dengan laporan pendapatan tiket dan laba bersih yang terkumpul selama Anda tidak aktif.
 
-Rencana perbaikan operasional, validasi business rules ketat, penambahan fitur reset & jual armada, dan simulasi latar belakang berdasarkan hasil evaluasi 10 diskusi utama (merujuk pada [FASE_PENGERJAAN.md](file:///c:/Users/Muhammad%20Krisna/Documents/Project%20Portofolio/Project%20Android%20Native/busmanager/FASE_PENGERJAAN.md)):
-- ✅ **Fase 1**: Presistensi Kustomisasi Armada & Sinkronisasi Garasi (Fix Kelas & Kursi saat Beli vs Masuk Garasi).
-- ✅ **Fase 2**: Pengetatan Validasi Bus & Driver di Wizard Trayek + Perapian Layout Teks Kartu Bus.
-- ✅ **Fase 3**: Penyempurnaan Simulasi, Penjadwalan Standby & Pembatalan Jadwal (Finish Leg di Terminal B Lalu Stay & Origin Locked).
-- ✅ **Fase 4**: Fitur Jual Armada di Garasi (Proteksi Armada Sedang Dinas) & Fitur Reset Akun (Mulai Baru).
-- ✅ **Fase 5**: Penyelarasan Tanggal Laporan Terminal, BottomSheet Play Hanya Trayek Aktif & Menu Informasi Trayek di HomeScreen.
-- ✅ **Fase 6**: Engine Simulasi Latar Belakang (Offline Progression Delta Time Catch-Up Saat Aplikasi Ditutup).
-- ✅ **Fase 7**: QA Menyeluruh, Verifikasi Strict Zero Comments, Bump Versi ke v2.2.0, dan Rilis APK.
+### 7. Laporan Operasional Terminal Harian
+- **Ringkasan Aktivitas Terminal**: Pantau berapa banyak penumpang yang naik dan turun di setiap terminal kota yang aktif dilayani oleh armada Anda.
+- **Rincian per Armada**: Ketahui kontribusi masing-masing bus yang singgah di suatu terminal pada tanggal tertentu.
+- **Riwayat Laporan**: Tinjau kembali performa dan pergerakan penumpang pada hari-hari operasional sebelumnya.
 
----
-
-## 📋 Roadmap Pengerjaan Season 5 (Database Persistence & Data Integrity Overhaul)
-
-- ✅ **Fase 1**: Persistensi Trayek ke Database Room (`CustomRouteEntity` & `CustomRouteDao` di Room DB v7).
-- ✅ **Fase 2**: Perbaikan Penugasan Jadwal Pulang-Pergi (PP) & DAO Multi-Schedule.
-- ✅ **Fase 3**: Sinkronisasi & Auto-Recovery Status Operasi Armada (State Reconciliation).
-- ✅ **Fase 4**: Auto-Seeding Database Terpusat & Integritas Relasi Data (First-Launch Setup).
-- ✅ **Fase 5**: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.3.0 & Publikasi Rilis.
-
----
-
-## 📋 Roadmap Pengerjaan Season 6 (UI/UX Refinement, Auto-Dispatch Engine & System Insets Overhaul)
-
-Rencana penyempurnaan antarmuka pengguna, penataan insets sistem operasi Android, otomasi keberangkatan armada berbasis jadwal, dan perapian navigasi berdasarkan hasil evaluasi 6 poin diskusi UI/UX:
-- ✅ **Fase 1 [Kritis]**: Penanganan System Bars & Insets Android (Fix Diskusi 6 - Atasi tabrakan status bar & navigation bar).
-- ✅ **Fase 2 [Tinggi]**: Standarisasi Format Informasi Jadwal Keberangkatan & Kepulangan (Fix Diskusi 1 - Format deskriptif & layout rapi).
-- ✅ **Fase 3 [Tinggi]**: Klasifikasi Status Armada di Garasi & Penggantian Istilah Standby (Fix Diskusi 3 & 4 - Pindah ke tab Berdinas & ganti "Menunggu Jadwal Keberangkatan").
-- ✅ **Fase 4 [Medium]**: Otomasi Keberangkatan Murni & Penghapusan Tombol Manual "Berdinas Sekarang" (Fix Diskusi 2 - Auto-dispatch saat Play).
-- ✅ **Fase 5 [Medium]**: Global Fade-In Transition Framework (Fix Diskusi 5 - Transisi global fade-in 1 detik pada NavDisplay, Route Wizard, dan Splash Screen).
-- ✅ **Fase 6 [Final]**: QA Menyeluruh, Strict Zero Comments, Desain Baru Icon Aplikasi Modern, Bump Versi ke v2.4.0 & Publikasi Rilis.
-
----
-
-## 📱 Spesifikasi Teknis
-
-- **Bahasa**: Kotlin 2.3+
-- **UI Toolkit**: Jetpack Compose (Material 3)
-- **Komponen Arsitektur**:
-  - Clean Architecture + Domain-Driven Design (DDD)
-  - Single Responsibility & SOLID Principles
-  - Navigation Compose & Navigation3
-  - Room Database v7 (`buses`, `company`, `drivers`, `route_pricings`, `route_schedules`, `financial_transactions`, `terminal_passenger_records`, `custom_routes`)
-  - Kotlin Coroutines & Reactive StateFlow UI State
-  - Window Insets & System Bars Padding Management
-  - Global Motion & Transition Framework (Fade-In 1000ms)
-- **Versi Rilis**: v2.4.0 (Build VersionCode: 11)
-- **Min SDK**: API 24 (Android 7.0 Nougat)
-- **Target SDK**: API 36 (Android 16)
-- **Java Compatibility**: JDK 17
-
----
-
-## 🛠️ Panduan Build & Pengujian
-
-### Build APK Release (Signed)
-```bash
-./gradlew assembleRelease
-```
-Berkas APK release siap instal berada di:
-`app/build/outputs/apk/release/app-release.apk`
-
-### Menjalankan Unit Tests
-```bash
-./gradlew testDebugUnitTest
-```
-Seluruh unit tests memverifikasi:
-- Custom Bus Builder modular (sasis, karoseri, kelas, penamaan).
-- Smooth minute clock & simulation ticker.
-- Komisi sopir bagi hasil 30% & pencatatan keuangan.
-- Kedinamisan penumpang transit & kapasitas bus.
-- Palet warna multi-rute & Google Maps track bus.
-- Log laporan terminal & agregasi breakdown armada.
+### 8. Buku Kas Keuangan & Pengelolaan Modal
+- **Pencatatan Keuangan Transparan**: Pantau keluar-masuk uang perusahaan dari hasil penjualan tiket dan pembayaran bagi hasil sopir.
+- **Modal Awal yang Cukup**: Memulai permainan dengan saldo modal Rp 50.000.000.000 untuk keleluasaan membangun rute dan memperbanyak armada bus.
+- **Fitur Mulai Baru (Reset Akun)**: Ingin mencoba strategi bisnis baru? Gunakan fitur mulai baru untuk mengembalikan permainan ke kondisi awal.

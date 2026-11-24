@@ -12,7 +12,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 
 object AppTransitions {
-    const val TRANSITION_DURATION_MS = 1000
+    const val TRANSITION_DURATION_MS = 500
 
     fun fadeInSpec(durationMillis: Int = TRANSITION_DURATION_MS): EnterTransition {
         return fadeIn(

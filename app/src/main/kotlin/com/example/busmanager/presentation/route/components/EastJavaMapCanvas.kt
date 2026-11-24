@@ -120,9 +120,9 @@ fun EastJavaMapCanvas(
                 val maxPy = (canvasHeight * (targetScale - 1f)) / 2f
                 val targetPanX = ((0.5f - trackedTrip.currentCoordinate.x) * canvasWidth * targetScale).coerceIn(-maxPx, maxPx)
                 val targetPanY = ((0.5f - trackedTrip.currentCoordinate.y) * canvasHeight * targetScale).coerceIn(-maxPy, maxPy)
-                launch { zoomAnim.animateTo(targetScale, animationSpec = tween(350)) }
-                launch { panXAnim.animateTo(targetPanX, animationSpec = tween(350)) }
-                launch { panYAnim.animateTo(targetPanY, animationSpec = tween(350)) }
+                launch { zoomAnim.animateTo(targetScale, animationSpec = tween(500)) }
+                launch { panXAnim.animateTo(targetPanX, animationSpec = tween(500)) }
+                launch { panYAnim.animateTo(targetPanY, animationSpec = tween(500)) }
             }
         }
 
@@ -174,9 +174,9 @@ fun EastJavaMapCanvas(
                 val tPanX = ((0.5f - targetTrip.currentCoordinate.x) * canvasWidth * targetScale).coerceIn(-maxPx, maxPx)
                 val tPanY = ((0.5f - targetTrip.currentCoordinate.y) * canvasHeight * targetScale).coerceIn(-maxPy, maxPy)
                 coroutineScope.launch {
-                    launch { zoomAnim.animateTo(targetScale, animationSpec = tween(350)) }
-                    launch { panXAnim.animateTo(tPanX, animationSpec = tween(350)) }
-                    launch { panYAnim.animateTo(tPanY, animationSpec = tween(350)) }
+                    launch { zoomAnim.animateTo(targetScale, animationSpec = tween(500)) }
+                    launch { panXAnim.animateTo(tPanX, animationSpec = tween(500)) }
+                    launch { panYAnim.animateTo(tPanY, animationSpec = tween(500)) }
                 }
             } else {
                 resetMap()
@@ -462,7 +462,7 @@ fun EastJavaMapCanvas(
 
 private fun DrawScope.drawEastJavaLandmass() {
     val path = Path().apply {
-        moveTo(size.width * 0.05f, size.height * 0.12f)
+        moveTo(size.width * 0.02f, size.height * 0.12f)
         lineTo(size.width * 0.18f, size.height * 0.14f)
         lineTo(size.width * 0.25f, size.height * 0.24f)
         lineTo(size.width * 0.35f, size.height * 0.33f)
@@ -477,7 +477,7 @@ private fun DrawScope.drawEastJavaLandmass() {
         lineTo(size.width * 0.66f, size.height * 0.82f)
         lineTo(size.width * 0.48f, size.height * 0.80f)
         lineTo(size.width * 0.28f, size.height * 0.82f)
-        lineTo(size.width * 0.05f, size.height * 0.78f)
+        lineTo(size.width * 0.02f, size.height * 0.80f)
         close()
     }
 

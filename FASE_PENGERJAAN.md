@@ -38,10 +38,11 @@ Dokumen ini memuat perencanaan rinci perbaikan aplikasi **TransNusantara (Bus Ma
 
 ---
 
-### 🔹 Fase 4 [Visual Peta]: Visualisasi Titik Kota Baru & Integrasi Wizard Rute
-- [ ] Memperbarui kanvas peta `EastJavaMapCanvas` untuk menampilkan titik kota dan segmen jalur baru Mojokerto, Kediri, Tulungagung, dan Blitar.
-- [ ] Memastikan rute baru langsung dapat dirancang di Wizard Rute dengan estimasi jarak, durasi, dan matriks tarif otomatis.
-- [ ] Verifikasi visual peta dan alur perancangan rute, lalu Git Commit Fase 4.
+### 🔹 Fase 4 [Visual Peta]: Visualisasi Titik Kota Baru & Integrasi Wizard Rute [SELESAI]
+- [x] Memperbarui kanvas peta `EastJavaMapCanvas` untuk menampilkan titik kota dan segmen jalur baru Mojokerto, Kediri, Tulungagung, dan Blitar serta penyesuaian kontur daratan barat.
+- [x] Menurunkan durasi transisi layar dan animasi pergerakan kamera peta menjadi 0.5 detik (500 ms) agar cepat dan responsif.
+- [x] Memastikan rute baru langsung dapat dirancang di Wizard Rute dengan estimasi jarak, durasi, dan matriks tarif otomatis beserta pengujian domain use case rute jalur selatan.
+- [x] Bump versi ke `v2.6.0` (versionCode 13), build signed release APK (`app-release.apk`), dan publikasi rilis `v2.6.0`.
 
 ---
 

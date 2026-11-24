@@ -79,4 +79,25 @@ class BuildCustomRouteUseCaseTest {
         val route = result.getOrNull()
         assertEquals(RoutePathType.NON_TOLL, route?.pathType)
     }
+
+    @Test
+    fun invoke_southernCorridor_buildsContinuousMultiStopRoute() {
+        val tamanan = terminalRepository.getTerminalById("term_tamanan")!!
+        val gayatri = terminalRepository.getTerminalById("term_gayatri")!!
+        val patria = terminalRepository.getTerminalById("term_patria")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        val result = useCase(
+            terminals = listOf(tamanan, gayatri, patria, arjosari),
+            customName = "Kediri - Malang Jalur Selatan"
+        )
+
+        assertTrue(result.isSuccess)
+        val route = result.getOrNull()
+        assertNotNull(route)
+        assertEquals(tamanan.id, route?.originTerminal?.id)
+        assertEquals(arjosari.id, route?.destinationTerminal?.id)
+        assertEquals(2, route?.transitTerminals?.size)
+        assertEquals(3, route?.segments?.size)
+    }
 }

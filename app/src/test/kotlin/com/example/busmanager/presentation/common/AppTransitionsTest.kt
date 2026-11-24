@@ -7,8 +7,8 @@ import org.junit.Test
 class AppTransitionsTest {
 
     @Test
-    fun defaultTransitionDuration_isOneThousandMilliseconds() {
-        assertEquals(1000, AppTransitions.TRANSITION_DURATION_MS)
+    fun defaultTransitionDuration_isFiveHundredMilliseconds() {
+        assertEquals(500, AppTransitions.TRANSITION_DURATION_MS)
     }
 
     @Test

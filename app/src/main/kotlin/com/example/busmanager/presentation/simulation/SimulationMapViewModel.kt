@@ -552,4 +552,52 @@ class SimulationMapViewModel(
     fun cancelNextSchedule(tripId: String) {
         dispatchBusUseCase.markCancelNextSchedule(tripId, true)
     }
+
+    fun openEditSchedule(bus: Bus, route: BusRoute, headway: Int, dwell: Int) {
+        _uiState.update {
+            it.copy(
+                editingScheduleTarget = SimulationScheduleEditTarget(
+                    bus = bus,
+                    route = route,
+                    currentHeadwayMinutes = headway,
+                    currentTransitDwellMinutes = dwell
+                )
+            )
+        }
+    }
+
+    fun dismissEditSchedule() {
+        _uiState.update { it.copy(editingScheduleTarget = null) }
+    }
+
+    fun saveSchedule(headwayMinutes: Int, transitDwellMinutes: Int) {
+        val target = _uiState.value.editingScheduleTarget ?: return
+        viewModelScope.launch {
+            val busId = target.bus.id
+            val schedules = routeScheduleRepository?.getSchedulesForBus(busId) ?: emptyList()
+            if (schedules.isNotEmpty()) {
+                schedules.forEach { sched ->
+                    routeScheduleRepository?.updateSchedule(
+                        sched.copy(
+                            headwayMinutes = headwayMinutes,
+                            transitDwellMinutes = transitDwellMinutes
+                        )
+                    )
+                }
+            } else {
+                val routeSchedules = routeScheduleRepository?.getSchedulesListForRoute(target.route.id) ?: emptyList()
+                if (routeSchedules.isNotEmpty()) {
+                    routeSchedules.forEach { sched ->
+                        routeScheduleRepository?.updateSchedule(
+                            sched.copy(
+                                headwayMinutes = headwayMinutes,
+                                transitDwellMinutes = transitDwellMinutes
+                            )
+                        )
+                    }
+                }
+            }
+            _uiState.update { it.copy(editingScheduleTarget = null) }
+        }
+    }
 }

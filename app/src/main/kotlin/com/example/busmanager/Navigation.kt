@@ -127,7 +127,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
                         chassisCatalogRepository = appContainer.chassisCatalogRepository,
                         karoseriCatalogRepository = appContainer.karoseriCatalogRepository,
-                        financialTransactionRepository = appContainer.financialTransactionRepository
+                        financialTransactionRepository = appContainer.financialTransactionRepository,
+                        getShowroomBusesUseCase = appContainer.getShowroomBusesUseCase
                     )
                 }
                 ShowroomScreen(
@@ -191,7 +192,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         companyRepository = appContainer.companyRepository,
                         getActiveTripsUseCase = appContainer.getActiveTripsUseCase,
                         sellBusUseCase = appContainer.sellBusUseCase,
-                        reconcileBusOperatingStateUseCase = appContainer.reconcileBusOperatingStateUseCase
+                        reconcileBusOperatingStateUseCase = appContainer.reconcileBusOperatingStateUseCase,
+                        routeScheduleRepository = appContainer.routeScheduleRepository
                     )
                 }
                 GarageScreen(

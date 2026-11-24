@@ -15,6 +15,16 @@ data class Money(val amount: Long) : Comparable<Money> {
         return Money(amount - other.amount)
     }
 
+    operator fun times(factor: Int): Money {
+        require(factor >= 0) { "Factor cannot be negative" }
+        return Money(amount * factor)
+    }
+
+    operator fun times(factor: Long): Money {
+        require(factor >= 0) { "Factor cannot be negative" }
+        return Money(amount * factor)
+    }
+
     fun canAfford(cost: Money): Boolean = amount >= cost.amount
 
     override fun compareTo(other: Money): Int = amount.compareTo(other.amount)

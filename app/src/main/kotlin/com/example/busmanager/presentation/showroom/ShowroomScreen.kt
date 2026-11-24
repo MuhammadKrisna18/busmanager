@@ -83,7 +83,7 @@ fun ShowroomScreen(
             ShowroomTopBar(onNavigateBack = onNavigateBack)
         },
         bottomBar = {
-            if (!uiState.isLoading) {
+            if (!uiState.isLoading && uiState.mode == ShowroomMode.CUSTOM_ASSEMBLY) {
                 ShowroomBottomActionBar(
                     currentStep = uiState.currentStep,
                     canProceed = when (uiState.currentStep) {
@@ -94,6 +94,7 @@ fun ShowroomScreen(
                     },
                     canAfford = uiState.canAfford,
                     isPurchasing = uiState.isPurchasing,
+                    batchQuantity = uiState.batchQuantity,
                     totalInvestment = uiState.totalInvestment,
                     onPrevious = { viewModel.previousStep() },
                     onNext = { viewModel.nextStep() },
@@ -127,11 +128,9 @@ fun ShowroomScreen(
                 }
 
                 item {
-                    ShowroomStepIndicator(
-                        currentStep = uiState.currentStep,
-                        selectedChassis = uiState.selectedChassis,
-                        selectedBody = uiState.selectedBody,
-                        onStepClick = { viewModel.goToStep(it) }
+                    ShowroomModeSelector(
+                        currentMode = uiState.mode,
+                        onSelectMode = { viewModel.setMode(it) }
                     )
                 }
 
@@ -154,92 +153,149 @@ fun ShowroomScreen(
                     }
                 }
 
-                when (uiState.currentStep) {
-                    ShowroomStep.CHASSIS -> {
-                        item {
-                            ChassisBrandFilterRow(
-                                selectedBrand = uiState.selectedChassisFilter,
-                                onSelectBrand = { viewModel.setChassisBrandFilter(it) }
-                            )
-                        }
-
-                        items(uiState.filteredChassis, key = { it.id }) { chassis ->
-                            ChassisSelectionCard(
-                                chassis = chassis,
-                                isSelected = uiState.selectedChassis?.id == chassis.id,
-                                onSelect = { viewModel.selectChassis(chassis) }
-                            )
-                        }
-                    }
-
-                    ShowroomStep.BODY -> {
-                        item {
-                            SelectedChassisSummaryBanner(chassis = uiState.selectedChassis)
-                        }
-
-                        item {
-                            KaroseriBrandFilterRow(
-                                selectedBrand = uiState.selectedKaroseriFilter,
-                                onSelectBrand = { viewModel.setKaroseriBrandFilter(it) }
-                            )
-                        }
-
-                        if (uiState.compatibleBodies.isEmpty()) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 32.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Tidak ada bodi yang kompatibel dengan filter terpilih.",
-                                        color = TextMuted,
-                                        fontSize = 13.sp
-                                    )
-                                }
-                            }
-                        } else {
-                            items(uiState.compatibleBodies, key = { it.id }) { body ->
-                                KaroseriBodySelectionCard(
-                                    body = body,
-                                    isSelected = uiState.selectedBody?.id == body.id,
-                                    onSelect = { viewModel.selectBody(body) }
+                if (uiState.mode == ShowroomMode.INSTANT_PURCHASE) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(AppDimens.radiusMedium),
+                            colors = CardDefaults.cardColors(containerColor = IceBlue)
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(AppDimens.paddingMedium)
+                            ) {
+                                Text(
+                                    text = "⚡ Katalog Bus Siap Pakai Pabrikan",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = PrimaryBlueDark
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "Pilih armada siap jalan dengan konfigurasi sasis, bodi, dan kapasitas kursi asli pabrikan. Bisa dibeli borongan sesuai kebutuhan ekspansi.",
+                                    fontSize = 11.sp,
+                                    color = TextMuted
                                 )
                             }
                         }
                     }
 
-                    ShowroomStep.CLASS -> {
-                        item {
-                            ConfigurationSummaryHeader(
-                                chassis = uiState.selectedChassis,
-                                body = uiState.selectedBody
-                            )
-                        }
+                    items(uiState.readyStockBuses, key = { it.id }) { stockBus ->
+                        val qty = uiState.getInstantQuantity(stockBus.id)
+                        val totalCost = uiState.getInstantTotalCost(stockBus)
+                        val canAffordThis = uiState.canAffordInstant(stockBus)
 
-                        items(BusClass.entries, key = { it.name }) { busClass ->
-                            BusClassSelectionCard(
-                                busClass = busClass,
-                                body = uiState.selectedBody,
-                                chassis = uiState.selectedChassis,
-                                isSelected = uiState.selectedBusClass == busClass,
-                                onSelect = { viewModel.selectBusClass(busClass) }
-                            )
-                        }
+                        InstantBusCard(
+                            bus = stockBus,
+                            quantity = qty,
+                            totalCost = totalCost,
+                            canAfford = canAffordThis,
+                            isPurchasing = uiState.isPurchasing,
+                            onQuantityChange = { viewModel.setInstantQuantity(stockBus.id, it) },
+                            onBuy = { viewModel.buyInstantBus(stockBus) }
+                        )
+                    }
+                } else {
+                    item {
+                        ShowroomStepIndicator(
+                            currentStep = uiState.currentStep,
+                            selectedChassis = uiState.selectedChassis,
+                            selectedBody = uiState.selectedBody,
+                            onStepClick = { viewModel.goToStep(it) }
+                        )
                     }
 
-                    ShowroomStep.REVIEW -> {
-                        item {
-                            ReviewConfirmationContent(
-                                chassis = uiState.selectedChassis,
-                                body = uiState.tailoredBody,
-                                customBusCode = uiState.customBusCode,
-                                totalInvestment = uiState.totalInvestment,
-                                company = uiState.company,
-                                canAfford = uiState.canAfford,
-                                onUpdateBusCode = { viewModel.updateBusCode(it) }
-                            )
+                    when (uiState.currentStep) {
+                        ShowroomStep.CHASSIS -> {
+                            item {
+                                ChassisBrandFilterRow(
+                                    selectedBrand = uiState.selectedChassisFilter,
+                                    onSelectBrand = { viewModel.setChassisBrandFilter(it) }
+                                )
+                            }
+
+                            items(uiState.filteredChassis, key = { it.id }) { chassis ->
+                                ChassisSelectionCard(
+                                    chassis = chassis,
+                                    isSelected = uiState.selectedChassis?.id == chassis.id,
+                                    onSelect = { viewModel.selectChassis(chassis) }
+                                )
+                            }
+                        }
+
+                        ShowroomStep.BODY -> {
+                            item {
+                                SelectedChassisSummaryBanner(chassis = uiState.selectedChassis)
+                            }
+
+                            item {
+                                KaroseriBrandFilterRow(
+                                    selectedBrand = uiState.selectedKaroseriFilter,
+                                    onSelectBrand = { viewModel.setKaroseriBrandFilter(it) }
+                                )
+                            }
+
+                            if (uiState.compatibleBodies.isEmpty()) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 32.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = "Tidak ada bodi yang kompatibel dengan filter terpilih.",
+                                            color = TextMuted,
+                                            fontSize = 13.sp
+                                        )
+                                    }
+                                }
+                            } else {
+                                items(uiState.compatibleBodies, key = { it.id }) { body ->
+                                    KaroseriBodySelectionCard(
+                                        body = body,
+                                        isSelected = uiState.selectedBody?.id == body.id,
+                                        onSelect = { viewModel.selectBody(body) }
+                                    )
+                                }
+                            }
+                        }
+
+                        ShowroomStep.CLASS -> {
+                            item {
+                                ConfigurationSummaryHeader(
+                                    chassis = uiState.selectedChassis,
+                                    body = uiState.selectedBody
+                                )
+                            }
+
+                            items(BusClass.entries, key = { it.name }) { busClass ->
+                                BusClassSelectionCard(
+                                    busClass = busClass,
+                                    body = uiState.selectedBody,
+                                    chassis = uiState.selectedChassis,
+                                    isSelected = uiState.selectedBusClass == busClass,
+                                    onSelect = { viewModel.selectBusClass(busClass) }
+                                )
+                            }
+                        }
+
+                        ShowroomStep.REVIEW -> {
+                            item {
+                                ReviewConfirmationContent(
+                                    chassis = uiState.selectedChassis,
+                                    body = uiState.tailoredBody,
+                                    customBusCode = uiState.customBusCode,
+                                    batchQuantity = uiState.batchQuantity,
+                                    unitInvestment = uiState.unitInvestment,
+                                    totalInvestment = uiState.totalInvestment,
+                                    company = uiState.company,
+                                    canAfford = uiState.canAfford,
+                                    onUpdateBusCode = { viewModel.updateBusCode(it) },
+                                    onUpdateBatchQuantity = { viewModel.setBatchQuantity(it) }
+                                )
+                            }
                         }
                     }
                 }
@@ -247,9 +303,10 @@ fun ShowroomScreen(
         }
     }
 
-    if (uiState.purchaseSuccessBus != null) {
+    if (uiState.purchaseSuccessBuses.isNotEmpty() || uiState.purchaseSuccessBus != null) {
+        val successList = uiState.purchaseSuccessBuses.ifEmpty { listOfNotNull(uiState.purchaseSuccessBus) }
         PurchaseSuccessModal(
-            bus = uiState.purchaseSuccessBus!!,
+            buses = successList,
             onDismiss = { viewModel.dismissSuccessNotice() },
             onNavigateToGarage = {
                 viewModel.dismissSuccessNotice()
@@ -776,10 +833,13 @@ private fun ReviewConfirmationContent(
     chassis: Chassis?,
     body: KaroseriBody?,
     customBusCode: String,
+    batchQuantity: Int,
+    unitInvestment: Money,
     totalInvestment: Money,
     company: Company?,
     canAfford: Boolean,
-    onUpdateBusCode: (String) -> Unit
+    onUpdateBusCode: (String) -> Unit,
+    onUpdateBatchQuantity: (Int) -> Unit
 ) {
     if (chassis == null || body == null) return
 
@@ -825,6 +885,77 @@ private fun ReviewConfirmationContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFF8FAFC))
+                    .padding(10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Jumlah Pembelian Unit:",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextDark
+                    )
+                    Text(
+                        text = "Harga satuan: ${unitInvestment.formatRupiah()}",
+                        fontSize = 10.sp,
+                        color = TextMuted
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(if (batchQuantity > 1) IceBlue else Color(0xFFF1F5F9))
+                            .clickable(enabled = batchQuantity > 1) { onUpdateBatchQuantity(batchQuantity - 1) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "-",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (batchQuantity > 1) PrimaryBlueDark else DisabledGray
+                        )
+                    }
+
+                    Text(
+                        text = "$batchQuantity",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextDark,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(if (batchQuantity < 20) IceBlue else Color(0xFFF1F5F9))
+                            .clickable(enabled = batchQuantity < 20) { onUpdateBatchQuantity(batchQuantity + 1) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "+",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (batchQuantity < 20) PrimaryBlueDark else DisabledGray
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -837,12 +968,14 @@ private fun ReviewConfirmationContent(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Total Investasi Pembelian:",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PrimaryBlueDark
-                    )
+                    Column {
+                        Text(
+                            text = "Total Investasi ($batchQuantity Unit):",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryBlueDark
+                        )
+                    }
                     Text(
                         text = totalInvestment.formatRupiah(),
                         fontSize = 16.sp,
@@ -855,7 +988,7 @@ private fun ReviewConfirmationContent(
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = "Nomor Plat / Kode Panggilan Armada:",
+                text = if (batchQuantity > 1) "Awalan Nomor Plat / Kode Panggilan Armada:" else "Nomor Plat / Kode Panggilan Armada:",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = TextDark
@@ -867,7 +1000,7 @@ private fun ReviewConfirmationContent(
                 onValueChange = onUpdateBusCode,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Contoh: TN-01, TN-02") }
+                placeholder = { Text(if (batchQuantity > 1) "Contoh: TN (akan jadi TN-01, TN-02, dst)" else "Contoh: TN-01") }
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -933,6 +1066,7 @@ private fun ShowroomBottomActionBar(
     canProceed: Boolean,
     canAfford: Boolean,
     isPurchasing: Boolean,
+    batchQuantity: Int,
     totalInvestment: Money,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
@@ -972,8 +1106,13 @@ private fun ShowroomBottomActionBar(
                     ),
                     modifier = Modifier.weight(if (currentStep == ShowroomStep.CHASSIS) 1f else 2f)
                 ) {
+                    val purchaseText = if (batchQuantity > 1) {
+                        "🛒 Beli $batchQuantity Armada (${totalInvestment.formatRupiah()})"
+                    } else {
+                        "🛒 Beli Armada (${totalInvestment.formatRupiah()})"
+                    }
                     Text(
-                        text = if (isPurchasing) "Memproses..." else if (canAfford) "🛒 Beli Armada (${totalInvestment.formatRupiah()})" else "Saldo Tidak Cukup",
+                        text = if (isPurchasing) "Memproses..." else if (canAfford) purchaseText else "Saldo Tidak Cukup",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
@@ -996,10 +1135,13 @@ private fun ShowroomBottomActionBar(
 
 @Composable
 private fun PurchaseSuccessModal(
-    bus: Bus,
+    buses: List<Bus>,
     onDismiss: () -> Unit,
     onNavigateToGarage: () -> Unit
 ) {
+    val isMulti = buses.size > 1
+    val firstBus = buses.firstOrNull() ?: return
+
     Dialog(onDismissRequest = onDismiss) {
         Card(
             shape = RoundedCornerShape(AppDimens.radiusLarge),
@@ -1027,7 +1169,7 @@ private fun PurchaseSuccessModal(
                 Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
 
                 Text(
-                    text = "Armada Berhasil Dirakit!",
+                    text = if (isMulti) "Berhasil Membeli ${buses.size} Unit Armada!" else "Armada Berhasil Dirakit!",
                     color = TextDark,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold
@@ -1036,7 +1178,7 @@ private fun PurchaseSuccessModal(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "${bus.busCode} • ${bus.fullName}",
+                    text = if (isMulti) "${buses.first().busCode} s/d ${buses.last().busCode} • ${firstBus.fullName}" else "${firstBus.busCode} • ${firstBus.fullName}",
                     color = PrimaryBlueDark,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold
@@ -1045,7 +1187,7 @@ private fun PurchaseSuccessModal(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = "Kelas ${bus.body.busClass.displayName} (${bus.body.passengerCapacity} Kursi)",
+                    text = "Kelas ${firstBus.body.busClass.displayName} (${firstBus.body.passengerCapacity} Kursi)",
                     color = TextMuted,
                     fontSize = 11.sp
                 )
@@ -1068,7 +1210,201 @@ private fun PurchaseSuccessModal(
                     shape = RoundedCornerShape(AppDimens.radiusPill),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "Rakit Armada Baru Lagi", fontWeight = FontWeight.Bold)
+                    Text(text = "Beli Armada Lagi", fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShowroomModeSelector(
+    currentMode: ShowroomMode,
+    onSelectMode: (ShowroomMode) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(AppDimens.radiusSmall))
+            .background(IceBlue)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(6.dp))
+                .background(if (currentMode == ShowroomMode.CUSTOM_ASSEMBLY) PrimaryBlue else Color.Transparent)
+                .clickable { onSelectMode(ShowroomMode.CUSTOM_ASSEMBLY) }
+                .padding(vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "🛠️ Perakitan Kustom",
+                color = if (currentMode == ShowroomMode.CUSTOM_ASSEMBLY) Color.White else PrimaryBlueDark,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(6.dp))
+                .background(if (currentMode == ShowroomMode.INSTANT_PURCHASE) PrimaryBlue else Color.Transparent)
+                .clickable { onSelectMode(ShowroomMode.INSTANT_PURCHASE) }
+                .padding(vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "⚡ Beli Instan Pabrikan",
+                color = if (currentMode == ShowroomMode.INSTANT_PURCHASE) Color.White else PrimaryBlueDark,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun InstantBusCard(
+    bus: Bus,
+    quantity: Int,
+    totalCost: Money,
+    canAfford: Boolean,
+    isPurchasing: Boolean,
+    onQuantityChange: (Int) -> Unit,
+    onBuy: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppDimens.radiusMedium),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppDimens.paddingMedium)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusSmall))
+                            .background(PrimaryBlueDark)
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = bus.chassis.brand.displayName,
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = bus.fullName,
+                        color = TextDark,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text = bus.totalPrice.formatRupiah(),
+                    color = PrimaryBlue,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFFF8FAFC))
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                SpecBadge(label = "Sasis", value = bus.chassis.modelName)
+                SpecBadge(label = "Bodi", value = bus.body.modelName)
+                SpecBadge(label = "Kelas", value = bus.body.busClass.displayName)
+                SpecBadge(label = "Kursi", value = "${bus.body.passengerCapacity} Kursi")
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(if (quantity > 1) IceBlue else Color(0xFFF1F5F9))
+                            .clickable(enabled = quantity > 1) { onQuantityChange(quantity - 1) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "-",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (quantity > 1) PrimaryBlueDark else DisabledGray
+                        )
+                    }
+
+                    Text(
+                        text = "$quantity Unit",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextDark
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(if (quantity < 20) IceBlue else Color(0xFFF1F5F9))
+                            .clickable(enabled = quantity < 20) { onQuantityChange(quantity + 1) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "+",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (quantity < 20) PrimaryBlueDark else DisabledGray
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = onBuy,
+                    enabled = canAfford && !isPurchasing,
+                    shape = RoundedCornerShape(AppDimens.radiusMedium),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (canAfford) SuccessGreen else DisabledGray
+                    )
+                ) {
+                    Text(
+                        text = if (isPurchasing) "Memproses..." else if (canAfford) "🛒 Beli (${totalCost.formatRupiah()})" else "Saldo Tidak Cukup",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                 }
             }
         }

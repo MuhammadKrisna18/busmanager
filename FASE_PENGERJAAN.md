@@ -95,11 +95,11 @@ Dokumen ini memuat detail perencanaan perbaikan arsitektural, logika simulasi, d
 
 ---
 
-### 🔹 Fase 3 [Tinggi]: Showroom Bus & Fleksibilitas Garasi Armada
-- Fitur pembelian bus secara batch (multi-unit stepper) di layar konfirmasi perakitan kustom (Fix Diskusi 5).
-- Penambahan katalog **Pembelian Instan** di Showroom (bus siap pakai dengan sasis, bodi, dan kapasitas asli pabrikan) (Fix Diskusi 5).
-- Modal dialog untuk mengubah jeda keberangkatan dan waktu ampiran langsung dari Garasi Armada dan layar Play ➔ Trayek (Fix Diskusi 4).
-- Pengujian unit test & Git Commit Fase 3.
+### 🔹 Fase 3 [Tinggi]: Showroom Bus & Fleksibilitas Garasi Armada - [SELESAI]
+- [x] Fitur pembelian bus secara batch (multi-unit stepper) di layar konfirmasi perakitan kustom (Fix Diskusi 5).
+- [x] Penambahan katalog **Pembelian Instan** di Showroom (bus siap pakai dengan sasis, bodi, dan kapasitas asli pabrikan) (Fix Diskusi 5).
+- [x] Modal dialog untuk mengubah jeda keberangkatan dan waktu ampiran langsung dari Garasi Armada dan layar Play ➔ Trayek (Fix Diskusi 4).
+- [x] Pengujian unit test & Git Commit Fase 3.
 
 ---
 

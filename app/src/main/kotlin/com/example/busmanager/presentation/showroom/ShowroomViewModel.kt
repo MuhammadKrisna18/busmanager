@@ -18,6 +18,7 @@ import com.example.busmanager.domain.fleet.repository.ChassisCatalogRepository
 import com.example.busmanager.domain.fleet.repository.KaroseriCatalogRepository
 import com.example.busmanager.domain.fleet.usecase.BuyBusUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
+import com.example.busmanager.domain.fleet.usecase.GetShowroomBusesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,7 +33,8 @@ class ShowroomViewModel(
     private val getOwnedFleetUseCase: GetOwnedFleetUseCase,
     private val chassisCatalogRepository: ChassisCatalogRepository,
     private val karoseriCatalogRepository: KaroseriCatalogRepository,
-    private val financialTransactionRepository: FinancialTransactionRepository? = null
+    private val financialTransactionRepository: FinancialTransactionRepository? = null,
+    private val getShowroomBusesUseCase: GetShowroomBusesUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ShowroomUiState())
@@ -64,6 +66,14 @@ class ShowroomViewModel(
                     )
                 }
             }.collect {}
+        }
+
+        if (getShowroomBusesUseCase != null) {
+            viewModelScope.launch {
+                getShowroomBusesUseCase.invoke().collect { readyStocks ->
+                    _uiState.update { it.copy(readyStockBuses = readyStocks) }
+                }
+            }
         }
     }
 
@@ -144,6 +154,22 @@ class ShowroomViewModel(
         }
     }
 
+    fun setMode(mode: ShowroomMode) {
+        _uiState.update { it.copy(mode = mode, errorMessage = null) }
+    }
+
+    fun setBatchQuantity(quantity: Int) {
+        _uiState.update { it.copy(batchQuantity = quantity.coerceIn(1, 20)) }
+    }
+
+    fun setInstantQuantity(busId: String, quantity: Int) {
+        _uiState.update { current ->
+            val updated = current.instantBatchQuantities.toMutableMap()
+            updated[busId] = quantity.coerceIn(1, 20)
+            current.copy(instantBatchQuantities = updated)
+        }
+    }
+
     fun confirmPurchase() {
         val state = _uiState.value
         val chassis = state.selectedChassis ?: return
@@ -162,30 +188,32 @@ class ShowroomViewModel(
                 body = body
             )
 
-            when (val result = buyBusUseCase(busToBuy)) {
-                is BuyBusResult.Success -> {
-                    val dateText = "Hari 1"
-                    val timeText = "08:00"
-                    val transaction = FinancialTransaction(
-                        id = "tx-bus-${busToBuy.id}-${System.currentTimeMillis()}",
-                        dateText = dateText,
-                        timeText = timeText,
-                        day = 1,
-                        month = 1,
-                        year = 2026,
-                        type = TransactionType.EXPENSE,
-                        category = TransactionCategory.BUS_PURCHASE,
-                        amount = busToBuy.totalPrice,
-                        busId = busToBuy.id,
-                        busCode = busToBuy.busCode,
-                        description = "Pembelian armada baru: ${busToBuy.busCode} (${busToBuy.fullName})"
-                    )
-                    financialTransactionRepository?.recordTransaction(transaction)
+            val quantity = state.batchQuantity.coerceAtLeast(1)
+            val result = if (quantity > 1) {
+                buyBusUseCase.buyBatch(busToBuy, quantity)
+            } else {
+                buyBusUseCase(busToBuy)
+            }
 
+            when (result) {
+                is BuyBusResult.Success -> {
+                    recordBusPurchaseTransaction(result.bus)
                     _uiState.update {
                         it.copy(
                             isPurchasing = false,
                             purchaseSuccessBus = result.bus,
+                            purchaseSuccessBuses = listOf(result.bus),
+                            errorMessage = null
+                        )
+                    }
+                }
+                is BuyBusResult.BatchSuccess -> {
+                    result.buses.forEach { recordBusPurchaseTransaction(it) }
+                    _uiState.update {
+                        it.copy(
+                            isPurchasing = false,
+                            purchaseSuccessBus = result.buses.firstOrNull(),
+                            purchaseSuccessBuses = result.buses,
                             errorMessage = null
                         )
                     }
@@ -208,6 +236,82 @@ class ShowroomViewModel(
                 }
             }
         }
+    }
+
+    fun buyInstantBus(bus: Bus) {
+        val state = _uiState.value
+        val quantity = state.getInstantQuantity(bus.id)
+        viewModelScope.launch {
+            _uiState.update { it.copy(isPurchasing = true, errorMessage = null) }
+            val result = if (quantity > 1) {
+                buyBusUseCase.buyBatch(bus, quantity)
+            } else {
+                val singleBus = bus.copy(
+                    id = UUID.randomUUID().toString(),
+                    busCode = String.format("TN-%02d", state.ownedBusCount + 1)
+                )
+                buyBusUseCase(singleBus)
+            }
+
+            when (result) {
+                is BuyBusResult.Success -> {
+                    recordBusPurchaseTransaction(result.bus)
+                    _uiState.update {
+                        it.copy(
+                            isPurchasing = false,
+                            purchaseSuccessBus = result.bus,
+                            purchaseSuccessBuses = listOf(result.bus),
+                            errorMessage = null
+                        )
+                    }
+                }
+                is BuyBusResult.BatchSuccess -> {
+                    result.buses.forEach { recordBusPurchaseTransaction(it) }
+                    _uiState.update {
+                        it.copy(
+                            isPurchasing = false,
+                            purchaseSuccessBus = result.buses.firstOrNull(),
+                            purchaseSuccessBuses = result.buses,
+                            errorMessage = null
+                        )
+                    }
+                }
+                is BuyBusResult.InsufficientFunds -> {
+                    _uiState.update {
+                        it.copy(
+                            isPurchasing = false,
+                            errorMessage = "Saldo tidak mencukupi. Diperlukan ${result.required.formatRupiah()}"
+                        )
+                    }
+                }
+                is BuyBusResult.CompanyNotFound -> {
+                    _uiState.update {
+                        it.copy(
+                            isPurchasing = false,
+                            errorMessage = "Data perusahaan tidak ditemukan"
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun recordBusPurchaseTransaction(bus: Bus) {
+        val transaction = FinancialTransaction(
+            id = "tx-bus-${bus.id}-${System.nanoTime()}",
+            dateText = "Hari 1",
+            timeText = "08:00",
+            day = 1,
+            month = 1,
+            year = 2026,
+            type = TransactionType.EXPENSE,
+            category = TransactionCategory.BUS_PURCHASE,
+            amount = bus.totalPrice,
+            busId = bus.id,
+            busCode = bus.busCode,
+            description = "Pembelian armada baru: ${bus.busCode} (${bus.fullName})"
+        )
+        financialTransactionRepository?.recordTransaction(transaction)
     }
 
     fun resetBuilder() {

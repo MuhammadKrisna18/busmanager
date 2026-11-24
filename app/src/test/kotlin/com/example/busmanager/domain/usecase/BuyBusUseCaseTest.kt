@@ -108,6 +108,38 @@ class BuyBusUseCaseTest {
         assertTrue(result is BuyBusResult.CompanyNotFound)
     }
 
+    @Test
+    fun buyBatchSucceedsWhenFundsAreSufficient() = runBlocking {
+        fakeCompanyRepo.createCompany("PO Sinar Jaya", Money.rupiah(2_000_000_000))
+        val templateBus = createSampleBus(Money.rupiah(500_000_000))
+
+        val result = buyBusUseCase.buyBatch(templateBus, 3)
+
+        assertTrue(result is BuyBusResult.BatchSuccess)
+        val batchResult = result as BuyBusResult.BatchSuccess
+        assertEquals(3, batchResult.buses.size)
+        assertEquals("TN-01", batchResult.buses[0].busCode)
+        assertEquals("TN-02", batchResult.buses[1].busCode)
+        assertEquals("TN-03", batchResult.buses[2].busCode)
+
+        val remaining = fakeCompanyRepo.getCompany().first()?.balance
+        assertEquals(Money.rupiah(500_000_000), remaining)
+        assertEquals(3, fakeFleetRepo.getOwnedBuses().first().size)
+    }
+
+    @Test
+    fun buyBatchFailsWhenFundsAreInsufficient() = runBlocking {
+        fakeCompanyRepo.createCompany("PO Sinar Jaya", Money.rupiah(1_000_000_000))
+        val templateBus = createSampleBus(Money.rupiah(500_000_000))
+
+        val result = buyBusUseCase.buyBatch(templateBus, 3)
+
+        assertTrue(result is BuyBusResult.InsufficientFunds)
+        val remaining = fakeCompanyRepo.getCompany().first()?.balance
+        assertEquals(Money.rupiah(1_000_000_000), remaining)
+        assertTrue(fakeFleetRepo.getOwnedBuses().first().isEmpty())
+    }
+
     private class FakeCompanyRepository : CompanyRepository {
         private val state = MutableStateFlow<Company?>(null)
 

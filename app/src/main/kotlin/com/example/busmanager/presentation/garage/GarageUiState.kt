@@ -8,6 +8,13 @@ enum class GarageFilter(val displayName: String) {
     STANDBY("Di Garasi")
 }
 
+data class GarageScheduleTarget(
+    val bus: Bus,
+    val routeName: String,
+    val currentHeadwayMinutes: Int = 60,
+    val currentTransitDwellMinutes: Int = 10
+)
+
 data class GarageBusItem(
     val bus: Bus,
     val driverName: String?,
@@ -15,7 +22,9 @@ data class GarageBusItem(
     val hasPricings: Boolean,
     val isOperating: Boolean,
     val activeTripDirection: String? = null,
-    val activeTripProgressPercent: Int? = null
+    val activeTripProgressPercent: Int? = null,
+    val headwayMinutes: Int = 60,
+    val transitDwellMinutes: Int = 10
 ) {
     val canOperate: Boolean
         get() = bus.routeId != null && bus.driverId != null && hasPricings
@@ -40,5 +49,6 @@ data class GarageUiState(
     val operatingBusCount: Int = 0,
     val standbyBusCount: Int = 0,
     val isLoading: Boolean = false,
-    val companyName: String = "PO TransNusantara"
+    val companyName: String = "PO TransNusantara",
+    val editingScheduleTarget: GarageScheduleTarget? = null
 )

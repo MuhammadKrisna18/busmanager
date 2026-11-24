@@ -10,6 +10,7 @@ import com.example.busmanager.domain.fleet.usecase.SellBusResult
 import com.example.busmanager.domain.fleet.usecase.SellBusUseCase
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
+import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +29,8 @@ class GarageViewModel(
     private val companyRepository: CompanyRepository,
     private val getActiveTripsUseCase: GetActiveTripsUseCase? = null,
     private val sellBusUseCase: SellBusUseCase? = null,
-    private val reconcileBusOperatingStateUseCase: ReconcileBusOperatingStateUseCase? = null
+    private val reconcileBusOperatingStateUseCase: ReconcileBusOperatingStateUseCase? = null,
+    private val routeScheduleRepository: RouteScheduleRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GarageUiState(isLoading = true))
@@ -42,12 +44,14 @@ class GarageViewModel(
         viewModelScope.launch {
             reconcileBusOperatingStateUseCase?.invoke()
             val activeTripsFlow: Flow<List<ActiveBusTrip>> = getActiveTripsUseCase?.invoke() ?: MutableStateFlow(emptyList())
+            val schedulesFlow = routeScheduleRepository?.getAllSchedules() ?: MutableStateFlow(emptyList())
             combine(
                 fleetRepository.getOwnedBuses(),
                 driverRepository.getAllDrivers(),
                 companyRepository.getCompany(),
-                activeTripsFlow
-            ) { buses, drivers, company, activeTrips ->
+                activeTripsFlow,
+                schedulesFlow
+            ) { buses, drivers, company, activeTrips, schedules ->
                 val busItems = buses.map { bus ->
                     val activeTrip = activeTrips.find { it.busId == bus.id }
                     val isOperating = activeTrip != null || bus.isOperating
@@ -56,6 +60,7 @@ class GarageViewModel(
                     val pricings = (activeTrip?.route?.id ?: bus.routeId)?.let { rId ->
                         routePricingRepository.getPricingsListForRoute(rId)
                     } ?: emptyList()
+                    val schedule = schedules.find { it.assignedBusId == bus.id }
 
                     GarageBusItem(
                         bus = bus,
@@ -64,7 +69,9 @@ class GarageViewModel(
                         hasPricings = pricings.isNotEmpty(),
                         isOperating = isOperating,
                         activeTripDirection = activeTrip?.let { "Menuju ${it.currentDestinationName} dari ${it.currentOriginName}" },
-                        activeTripProgressPercent = activeTrip?.let { (it.progressFraction * 100).toInt() }
+                        activeTripProgressPercent = activeTrip?.let { (it.progressFraction * 100).toInt() },
+                        headwayMinutes = schedule?.headwayMinutes ?: 60,
+                        transitDwellMinutes = schedule?.transitDwellMinutes ?: 10
                     )
                 }
 
@@ -109,6 +116,55 @@ class GarageViewModel(
         viewModelScope.launch {
             val result = sellBusUseCase?.invoke(busId) ?: SellBusResult.BusNotFound
             onResult(result)
+        }
+    }
+
+    fun openEditSchedule(item: GarageBusItem) {
+        val routeName = item.routeName ?: "Trayek Operasional"
+        _uiState.update {
+            it.copy(
+                editingScheduleTarget = GarageScheduleTarget(
+                    bus = item.bus,
+                    routeName = routeName,
+                    currentHeadwayMinutes = item.headwayMinutes,
+                    currentTransitDwellMinutes = item.transitDwellMinutes
+                )
+            )
+        }
+    }
+
+    fun dismissEditSchedule() {
+        _uiState.update { it.copy(editingScheduleTarget = null) }
+    }
+
+    fun saveSchedule(headwayMinutes: Int, transitDwellMinutes: Int) {
+        val target = _uiState.value.editingScheduleTarget ?: return
+        viewModelScope.launch {
+            val busId = target.bus.id
+            val schedules = routeScheduleRepository?.getSchedulesForBus(busId) ?: emptyList()
+            if (schedules.isNotEmpty()) {
+                schedules.forEach { sched ->
+                    routeScheduleRepository?.updateSchedule(
+                        sched.copy(
+                            headwayMinutes = headwayMinutes,
+                            transitDwellMinutes = transitDwellMinutes
+                        )
+                    )
+                }
+            } else if (target.bus.routeId != null) {
+                val routeSchedules = routeScheduleRepository?.getSchedulesListForRoute(target.bus.routeId) ?: emptyList()
+                if (routeSchedules.isNotEmpty()) {
+                    routeSchedules.forEach { sched ->
+                        routeScheduleRepository?.updateSchedule(
+                            sched.copy(
+                                headwayMinutes = headwayMinutes,
+                                transitDwellMinutes = transitDwellMinutes
+                            )
+                        )
+                    }
+                }
+            }
+            _uiState.update { it.copy(editingScheduleTarget = null) }
         }
     }
 }

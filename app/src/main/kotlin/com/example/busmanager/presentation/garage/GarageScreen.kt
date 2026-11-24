@@ -47,6 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.company.model.Money
+import com.example.busmanager.presentation.route.components.EditScheduleDialog
 import com.example.busmanager.ui.theme.BackgroundWhite
 import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.IceBlue
@@ -144,6 +145,20 @@ fun GarageScreen(
                 OutlinedButton(onClick = { busToSell = null }) {
                     Text("Batal")
                 }
+            }
+        )
+    }
+
+    if (uiState.editingScheduleTarget != null) {
+        val target = uiState.editingScheduleTarget!!
+        EditScheduleDialog(
+            busCode = target.bus.busCode,
+            routeName = target.routeName,
+            initialHeadwayMinutes = target.currentHeadwayMinutes,
+            initialTransitDwellMinutes = target.currentTransitDwellMinutes,
+            onDismiss = { viewModel.dismissEditSchedule() },
+            onSave = { headway, dwell ->
+                viewModel.saveSchedule(headway, dwell)
             }
         )
     }
@@ -281,6 +296,7 @@ fun GarageScreen(
                             GarageBusCard(
                                 item = item,
                                 onAssignRouteClick = onNavigateToRoutes,
+                                onEditScheduleClick = { viewModel.openEditSchedule(item) },
                                 onSellClick = {
                                     if (item.isOperating) {
                                         operatingWarningBus = item
@@ -352,6 +368,7 @@ private fun GarageTopBar(
 private fun GarageBusCard(
     item: GarageBusItem,
     onAssignRouteClick: () -> Unit,
+    onEditScheduleClick: () -> Unit,
     onSellClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -541,12 +558,25 @@ private fun GarageBusCard(
                             color = PrimaryBlue
                         )
                     }
+                } else {
+                    OutlinedButton(
+                        onClick = onEditScheduleClick,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "⚙️ Ubah Jadwal",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = PrimaryBlue
+                        )
+                    }
                 }
                 val sellPrice = Money.rupiah((bus.totalPrice.amount * 0.70).toLong().coerceAtLeast(10_000_000L))
                 OutlinedButton(
                     onClick = onSellClick,
                     shape = RoundedCornerShape(12.dp),
-                    modifier = if (item.routeName == null) Modifier.weight(1f) else Modifier.fillMaxWidth(),
+                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFDC2626)),
                     border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFDC2626))
                 ) {

@@ -40,7 +40,8 @@ data class SimulationMapUiState(
     val selectedTrip: ActiveBusTrip? = null,
     val trackedTripId: String? = null,
     val activeBottomSheet: SimulationBottomSheetType = SimulationBottomSheetType.NONE,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val editingScheduleTarget: SimulationScheduleEditTarget? = null
 ) {
     val formattedDateTime: String
         get() = currentTime.formatDateTime()
@@ -80,4 +81,11 @@ data class ParkedBusInfo(
     val bus: Bus,
     val terminal: Terminal,
     val route: BusRoute?
+)
+
+data class SimulationScheduleEditTarget(
+    val bus: Bus,
+    val route: BusRoute,
+    val currentHeadwayMinutes: Int = 60,
+    val currentTransitDwellMinutes: Int = 10
 )

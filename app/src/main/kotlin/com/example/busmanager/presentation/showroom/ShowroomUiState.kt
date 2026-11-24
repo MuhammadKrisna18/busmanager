@@ -12,6 +12,11 @@ import com.example.busmanager.domain.fleet.model.EngineLocation
 import com.example.busmanager.domain.fleet.model.KaroseriBody
 import com.example.busmanager.domain.fleet.model.KaroseriBrand
 
+enum class ShowroomMode {
+    CUSTOM_ASSEMBLY,
+    INSTANT_PURCHASE
+}
+
 enum class ShowroomStep(val stepNumber: Int, val title: String) {
     CHASSIS(1, "1. Sasis"),
     BODY(2, "2. Bodi"),
@@ -20,18 +25,23 @@ enum class ShowroomStep(val stepNumber: Int, val title: String) {
 }
 
 data class ShowroomUiState(
+    val mode: ShowroomMode = ShowroomMode.CUSTOM_ASSEMBLY,
     val company: Company? = null,
     val currentStep: ShowroomStep = ShowroomStep.CHASSIS,
     val allChassis: List<Chassis> = emptyList(),
     val allBodies: List<KaroseriBody> = emptyList(),
+    val readyStockBuses: List<Bus> = emptyList(),
     val selectedChassisFilter: ChassisBrand? = null,
     val selectedKaroseriFilter: KaroseriBrand? = null,
     val selectedChassis: Chassis? = null,
     val selectedBody: KaroseriBody? = null,
     val selectedBusClass: BusClass = BusClass.EKSEKUTIF,
     val customBusCode: String = "",
+    val batchQuantity: Int = 1,
+    val instantBatchQuantities: Map<String, Int> = emptyMap(),
     val isPurchasing: Boolean = false,
     val purchaseSuccessBus: Bus? = null,
+    val purchaseSuccessBuses: List<Bus> = emptyList(),
     val errorMessage: String? = null,
     val isLoading: Boolean = true,
     val ownedBusCount: Int = 0
@@ -86,16 +96,28 @@ data class ShowroomUiState(
             )
         }
 
-    val totalInvestment: Money
+    val unitInvestment: Money
         get() {
             val chassisPrice = selectedChassis?.price ?: Money.ZERO
             val bodyPrice = tailoredBody?.price ?: Money.ZERO
             return chassisPrice + bodyPrice
         }
 
+    val totalInvestment: Money
+        get() = unitInvestment * batchQuantity.toLong()
+
     val canAfford: Boolean
         get() {
             val balance = company?.balance ?: return false
             return balance.canAfford(totalInvestment)
         }
+
+    fun getInstantQuantity(busId: String): Int = instantBatchQuantities[busId] ?: 1
+
+    fun getInstantTotalCost(bus: Bus): Money = bus.totalPrice * getInstantQuantity(bus.id).toLong()
+
+    fun canAffordInstant(bus: Bus): Boolean {
+        val balance = company?.balance ?: return false
+        return balance.canAfford(getInstantTotalCost(bus))
+    }
 }

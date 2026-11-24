@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.simulation.model.SimulationSpeed
 import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
+import com.example.busmanager.presentation.route.components.EditScheduleDialog
 import com.example.busmanager.presentation.simulation.components.BusLiveTrackingCard
 import com.example.busmanager.presentation.simulation.components.FleetOverviewBottomSheet
 import com.example.busmanager.presentation.simulation.components.RoutesOverviewBottomSheet
@@ -170,11 +171,28 @@ fun SimulationMapScreen(
                 schedules = state.schedules,
                 drivers = state.drivers,
                 onSelectRoute = { viewModel.selectRoute(it) },
+                onEditSchedule = { bus, route, headway, dwell ->
+                    viewModel.openEditSchedule(bus, route, headway, dwell)
+                },
                 onDismiss = { viewModel.dismissBottomSheet() },
                 onNavigateToRoutePlanner = onNavigateToRoutes
             )
         }
         SimulationBottomSheetType.NONE -> {}
+    }
+
+    if (state.editingScheduleTarget != null) {
+        val target = state.editingScheduleTarget!!
+        EditScheduleDialog(
+            busCode = target.bus.busCode,
+            routeName = target.route.name,
+            initialHeadwayMinutes = target.currentHeadwayMinutes,
+            initialTransitDwellMinutes = target.currentTransitDwellMinutes,
+            onDismiss = { viewModel.dismissEditSchedule() },
+            onSave = { headway, dwell ->
+                viewModel.saveSchedule(headway, dwell)
+            }
+        )
     }
 }
 

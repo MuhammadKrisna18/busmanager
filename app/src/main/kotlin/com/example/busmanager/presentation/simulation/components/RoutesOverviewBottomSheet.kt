@@ -64,6 +64,7 @@ fun RoutesOverviewBottomSheet(
     schedules: List<RouteSchedule> = emptyList(),
     drivers: List<Driver> = emptyList(),
     onSelectRoute: (BusRoute) -> Unit,
+    onEditSchedule: (Bus, BusRoute, Int, Int) -> Unit = { _, _, _, _ -> },
     onDismiss: () -> Unit,
     onNavigateToRoutePlanner: () -> Unit = {}
 ) {
@@ -170,7 +171,8 @@ fun RoutesOverviewBottomSheet(
                             onSelect = {
                                 onSelectRoute(route)
                                 onDismiss()
-                            }
+                            },
+                            onEditSchedule = onEditSchedule
                         )
                     }
                 }
@@ -187,7 +189,8 @@ private fun ActiveRouteItemCard(
     schedules: List<RouteSchedule>,
     activeTrips: List<ActiveBusTrip>,
     isSelected: Boolean,
-    onSelect: () -> Unit
+    onSelect: () -> Unit,
+    onEditSchedule: (Bus, BusRoute, Int, Int) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -353,18 +356,42 @@ private fun ActiveRouteItemCard(
                             }
                         }
 
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(AppDimens.radiusPill))
-                                .background(if (isRunning) SuccessGreenLight else IceBlue)
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = if (isRunning) "● Berdinas" else "Menunggu di $currentTerminalName",
-                                color = if (isRunning) SuccessGreen else PrimaryBlueDark,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                        Column(horizontalAlignment = Alignment.End) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(AppDimens.radiusPill))
+                                    .background(if (isRunning) SuccessGreenLight else IceBlue)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = if (isRunning) "● Berdinas" else "Menunggu di $currentTerminalName",
+                                    color = if (isRunning) SuccessGreen else PrimaryBlueDark,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFFE0E7FF))
+                                    .clickable {
+                                        val currentHeadway = busSchedules.firstOrNull()?.headwayMinutes ?: 60
+                                        val currentDwell = busSchedules.firstOrNull()?.transitDwellMinutes ?: 10
+                                        onEditSchedule(bus, route, currentHeadway, currentDwell)
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "⚙️ Ubah Jadwal",
+                                    color = PrimaryBlueDark,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
                 }

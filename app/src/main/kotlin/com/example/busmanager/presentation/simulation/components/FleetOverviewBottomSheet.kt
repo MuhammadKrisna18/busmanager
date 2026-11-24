@@ -73,7 +73,7 @@ fun FleetOverviewBottomSheet(
     drivers: List<Driver> = emptyList(),
     schedules: List<RouteSchedule> = emptyList(),
     busOperationStatuses: Map<String, BusOperationStatus> = emptyMap(),
-    onDispatchBus: (Bus, BusRoute) -> Unit,
+    onDispatchBus: ((Bus, BusRoute) -> Unit)? = null,
     onTrackBus: (ActiveBusTrip) -> Unit,
     onCancelNextSchedule: (ActiveBusTrip) -> Unit = {},
     onDismiss: () -> Unit,
@@ -196,7 +196,7 @@ fun FleetOverviewBottomSheet(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Pilih tab Semua Armada untuk memberangkatkan bus atau tunggu jadwal.",
+                                text = "Armada yang siap akan berangkat otomatis saat jam jadwal keberangkatan tiba.",
                                 color = TextMuted,
                                 fontSize = 12.sp
                             )
@@ -266,7 +266,7 @@ fun FleetOverviewBottomSheet(
                                 assignedRoute = assignedRoute,
                                 operationStatus = status,
                                 availableRoutes = availableRoutes,
-                                onDispatch = { route -> onDispatchBus(bus, route) },
+                                onDispatch = { route -> onDispatchBus?.invoke(bus, route) },
                                 onTrack = {
                                     if (activeTrip != null) {
                                         onTrackBus(activeTrip)
@@ -477,7 +477,7 @@ private fun FleetBusItemCard(
     assignedRoute: BusRoute?,
     operationStatus: BusOperationStatus?,
     availableRoutes: List<BusRoute>,
-    onDispatch: (BusRoute) -> Unit,
+    onDispatch: ((BusRoute) -> Unit)? = null,
     onTrack: () -> Unit
 ) {
     val isOperating = activeTrip != null
@@ -607,21 +607,21 @@ private fun FleetBusItemCard(
                         )
                     }
                 } else if (canOperate) {
-                    val targetRoute = assignedRoute ?: availableRoutes.firstOrNull()
-                    if (targetRoute != null) {
-                        Button(
-                            onClick = { onDispatch(targetRoute) },
-                            shape = RoundedCornerShape(AppDimens.radiusPill),
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "Berdinas Sekarang",
-                                color = Color.White,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusSmall))
+                            .background(IceBlue)
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Text(text = "🕒", fontSize = 12.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Otomatis jalan sesuai jam keberangkatan",
+                            color = PrimaryBlueDark,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 } else {
                     Text(

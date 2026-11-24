@@ -199,11 +199,12 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 4 [Medium]: Otomasi Keberangkatan Murni & Penghapusan Tombol Manual "Berdinas Sekarang" (Fix Diskusi 2)
-- Hapus/nonaktifkan tombol manual `Berdinas Sekarang` pada BottomSheet simulasi armada.
-- Tampilkan badge status kesiapan otomatisasi (`Menunggu Jam Keberangkatan`).
-- Pastikan ketika user menekan Play dan waktu simulasi mencapai jadwal, engine simulasi langsung memberangkatkan bus secara otomatis.
-- Pengujian unit test & Git Commit Fase 4.
+### ✅ Fase 4 [Medium]: Otomasi Keberangkatan Murni & Penghapusan Tombol Manual "Berdinas Sekarang" (Fix Diskusi 2) - SELESAI
+- Tombol manual `Berdinas Sekarang` di `FleetOverviewBottomSheet` dihapus sepenuhnya, mencegah pemberangkatan di luar jadwal operasional. (Selesai)
+- Digantikan dengan indikator kesiapan otomatisasi dinas: badge informatif `"🕒 Otomatis jalan sesuai jam keberangkatan"` dengan styling `IceBlue` dan teks tebal. (Selesai)
+- Keterangan tab armada kosong diperbarui menjadi `"Armada yang siap akan berangkat otomatis saat jam jadwal keberangkatan tiba."`. (Selesai)
+- Engine simulasi `SimulationMapViewModel` otomatis memberangkatkan armada tepat waktu saat jam jadwal tercapai (terintegrasi dengan kalkulasi offline progression saat aplikasi tidak dibuka). (Selesai)
+- Pengujian unit test & Git Commit Fase 4. (Selesai)
 
 ---
 

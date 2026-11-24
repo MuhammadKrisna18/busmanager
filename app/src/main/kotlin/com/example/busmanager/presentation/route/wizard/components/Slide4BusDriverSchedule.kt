@@ -1,7 +1,6 @@
 package com.example.busmanager.presentation.route.wizard.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,7 +20,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -44,7 +43,6 @@ import com.example.busmanager.ui.theme.SuccessGreen
 import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
-import com.example.busmanager.ui.theme.TextLight
 import com.example.busmanager.ui.theme.TextMuted
 import com.example.busmanager.ui.theme.WarningAmber
 import com.example.busmanager.ui.theme.WarningAmberLight
@@ -56,8 +54,23 @@ fun Slide4BusDriverSchedule(
     onSelectDriver: (Driver) -> Unit,
     onSetDepartureTime: (Int, Int) -> Unit,
     onSetDirection: (RouteDirection) -> Unit,
+    onSetIsRoundTrip: (Boolean) -> Unit,
+    onSetReturnTime: (Int, Int) -> Unit,
+    onResetReturnTime: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val originCity = uiState.selectedOrigin?.city ?: "Asal"
+    val destCity = uiState.selectedDestination?.city ?: "Tujuan"
+    val outboundFromCity = if (uiState.direction == RouteDirection.ORIGIN_TO_DESTINATION) originCity else destCity
+    val outboundToCity = if (uiState.direction == RouteDirection.ORIGIN_TO_DESTINATION) destCity else originCity
+    val returnFromCity = outboundToCity
+    val returnToCity = outboundFromCity
+
+    val durationHours = uiState.estimatedDurationMinutes / 60
+    val durationMins = uiState.estimatedDurationMinutes % 60
+    val durationText = if (durationHours > 0) "$durationHours Jam $durationMins Menit" else "$durationMins Menit"
+    val distanceText = "${uiState.builtRoute?.totalDistanceKm ?: 0} km"
+
     LazyColumn(
         modifier = modifier
             .fillMaxWidth()
@@ -109,9 +122,7 @@ fun Slide4BusDriverSchedule(
                         containerColor = if (isSelected) IceBlue else SurfaceWhite
                     ),
                     border = CardDefaults.outlinedCardBorder().copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(
-                            if (isSelected) PrimaryBlue else CardBorder
-                        )
+                        brush = SolidColor(if (isSelected) PrimaryBlue else CardBorder)
                     )
                 ) {
                     Row(
@@ -212,9 +223,7 @@ fun Slide4BusDriverSchedule(
                         containerColor = if (isSelected) IceBlue else SurfaceWhite
                     ),
                     border = CardDefaults.outlinedCardBorder().copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(
-                            if (isSelected) PrimaryBlue else CardBorder
-                        )
+                        brush = SolidColor(if (isSelected) PrimaryBlue else CardBorder)
                     )
                 ) {
                     Row(
@@ -262,22 +271,58 @@ fun Slide4BusDriverSchedule(
 
         item {
             Text(
-                text = "3. Atur Jam Keberangkatan & Arah",
+                text = "3. Atur Pola & Jam Keberangkatan",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Tentukan arah dinas dan jam berangkat bus",
+                text = "Tentukan pola dinas bolak-balik atau satu arah serta jam berangkat armada",
                 fontSize = 12.sp,
                 color = TextMuted
             )
             Spacer(modifier = Modifier.height(10.dp))
 
-            val originCity = uiState.selectedOrigin?.city ?: "Asal"
-            val destCity = uiState.selectedDestination?.city ?: "Tujuan"
+            Text(
+                text = "Pola Perjalanan",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = uiState.isRoundTrip,
+                    onClick = { onSetIsRoundTrip(true) },
+                    label = { Text("🔄 Pulang-Pergi (A-B & B-A)") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = IceBlue,
+                        selectedLabelColor = PrimaryBlueDark
+                    )
+                )
+                FilterChip(
+                    selected = !uiState.isRoundTrip,
+                    onClick = { onSetIsRoundTrip(false) },
+                    label = { Text("➡️ Satu Arah") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = IceBlue,
+                        selectedLabelColor = PrimaryBlueDark
+                    )
+                )
+            }
 
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "Arah Berangkat Perdana",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(6.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -308,15 +353,16 @@ fun Slide4BusDriverSchedule(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-                border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CardBorder))
+                border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(CardBorder))
             ) {
                 Column(
                     modifier = Modifier.padding(14.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Jam Keberangkatan",
+                        text = "Jadwal Berangkat Pergi ($outboundFromCity ➔ $outboundToCity)",
                         fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
                         color = TextMuted
                     )
                     Spacer(modifier = Modifier.height(6.dp))
@@ -387,10 +433,158 @@ fun Slide4BusDriverSchedule(
                 }
             }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = IceBlue),
+                border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(PrimaryBlue.copy(alpha = 0.3f)))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(text = "⏱️", fontSize = 16.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Estimasi Perjalanan & Waktu Tiba",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryBlueDark
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Durasi Tempuh ($distanceText)", fontSize = 12.sp, color = TextDark)
+                        Text(text = durationText, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PrimaryBlueDark)
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Estimasi Tiba di $outboundToCity", fontSize = 12.sp, color = TextDark)
+                        Text(
+                            text = String.format("%02d:%02d WIB", uiState.arrivalHour, uiState.arrivalMinute),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryBlueDark
+                        )
+                    }
+                    if (uiState.isRoundTrip) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Jeda Istirahat Minimal Kru", fontSize = 12.sp, color = TextDark)
+                            Text(text = "1 Jam (Wajib)", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextDark)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Keberangkatan Pulang Tercepat", fontSize = 12.sp, color = TextDark)
+                            Text(
+                                text = String.format("%02d:%02d WIB", uiState.minReturnHour, uiState.minReturnMinute),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = SuccessGreen
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (uiState.isRoundTrip) {
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                    border = CardDefaults.outlinedCardBorder().copy(
+                        brush = SolidColor(if (uiState.hasLayoverConflict) WarningAmber else CardBorder)
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Jadwal Berangkat Pulang ($returnFromCity ➔ $returnToCity)",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = TextMuted
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = String.format("%02d:%02d WIB", uiState.returnHour, uiState.returnMinute),
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (uiState.hasLayoverConflict) WarningAmber else PrimaryBlueDark
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedButton(
+                                onClick = {
+                                    val newH = (uiState.returnHour - 1).let { if (it < 0) 23 else it }
+                                    onSetReturnTime(newH, uiState.returnMinute)
+                                }
+                            ) {
+                                Text("-1 Jam")
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    val newH = (uiState.returnHour + 1) % 24
+                                    onSetReturnTime(newH, uiState.returnMinute)
+                                }
+                            ) {
+                                Text("+1 Jam")
+                            }
+                            OutlinedButton(
+                                onClick = {
+                                    val newM = (uiState.returnMinute + 15) % 60
+                                    onSetReturnTime(uiState.returnHour, newM)
+                                }
+                            ) {
+                                Text("+15 Mnt")
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(IceBlue)
+                                .clickable { onResetReturnTime() }
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = String.format("Set ke Rekomendasi Tercepat (%02d:%02d WIB)", uiState.minReturnHour, uiState.minReturnMinute),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryBlue
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(14.dp))
         }
 
-        if (uiState.hasConflict) {
+        if (uiState.hasLayoverConflict) {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -398,24 +592,62 @@ fun Slide4BusDriverSchedule(
                     colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
                 ) {
                     Text(
-                        text = "⚠️ Jadwal bentrok! Sudah ada bus yang berangkat pada rute dan jam yang sama. Silakan geser jam keberangkatan.",
+                        text = "⚠️ Jeda istirahat bus & kru kurang dari 1 jam! Bus baru tiba pukul ${String.format("%02d:%02d", uiState.arrivalHour, uiState.arrivalMinute)} WIB, sehingga paling cepat dapat berangkat kembali pukul ${String.format("%02d:%02d", uiState.minReturnHour, uiState.minReturnMinute)} WIB.",
                         modifier = Modifier.padding(14.dp),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFB45309)
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
 
-        if (uiState.builtRoute != null && uiState.selectedBus != null && uiState.selectedDriver != null) {
+        if (uiState.hasOutboundConflict) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
+                ) {
+                    Text(
+                        text = "⚠️ Jadwal pergi bentrok! Sudah ada bus yang berangkat pada rute dan jam yang sama. Silakan geser jam keberangkatan.",
+                        modifier = Modifier.padding(14.dp),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB45309)
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        if (uiState.hasReturnConflict) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
+                ) {
+                    Text(
+                        text = "⚠️ Jadwal pulang bentrok! Sudah ada bus yang berangkat pada rute pulang pada jam tersebut. Silakan sesuaikan jam pulang.",
+                        modifier = Modifier.padding(14.dp),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB45309)
+                    )
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+        }
+
+        if (uiState.builtRoute != null && uiState.selectedBus != null && uiState.selectedDriver != null && !uiState.hasConflict) {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(containerColor = SuccessGreenLight),
-                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(SuccessGreen))
+                    border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(SuccessGreen))
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -429,8 +661,9 @@ fun Slide4BusDriverSchedule(
                             )
                         }
                         Spacer(modifier = Modifier.height(6.dp))
+                        val tripTypeText = if (uiState.isRoundTrip) "Pulang-Pergi (A-B & B-A)" else "Satu Arah"
                         Text(
-                            text = "Trayek, Matriks Tarif, Bus (${uiState.selectedBus.busCode}), dan Sopir (${uiState.selectedDriver.name}) telah siap. Klik 'Jalankan & Simpan' untuk mulai berdinas!",
+                            text = "Trayek $tripTypeText, Matriks Tarif, Bus (${uiState.selectedBus.busCode}), dan Sopir (${uiState.selectedDriver.name}) telah siap. Klik 'Jalankan & Simpan' untuk mulai berdinas!",
                             fontSize = 12.sp,
                             color = TextDark
                         )

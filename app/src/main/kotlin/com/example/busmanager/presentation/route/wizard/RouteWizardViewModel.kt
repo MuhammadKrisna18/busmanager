@@ -180,11 +180,19 @@ class RouteWizardViewModel(
         return if (buildResult.isSuccess) {
             val route = buildResult.getOrThrow()
             val generatedPricings = generateHopPricings(route)
-            state.copy(
+            val intermediate = state.copy(
                 builtRoute = route,
                 pricings = generatedPricings,
                 errorMessage = null
             )
+            if (intermediate.isRoundTrip && intermediate.layoverMinutes < 60) {
+                intermediate.copy(
+                    returnHour = intermediate.minReturnHour,
+                    returnMinute = intermediate.minReturnMinute
+                )
+            } else {
+                intermediate
+            }
         } else {
             state.copy(
                 builtRoute = null,
@@ -262,8 +270,55 @@ class RouteWizardViewModel(
         _uiState.update { it.copy(selectedDriver = driver) }
     }
 
+    fun setIsRoundTrip(enabled: Boolean) {
+        _uiState.update { current ->
+            if (enabled && current.layoverMinutes < 60) {
+                current.copy(
+                    isRoundTrip = true,
+                    returnHour = current.minReturnHour,
+                    returnMinute = current.minReturnMinute
+                )
+            } else {
+                current.copy(isRoundTrip = enabled)
+            }
+        }
+        checkScheduleConflict()
+    }
+
     fun setDepartureTime(hour: Int, minute: Int) {
-        _uiState.update { it.copy(departureHour = hour.coerceIn(0, 23), departureMinute = minute.coerceIn(0, 59)) }
+        val h = hour.coerceIn(0, 23)
+        val m = minute.coerceIn(0, 59)
+        _uiState.update { current ->
+            val updatedDeparture = current.copy(departureHour = h, departureMinute = m)
+            if (updatedDeparture.isRoundTrip && updatedDeparture.layoverMinutes < 60) {
+                updatedDeparture.copy(
+                    returnHour = updatedDeparture.minReturnHour,
+                    returnMinute = updatedDeparture.minReturnMinute
+                )
+            } else {
+                updatedDeparture
+            }
+        }
+        checkScheduleConflict()
+    }
+
+    fun setReturnTime(hour: Int, minute: Int) {
+        _uiState.update {
+            it.copy(
+                returnHour = hour.coerceIn(0, 23),
+                returnMinute = minute.coerceIn(0, 59)
+            )
+        }
+        checkScheduleConflict()
+    }
+
+    fun resetReturnTimeToRecommendation() {
+        _uiState.update {
+            it.copy(
+                returnHour = it.minReturnHour,
+                returnMinute = it.minReturnMinute
+            )
+        }
         checkScheduleConflict()
     }
 
@@ -276,13 +331,28 @@ class RouteWizardViewModel(
         val state = _uiState.value
         val routeId = state.builtRoute?.id ?: return
         viewModelScope.launch {
-            val conflict = routeScheduleRepository.checkConflict(
+            val outboundConflict = routeScheduleRepository.checkConflict(
                 routeId = routeId,
                 direction = state.direction,
                 hour = state.departureHour,
                 minute = state.departureMinute
             )
-            _uiState.update { it.copy(hasConflict = conflict) }
+            val returnConflict = if (state.isRoundTrip) {
+                routeScheduleRepository.checkConflict(
+                    routeId = routeId,
+                    direction = state.returnDirection,
+                    hour = state.returnHour,
+                    minute = state.returnMinute
+                )
+            } else {
+                false
+            }
+            _uiState.update {
+                it.copy(
+                    hasOutboundConflict = outboundConflict,
+                    hasReturnConflict = returnConflict
+                )
+            }
         }
     }
 
@@ -378,17 +448,32 @@ class RouteWizardViewModel(
                     )
                 )
 
-                val scheduleId = "sched-${route.id}-${System.currentTimeMillis()}"
-                val schedule = RouteSchedule(
-                    id = scheduleId,
+                val baseTime = System.currentTimeMillis()
+                val outboundScheduleId = "sched-${route.id}-outbound-$baseTime"
+                val outboundSchedule = RouteSchedule(
+                    id = outboundScheduleId,
                     routeId = route.id,
                     departureHour = state.departureHour,
                     departureMinute = state.departureMinute,
                     direction = state.direction,
                     assignedBusId = bus.id
                 )
-                routeScheduleRepository.addSchedule(schedule)
-                routeScheduleRepository.assignBusToSchedule(scheduleId, bus.id)
+                routeScheduleRepository.addSchedule(outboundSchedule)
+                routeScheduleRepository.assignBusToSchedule(outboundScheduleId, bus.id)
+
+                if (state.isRoundTrip) {
+                    val returnScheduleId = "sched-${route.id}-return-${baseTime + 1}"
+                    val returnSchedule = RouteSchedule(
+                        id = returnScheduleId,
+                        routeId = route.id,
+                        departureHour = state.returnHour,
+                        departureMinute = state.returnMinute,
+                        direction = state.returnDirection,
+                        assignedBusId = bus.id
+                    )
+                    routeScheduleRepository.addSchedule(returnSchedule)
+                    routeScheduleRepository.assignBusToSchedule(returnScheduleId, bus.id)
+                }
 
                 _uiState.update {
                     it.copy(

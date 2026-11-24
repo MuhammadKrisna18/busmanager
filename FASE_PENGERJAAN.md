@@ -32,7 +32,7 @@ Dokumen ini merangkum rencana tahapan pengerjaan untuk 6 fitur dan penyempurnaan
 
 ---
 
-### 🟡 Fase 2 [Medium]: Penjadwalan Pulang-Pergi (A-B & B-A) & Validasi Jeda 1 Jam
+### 🟡 Fase 2 [Medium]: Penjadwalan Pulang-Pergi (A-B & B-A) & Validasi Jeda 1 Jam [SELESAI ✅]
 - **Tujuan**: Menerapkan aturan perputaran armada (*Turnaround Time / Layover*) yang realistis untuk jadwal bolak-balik.
 - **Deliverables**:
   1. **Logika Waktu Putar Balik & Istirahat Kru (Diskusi 1)**:

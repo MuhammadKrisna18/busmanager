@@ -137,7 +137,10 @@ fun RouteWizardScreen(
                             onSelectBus = { viewModel.selectBus(it) },
                             onSelectDriver = { viewModel.selectDriver(it) },
                             onSetDepartureTime = { h, m -> viewModel.setDepartureTime(h, m) },
-                            onSetDirection = { viewModel.setDirection(it) }
+                            onSetDirection = { viewModel.setDirection(it) },
+                            onSetIsRoundTrip = { viewModel.setIsRoundTrip(it) },
+                            onSetReturnTime = { h, m -> viewModel.setReturnTime(h, m) },
+                            onResetReturnTime = { viewModel.resetReturnTimeToRecommendation() }
                         )
                     }
                 }

@@ -211,7 +211,113 @@ class RouteWizardViewModelTest {
     }
 
     @Test
-    fun launchAndSaveRoute_persistsAllDataSuccessfully() = runTest {
+    fun roundTrip_calculatesArrivalTime_and_minimumReturnTimeCorrectly() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.setDepartureTime(6, 0)
+
+        val state = viewModel.uiState.value
+        val duration = state.estimatedDurationMinutes
+        assertTrue(duration > 0)
+
+        val expectedArrivalTotal = 360 + duration
+        val expectedArrivalHour = (expectedArrivalTotal / 60) % 24
+        val expectedArrivalMinute = expectedArrivalTotal % 60
+        val expectedMinReturnTotal = expectedArrivalTotal + 60
+        val expectedMinReturnHour = (expectedMinReturnTotal / 60) % 24
+        val expectedMinReturnMinute = expectedMinReturnTotal % 60
+
+        assertEquals(expectedArrivalHour, state.arrivalHour)
+        assertEquals(expectedArrivalMinute, state.arrivalMinute)
+        assertEquals(expectedMinReturnHour, state.minReturnHour)
+        assertEquals(expectedMinReturnMinute, state.minReturnMinute)
+        assertFalse(state.hasLayoverConflict)
+    }
+
+    @Test
+    fun roundTrip_flagsLayoverConflict_whenReturnTimeLessThanOneHourAfterArrival() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.setDepartureTime(6, 0)
+
+        val arrivalH = viewModel.uiState.value.arrivalHour
+        val arrivalM = viewModel.uiState.value.arrivalMinute
+        viewModel.setReturnTime(arrivalH, arrivalM)
+
+        val state = viewModel.uiState.value
+        assertTrue(state.hasLayoverConflict)
+        assertTrue(state.hasConflict)
+        assertFalse(state.canLaunchFromStep4)
+    }
+
+    @Test
+    fun roundTrip_clearsLayoverConflict_whenReturnTimeAtLeastOneHourAfterArrival() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.setDepartureTime(6, 0)
+
+        val minH = viewModel.uiState.value.minReturnHour
+        val minM = viewModel.uiState.value.minReturnMinute
+        viewModel.setReturnTime(minH, minM)
+
+        val state = viewModel.uiState.value
+        assertFalse(state.hasLayoverConflict)
+        assertFalse(state.hasConflict)
+        assertTrue(state.canLaunchFromStep4)
+    }
+
+    @Test
+    fun resetReturnTimeToRecommendation_resetsToEarliestAllowedTime() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.setDepartureTime(6, 0)
+
+        viewModel.setReturnTime(6, 30)
+        assertTrue(viewModel.uiState.value.hasLayoverConflict)
+
+        viewModel.resetReturnTimeToRecommendation()
+        val state = viewModel.uiState.value
+        assertEquals(state.minReturnHour, state.returnHour)
+        assertEquals(state.minReturnMinute, state.returnMinute)
+        assertFalse(state.hasLayoverConflict)
+    }
+
+    @Test
+    fun oneWay_doesNotCheckLayoverOrReturnConflict() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.setDepartureTime(6, 0)
+        viewModel.setReturnTime(6, 10)
+
+        viewModel.setIsRoundTrip(false)
+        val state = viewModel.uiState.value
+        assertFalse(state.isRoundTrip)
+        assertFalse(state.hasConflict)
+        assertTrue(state.canLaunchFromStep4)
+    }
+
+    @Test
+    fun launchAndSaveRoute_withRoundTrip_createsTwoSchedulesWithAssignedBus() = runTest {
         advanceUntilIdle()
         val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
         val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
@@ -239,13 +345,76 @@ class RouteWizardViewModelTest {
         assertTrue(savedPricings.isNotEmpty())
 
         val savedSchedules = fakeScheduleRepo.getSchedulesListForRoute(finalRouteId)
-        assertEquals(1, savedSchedules.size)
-        assertEquals(8, savedSchedules.first().departureHour)
-        assertEquals(30, savedSchedules.first().departureMinute)
+        assertEquals(2, savedSchedules.size)
+
+        val outboundSched = savedSchedules.find { it.direction == RouteDirection.ORIGIN_TO_DESTINATION }
+        assertNotNull(outboundSched)
+        assertEquals(8, outboundSched?.departureHour)
+        assertEquals(30, outboundSched?.departureMinute)
+        assertEquals("bus-test-1", outboundSched?.assignedBusId)
+
+        val returnSched = savedSchedules.find { it.direction == RouteDirection.DESTINATION_TO_ORIGIN }
+        assertNotNull(returnSched)
+        assertEquals(state.returnHour, returnSched?.departureHour)
+        assertEquals(state.returnMinute, returnSched?.departureMinute)
+        assertEquals("bus-test-1", returnSched?.assignedBusId)
 
         val assignedBus = fakeFleetRepo.getBusById("bus-test-1")
         assertEquals(launchedId, assignedBus?.routeId)
         assertEquals("driver-test-1", assignedBus?.driverId)
+    }
+
+    @Test
+    fun launchAndSaveRoute_withOneWay_createsSingleSchedule() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.setIsRoundTrip(false)
+        viewModel.setDepartureTime(9, 0)
+
+        var launchedId: String? = null
+        viewModel.launchAndSaveRoute { id ->
+            launchedId = id
+        }
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.launchSuccess)
+        val finalRouteId = requireNotNull(launchedId)
+
+        val savedSchedules = fakeScheduleRepo.getSchedulesListForRoute(finalRouteId)
+        assertEquals(1, savedSchedules.size)
+        assertEquals(9, savedSchedules.first().departureHour)
+        assertEquals(0, savedSchedules.first().departureMinute)
+    }
+
+    @Test
+    fun launchAndSaveRoute_blockedWhenLayoverConflictExists() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.setDepartureTime(6, 0)
+
+        val arrivalH = viewModel.uiState.value.arrivalHour
+        val arrivalM = viewModel.uiState.value.arrivalMinute
+        viewModel.setReturnTime(arrivalH, arrivalM)
+
+        var launchedId: String? = null
+        viewModel.launchAndSaveRoute { id ->
+            launchedId = id
+        }
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertFalse(state.launchSuccess)
+        assertNull(launchedId)
+        assertTrue(fakeScheduleRepo.getAllList().isEmpty())
     }
 
     private class FakeRoutePricingRepository : RoutePricingRepository {
@@ -278,6 +447,8 @@ class RouteWizardViewModelTest {
     private class FakeRouteScheduleRepository : RouteScheduleRepository {
         private val list = mutableListOf<RouteSchedule>()
         private val flow = MutableStateFlow<List<RouteSchedule>>(emptyList())
+
+        fun getAllList(): List<RouteSchedule> = list.toList()
 
         override fun getSchedulesForRoute(routeId: String): Flow<List<RouteSchedule>> = flow
         override fun getAllSchedules(): Flow<List<RouteSchedule>> = flow

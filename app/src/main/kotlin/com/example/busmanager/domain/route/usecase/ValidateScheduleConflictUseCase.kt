@@ -7,6 +7,8 @@ import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import kotlinx.coroutines.flow.first
 import java.util.Locale
+import kotlin.math.abs
+import kotlin.math.min
 
 sealed interface ScheduleConflictResult {
     data object Valid : ScheduleConflictResult
@@ -16,6 +18,7 @@ sealed interface ScheduleConflictResult {
         val destinationCity: String,
         val corridor: RoutePathType,
         val departureTimeFormatted: String,
+        val timeDifferenceMinutes: Int,
         val errorMessage: String
     ) : ScheduleConflictResult
 }
@@ -29,7 +32,8 @@ class ValidateScheduleConflictUseCase(
         direction: RouteDirection,
         departureHour: Int,
         departureMinute: Int,
-        excludeScheduleId: String? = null
+        excludeScheduleId: String? = null,
+        minHeadwayBufferMinutes: Int = 30
     ): ScheduleConflictResult {
         val targetOriginId = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
             route.originTerminal.id
@@ -44,6 +48,7 @@ class ValidateScheduleConflictUseCase(
         }
 
         val targetCorridor = route.pathType
+        val targetTotalMinutes = departureHour * 60 + departureMinute
 
         val allSchedules = routeScheduleRepository.getAllSchedules().first()
         val allRoutes = routeRepository.getAllRoutes().associateBy { it.id }
@@ -71,32 +76,44 @@ class ValidateScheduleConflictUseCase(
             val isSameOrigin = schedOriginId == targetOriginId
             val isSameDest = schedDestId == targetDestId
             val isSameCorridor = schedCorridor == targetCorridor
-            val isSameTime = sched.departureHour == departureHour && sched.departureMinute == departureMinute
 
-            if (isSameOrigin && isSameDest && isSameCorridor && isSameTime) {
-                val originCity = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
-                    route.originTerminal.city
-                } else {
-                    route.destinationTerminal.city
+            if (isSameOrigin && isSameDest && isSameCorridor) {
+                val schedTotalMinutes = sched.departureHour * 60 + sched.departureMinute
+                val directDiff = abs(targetTotalMinutes - schedTotalMinutes)
+                val circularDiff = min(directDiff, 1440 - directDiff)
+
+                if (circularDiff < minHeadwayBufferMinutes) {
+                    val originCity = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                        route.originTerminal.city
+                    } else {
+                        route.destinationTerminal.city
+                    }
+
+                    val destCity = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                        route.destinationTerminal.city
+                    } else {
+                        route.originTerminal.city
+                    }
+
+                    val timeFormatted = String.format(Locale.US, "%02d:%02d WIB", sched.departureHour, sched.departureMinute)
+                    val corridorName = if (targetCorridor == RoutePathType.TOLL) "Tol" else "Non-Tol"
+
+                    val errorReason = if (circularDiff == 0) {
+                        "Bentrok jadwal: Sudah ada keberangkatan dari $originCity ke $destCity ($corridorName) pada pukul $timeFormatted di trayek '${schedRoute.name}'."
+                    } else {
+                        "Jeda keberangkatan terlalu dekat: Sudah ada keberangkatan dari $originCity ke $destCity ($corridorName) pada pukul $timeFormatted di trayek '${schedRoute.name}' (selisih $circularDiff menit). Minimal jeda antar armada adalah $minHeadwayBufferMinutes menit."
+                    }
+
+                    return ScheduleConflictResult.Conflict(
+                        conflictingRouteName = schedRoute.name,
+                        originCity = originCity,
+                        destinationCity = destCity,
+                        corridor = targetCorridor,
+                        departureTimeFormatted = timeFormatted,
+                        timeDifferenceMinutes = circularDiff,
+                        errorMessage = errorReason
+                    )
                 }
-
-                val destCity = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
-                    route.destinationTerminal.city
-                } else {
-                    route.originTerminal.city
-                }
-
-                val timeFormatted = String.format(Locale.US, "%02d:%02d WIB", departureHour, departureMinute)
-                val corridorName = if (targetCorridor == RoutePathType.TOLL) "Tol" else "Non-Tol"
-
-                return ScheduleConflictResult.Conflict(
-                    conflictingRouteName = schedRoute.name,
-                    originCity = originCity,
-                    destinationCity = destCity,
-                    corridor = targetCorridor,
-                    departureTimeFormatted = timeFormatted,
-                    errorMessage = "Bentrok jadwal: Sudah ada keberangkatan dari $originCity ke $destCity ($corridorName) pada pukul $timeFormatted di trayek '${schedRoute.name}'."
-                )
             }
         }
 

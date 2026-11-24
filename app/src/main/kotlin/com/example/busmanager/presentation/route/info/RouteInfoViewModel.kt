@@ -19,6 +19,8 @@ class RouteInfoViewModel(
     private val _uiState = MutableStateFlow(RouteInfoUiState())
     val uiState: StateFlow<RouteInfoUiState> = _uiState.asStateFlow()
 
+    private val expandedRouteIds = MutableStateFlow<Set<String>>(emptySet())
+
     init {
         observeRouteInfo()
     }
@@ -27,13 +29,15 @@ class RouteInfoViewModel(
         viewModelScope.launch {
             combine(
                 getRouteOperationalStatusUseCase(),
-                routePricingRepository.getAllPricingsFlow()
-            ) { operationalList, allPricings ->
+                routePricingRepository.getAllPricingsFlow(),
+                expandedRouteIds
+            ) { operationalList, allPricings, expandedIds ->
                 val items = operationalList.map { opInfo ->
                     val routePricings = allPricings.filter { it.routeId == opInfo.route.id }
                     RouteDetailItem(
                         operationalInfo = opInfo,
-                        pricings = routePricings
+                        pricings = routePricings,
+                        isPricingsExpanded = expandedIds.contains(opInfo.route.id)
                     )
                 }
 
@@ -66,16 +70,8 @@ class RouteInfoViewModel(
     }
 
     fun togglePricingsExpanded(routeId: String) {
-        _uiState.update { state ->
-            val updated = state.allRoutes.map { item ->
-                if (item.operationalInfo.route.id == routeId) {
-                    item.copy(isPricingsExpanded = !item.isPricingsExpanded)
-                } else item
-            }
-            state.copy(
-                allRoutes = updated,
-                filteredRoutes = filterItems(updated, state.selectedFilter)
-            )
+        expandedRouteIds.update { current ->
+            if (current.contains(routeId)) current - routeId else current + routeId
         }
     }
 

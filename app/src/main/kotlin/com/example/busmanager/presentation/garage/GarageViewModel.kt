@@ -242,7 +242,7 @@ class GarageViewModel(
 
     fun setQuickAssignHeadway(minutes: Int) {
         _uiState.update { state ->
-            state.copy(quickAssignState = state.quickAssignState?.copy(headwayMinutes = minutes.coerceIn(15, 180)))
+            state.copy(quickAssignState = state.quickAssignState?.copy(headwayMinutes = minutes.coerceIn(30, 240)))
         }
     }
 

@@ -184,6 +184,116 @@ class ValidateScheduleConflictUseCaseTest {
         assertTrue(result is ScheduleConflictResult.Valid)
     }
 
+    @Test
+    fun validate_under30MinutesDifference_returnsConflict() = runBlocking {
+        fakeScheduleRepository.addSchedule(
+            RouteSchedule(
+                id = "sched-existing-7",
+                routeId = routeSbyMlgToll.id,
+                departureHour = 7,
+                departureMinute = 0,
+                direction = RouteDirection.ORIGIN_TO_DESTINATION
+            )
+        )
+
+        val result = useCase(
+            route = routeSbyMlgToll,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            departureHour = 7,
+            departureMinute = 15
+        )
+        assertTrue(result is ScheduleConflictResult.Conflict)
+        val conflict = result as ScheduleConflictResult.Conflict
+        assertEquals(15, conflict.timeDifferenceMinutes)
+        assertTrue(conflict.errorMessage.contains("Jeda keberangkatan terlalu dekat"))
+    }
+
+    @Test
+    fun validate_exactly30MinutesDifference_returnsValid() = runBlocking {
+        fakeScheduleRepository.addSchedule(
+            RouteSchedule(
+                id = "sched-existing-7",
+                routeId = routeSbyMlgToll.id,
+                departureHour = 7,
+                departureMinute = 0,
+                direction = RouteDirection.ORIGIN_TO_DESTINATION
+            )
+        )
+
+        val result = useCase(
+            route = routeSbyMlgToll,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            departureHour = 7,
+            departureMinute = 30
+        )
+        assertTrue(result is ScheduleConflictResult.Valid)
+    }
+
+    @Test
+    fun validate_multipleOf10MinutesDifference_returnsValid() = runBlocking {
+        fakeScheduleRepository.addSchedule(
+            RouteSchedule(
+                id = "sched-existing-7",
+                routeId = routeSbyMlgToll.id,
+                departureHour = 7,
+                departureMinute = 0,
+                direction = RouteDirection.ORIGIN_TO_DESTINATION
+            )
+        )
+
+        val result = useCase(
+            route = routeSbyMlgToll,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            departureHour = 7,
+            departureMinute = 40
+        )
+        assertTrue(result is ScheduleConflictResult.Valid)
+    }
+
+    @Test
+    fun validate_midnightWrapAroundUnder30Minutes_returnsConflict() = runBlocking {
+        fakeScheduleRepository.addSchedule(
+            RouteSchedule(
+                id = "sched-late-night",
+                routeId = routeSbyMlgToll.id,
+                departureHour = 23,
+                departureMinute = 50,
+                direction = RouteDirection.ORIGIN_TO_DESTINATION
+            )
+        )
+
+        val result = useCase(
+            route = routeSbyMlgToll,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            departureHour = 0,
+            departureMinute = 10
+        )
+        assertTrue(result is ScheduleConflictResult.Conflict)
+        val conflict = result as ScheduleConflictResult.Conflict
+        assertEquals(20, conflict.timeDifferenceMinutes)
+    }
+
+    @Test
+    fun validate_midnightWrapAroundOver30Minutes_returnsValid() = runBlocking {
+        fakeScheduleRepository.addSchedule(
+            RouteSchedule(
+                id = "sched-late-night",
+                routeId = routeSbyMlgToll.id,
+                departureHour = 23,
+                departureMinute = 40,
+                direction = RouteDirection.ORIGIN_TO_DESTINATION
+            )
+        )
+
+        val result = useCase(
+            route = routeSbyMlgToll,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            departureHour = 0,
+            departureMinute = 20
+        )
+        assertTrue(result is ScheduleConflictResult.Valid)
+    }
+
     private class FakeRouteScheduleRepository : RouteScheduleRepository {
         private val list = mutableListOf<RouteSchedule>()
         private val flow = MutableStateFlow<List<RouteSchedule>>(emptyList())

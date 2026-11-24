@@ -49,10 +49,10 @@ fun EditScheduleDialog(
     onDismiss: () -> Unit,
     onSave: (headwayMinutes: Int, transitDwellMinutes: Int) -> Unit
 ) {
-    var headway by remember { mutableIntStateOf(initialHeadwayMinutes) }
+    var headway by remember { mutableIntStateOf(initialHeadwayMinutes.coerceAtLeast(30)) }
     var dwell by remember { mutableIntStateOf(initialTransitDwellMinutes) }
 
-    val headwayOptions = listOf(30, 45, 60, 90, 120)
+    val headwayOptions = listOf(30, 40, 50, 60, 90, 120)
     val dwellOptions = listOf(0, 5, 10, 15)
 
     Dialog(onDismissRequest = onDismiss) {
@@ -82,15 +82,49 @@ fun EditScheduleDialog(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                Text(
-                    text = "Jeda Keberangkatan (Headway):",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextDark
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Jeda Keberangkatan (Headway):",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextDark
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(IceBlue)
+                                .clickable { headway = (headway - 10).coerceAtLeast(30) }
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                        ) {
+                            Text("-10", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryBlueDark)
+                        }
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "$headway Menit",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryBlueDark
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(IceBlue)
+                                .clickable { headway = (headway + 10).coerceAtMost(240) }
+                                .padding(horizontal = 8.dp, vertical = 2.dp)
+                        ) {
+                            Text("+10", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryBlueDark)
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Waktu jeda armada di terminal sebelum berangkat kembali (PP)",
+                    text = "Waktu jeda armada di terminal sebelum berangkat kembali (PP) (Min. 30 mnt)",
                     fontSize = 10.sp,
                     color = TextMuted
                 )

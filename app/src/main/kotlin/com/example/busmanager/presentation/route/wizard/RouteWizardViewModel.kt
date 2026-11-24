@@ -376,7 +376,7 @@ class RouteWizardViewModel(
     }
 
     fun setHeadwayMinutes(minutes: Int) {
-        _uiState.update { it.copy(headwayMinutes = minutes.coerceIn(15, 180)) }
+        _uiState.update { it.copy(headwayMinutes = minutes.coerceIn(30, 240)) }
     }
 
     fun setTransitDwellMinutes(minutes: Int) {

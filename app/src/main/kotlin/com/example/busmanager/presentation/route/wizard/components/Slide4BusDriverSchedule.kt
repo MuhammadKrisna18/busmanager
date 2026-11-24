@@ -339,15 +339,49 @@ fun Slide4BusDriverSchedule(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            Text(
-                text = "Jeda Keberangkatan (Waktu Istirahat di Terminal Tujuan)",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextDark
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Jeda Keberangkatan (Headway)",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextDark
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(IceBlue)
+                            .clickable { onSetHeadwayMinutes((uiState.headwayMinutes - 10).coerceAtLeast(30)) }
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text("-10", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryBlueDark)
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "${uiState.headwayMinutes} Menit",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(IceBlue)
+                            .clickable { onSetHeadwayMinutes((uiState.headwayMinutes + 10).coerceAtMost(240)) }
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text("+10", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryBlueDark)
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Bus akan beristirahat selama waktu ini setelah tiba sebelum otomatis berangkat kembali (PP)",
+                text = "Bus beristirahat selama waktu ini sebelum otomatis berangkat kembali (PP) (Min. 30 mnt)",
                 fontSize = 11.sp,
                 color = TextMuted
             )
@@ -356,7 +390,7 @@ fun Slide4BusDriverSchedule(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                listOf(30, 45, 60, 90, 120).forEach { mins ->
+                listOf(30, 40, 50, 60, 90, 120).forEach { mins ->
                     val label = when (mins) {
                         60 -> "1 Jam"
                         120 -> "2 Jam"

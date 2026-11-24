@@ -65,3 +65,59 @@ Dokumen ini memuat perencanaan rinci perbaikan aplikasi **TransNusantara (Bus Ma
 - [x] Audit zero comments (`0` komentar di seluruh file Kotlin proyek).
 - [x] Full regression testing seluruh unit test (100% passing).
 - [x] Bump versi ke `v2.7.0` (versionCode 14), build signed release APK (`app-release.apk`), dan publikasi Git Tag Rilis `v2.7.0`.
+
+---
+
+# Roadmap Pengerjaan Season 9: Decoupled Inventory, Smart Headway Buffer, Route Pricing Fix & 2.5D Isometric Map Overhaul
+
+Dokumen ini memuat susunan pengerjaan terperinci untuk Season 9 yang dipecah menjadi **5 fase modular dan terukur**:
+
+---
+
+## 📌 Rangkuman 4 Poin Utama Season 9
+1. **Poin 1 (Jeda Keberangkatan Semi):** Selisih waktu keberangkatan armada di trayek, koridor, dan tujuan yang sama minimal 30 menit (selisih jarak waktu >= 30 menit), dan user dapat menambah kelipatan 10 menit (30, 40, 50, dst.).
+2. **Poin 2 (Decoupled Inventory):** Pembuatan trayek baru tidak mewajibkan bus dan sopir (bisa disimpan sebagai trayek standby). Pembelian bus di showroom juga mandiri (IDLE di garasi). Aktivasi operasional dilakukan saat ketiganya ditugaskan.
+3. **Poin 3 (Fix Dropdown Tarif Tiket):** Memperbaiki bug dropdown daftar tarif tiket di Info Trayek yang langsung tertutup saat simulasi berjalan akibat reset state flow.
+4. **Poin 4 & 5 (Perombakan Peta, Jalur & Visual Armada 2.5D Isometrik):** Garis jalur tol & non-tol lebih kontras, anti-overlap marker bus, rendering armada 2.5D isometrik dengan rotasi arah rute, serta indikator cincin warna status (Hijau = Jalan, Kuning/Oranye = Ampiran, Biru/Ungu = Terminal A/B).
+
+---
+
+## 📋 Pembagian Fase Pengerjaan (Season 9)
+
+### 🔹 Fase 1 [Bugfix & Domain]: Fix Dropdown Tarif Tiket & Validasi Jeda Keberangkatan Minimal 30 Menit (Kelipatan 10) [SELESAI]
+- [x] Memperbaiki `RouteInfoViewModel` agar status `isPricingsExpanded` tersimpan independen (tidak ter-reset saat ada emisi update berkala use case).
+- [x] Memperbarui `ValidateScheduleConflictUseCase` untuk memvalidasi selisih waktu keberangkatan minimal 30 menit jika asal, tujuan, dan koridor sama persis.
+- [x] Menambahkan opsi pemilihan jeda keberangkatan kelipatan 10 menit (30, 40, 50, 60, dst.) pada dialog penugasan armada.
+- [x] Menulis/memperbarui unit test business rule jadwal, verifikasi bug dropdown tarif, lalu Git Commit Fase 1.
+
+---
+
+### 🔹 Fase 2 [Alur & Inventory]: Pembuatan Trayek Standby Tanpa Wajib Bus & Sopir (Decoupled Inventory)
+- [ ] Memperbarui `RouteWizard`: membuat penugasan bus dan sopir menjadi opsional dengan opsi tombol *"Simpan Trayek Saja (Standby)"* setelah matriks tarif selesai ditentukan.
+- [ ] Memastikan trayek yang tersimpan tanpa bus berstatus Standby/Non-aktif secara aman di database Room dan muncul di daftar Info Trayek.
+- [ ] Memverifikasi alur operasional: trayek standby dapat langsung diaktifkan melalui aksi penugasan cepat dari Garasi.
+- [ ] Pengujian unit test use case pembuatan trayek mandiri, verifikasi alur UI, lalu Git Commit Fase 2.
+
+---
+
+### 🔹 Fase 3 [Visual Peta & Jalur]: Perombakan Garis Rute (Tol & Non-Tol) & Algoritma Anti-Overlap Marker
+- [ ] Memperbarui rendering garis lintasan rute di `EastJavaMapCanvas`: Jalur Tol menggunakan warna Emas/Oranye Kontras, Jalur Arteri/Non-Tol menggunakan warna Biru Elektrik/Toska.
+- [ ] Mengimplementasikan algoritma penyesuaian posisi visual (anti-overlap / dynamic offset) untuk armada-armada yang sedang berada di terminal atau segmen jalan yang sama agar tidak saling menutupi.
+- [ ] Verifikasi tampilan garis jalur dan marker di peta simulasi, lalu Git Commit Fase 3.
+
+---
+
+### 🔹 Fase 4 [Armada 2.5D & Indikator Warna]: Rendering Bus 3D Isometrik & Cincin Status Perjalanan
+- [ ] Mengimplementasikan rendering armada 2.5D Isometrik pada Canvas (atap ber-AC, bodi bus bersudut, kaca depan/samping, dan bayangan dinamis di aspal) yang berotasi otomatis mengikuti sudut lintasan (*heading angle*).
+- [ ] Menerapkan cincin indikator warna status armada secara real-time:
+  - 🟢 **Hijau Neon:** Sedang bergerak melayani rute (*In Transit*).
+  - 🟡 **Kuning / Oranye:** Sedang berhenti di terminal ampiran (*Transit Dwell*).
+  - 🔵 **Biru / Ungu:** Sedang berada di terminal utama A / B (*Peron / Layover*).
+- [ ] Verifikasi performa rendering 60 FPS, kelancaran rotasi armada, dan Git Commit Fase 4.
+
+---
+
+### 🔹 Fase 5 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi Baru & Rilis APK
+- [ ] Full regression testing seluruh unit tests business rules (memastikan 100% lulus).
+- [ ] Audit zero comments (`0` komentar di seluruh file Kotlin proyek).
+- [ ] Bump versi aplikasi, generate signed release APK, buat Git Tag rilis baru, dan push ke GitHub Releases.

@@ -16,7 +16,7 @@ class FinanceViewModel(
     private val companyRepository: CompanyRepository,
     private val getFinancialTransactionsUseCase: GetFinancialTransactionsUseCase,
     private val fleetRepository: FleetRepository,
-    private val routeRepository: RouteRepository
+    private val routeRepository: RouteRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(FinanceUiState())
@@ -44,11 +44,6 @@ class FinanceViewModel(
                 _uiState.update { it.copy(availableBuses = buses) }
             }
         }
-
-        viewModelScope.launch {
-            val routes = routeRepository.getAllRoutes()
-            _uiState.update { it.copy(availableRoutes = routes) }
-        }
     }
 
     fun setTypeFilter(filter: TransactionTypeFilter) {
@@ -59,16 +54,11 @@ class FinanceViewModel(
         _uiState.update { it.copy(selectedBusId = busId) }
     }
 
-    fun setRouteFilter(routeId: String?) {
-        _uiState.update { it.copy(selectedRouteId = routeId) }
-    }
-
     fun resetFilters() {
         _uiState.update {
             it.copy(
                 selectedTypeFilter = TransactionTypeFilter.ALL,
-                selectedBusId = null,
-                selectedRouteId = null
+                selectedBusId = null
             )
         }
     }

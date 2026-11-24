@@ -47,7 +47,7 @@ class DriverRepositoryTest {
         driverRepository.seedCandidateDriversIfEmpty()
 
         val allDrivers = getAvailableDriversUseCase().first()
-        assertEquals(6, allDrivers.size)
+        assertEquals(100, allDrivers.size)
         assertTrue(allDrivers.none { it.isHired })
     }
 
@@ -57,7 +57,7 @@ class DriverRepositoryTest {
         driverRepository.seedCandidateDriversIfEmpty()
 
         val allDrivers = getAvailableDriversUseCase().first()
-        assertEquals(6, allDrivers.size)
+        assertEquals(100, allDrivers.size)
     }
 
     @Test

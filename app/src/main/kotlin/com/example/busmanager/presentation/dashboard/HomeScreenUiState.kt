@@ -4,6 +4,7 @@ import com.example.busmanager.core.update.UpdateInfo
 import com.example.busmanager.domain.company.model.Company
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.RouteOperationalInfo
+import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.OfflineProgressionResult
 
 data class HomeScreenUiState(
@@ -11,12 +12,14 @@ data class HomeScreenUiState(
     val ownedBuses: List<Bus> = emptyList(),
     val hiredDriverCount: Int = 0,
     val isPlaying: Boolean = false,
-    val gameDay: Int = 1,
-    val gameHour: Int = 8,
+    val gameCalendar: GameCalendar = GameCalendar.initial(),
     val isLoading: Boolean = true,
     val updateInfo: UpdateInfo? = null,
     val downloadProgress: Float? = null,
     val routeOperationalList: List<RouteOperationalInfo> = emptyList(),
     val showRouteInfoModal: Boolean = false,
     val offlineProgressionResult: OfflineProgressionResult? = null
-)
+) {
+    val formattedDateTime: String
+        get() = gameCalendar.formatDateTime()
+}

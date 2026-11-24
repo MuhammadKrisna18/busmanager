@@ -111,12 +111,12 @@ Dokumen ini memuat detail perencanaan perbaikan arsitektural, logika simulasi, d
 
 ---
 
-### 🔹 Fase 5 [Medium]: Manajemen Kru, Seleksi Bersih Wizard Rute & Ekosistem Keuangan
-- Penambahan 94 kandidat sopir baru (total 100 pengemudi di bursa pelamar) (Fix Diskusi 13).
-- Seleksi bersih saat membuat trayek (Slide 4 Wizard): hilangkan bus dan sopir yang sudah bertugas / tidak bisa dipilih, sehingga hanya menampilkan pilihan yang benar-benar siap beroperasi (Fix Diskusi 15).
-- Pembersihan filter rute di Buku Kas Keuangan `FinanceScreen` (Fix Diskusi 3).
-- Pembersihan HomeScreen: hapus info reputasi dan sinkronkan jam operasional langsung dengan jam simulasi Play (Fix Diskusi 8).
-- Pengujian unit test & Git Commit Fase 5.
+### 🔹 Fase 5 [Medium]: Manajemen Kru, Seleksi Bersih Wizard Rute & Ekosistem Keuangan - [SELESAI]
+- [x] Penambahan 94 kandidat sopir baru (total 100 pengemudi di bursa pelamar) (Fix Diskusi 13).
+- [x] Seleksi bersih saat membuat trayek (Slide 4 Wizard): hilangkan bus dan sopir yang sudah bertugas / tidak bisa dipilih, sehingga hanya menampilkan pilihan yang benar-benar siap beroperasi (Fix Diskusi 15).
+- [x] Pembersihan filter rute di Buku Kas Keuangan `FinanceScreen` (Fix Diskusi 3).
+- [x] Pembersihan HomeScreen: hapus info reputasi dan sinkronkan jam operasional langsung dengan jam simulasi Play (Fix Diskusi 8).
+- [x] Pengujian 267 unit test & Git Commit Fase 5.
 
 ---
 

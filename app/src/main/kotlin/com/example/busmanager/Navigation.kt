@@ -58,7 +58,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         resetGameUseCase = appContainer.resetGameUseCase,
                         getRouteOperationalStatusUseCase = appContainer.getRouteOperationalStatusUseCase,
                         processOfflineProgressionUseCase = appContainer.processOfflineProgressionUseCase,
-                        reconcileBusOperatingStateUseCase = appContainer.reconcileBusOperatingStateUseCase
+                        reconcileBusOperatingStateUseCase = appContainer.reconcileBusOperatingStateUseCase,
+                        getSimulationTimeUseCase = appContainer.getSimulationTimeUseCase
                     )
                 }
                 HomeScreen(

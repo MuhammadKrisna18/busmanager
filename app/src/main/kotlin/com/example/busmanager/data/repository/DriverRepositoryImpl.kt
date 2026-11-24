@@ -2,6 +2,7 @@ package com.example.busmanager.data.repository
 
 import com.example.busmanager.data.local.dao.DriverDao
 import com.example.busmanager.data.local.dao.OwnedBusDao
+import com.example.busmanager.data.local.datasource.DriverDataSource
 import com.example.busmanager.data.local.entity.DriverEntity
 import com.example.busmanager.data.mapper.toDomain
 import com.example.busmanager.data.mapper.toEntity
@@ -72,15 +73,7 @@ class DriverRepositoryImpl(
     }
 
     override suspend fun seedCandidateDriversIfEmpty() {
-        val initialCandidates = listOf(
-            DriverEntity("driver-1", "Pak Bambang Purwanto", 180_000L, null, false),
-            DriverEntity("driver-2", "Pak Joko Widodo", 200_000L, null, false),
-            DriverEntity("driver-3", "Mas Agus Santoso", 150_000L, null, false),
-            DriverEntity("driver-4", "Pak Slamet Riyadi", 220_000L, null, false),
-            DriverEntity("driver-5", "Mas Budi Hartono", 160_000L, null, false),
-            DriverEntity("driver-6", "Pak Sutrisno", 190_000L, null, false)
-        )
-        for (candidate in initialCandidates) {
+        for (candidate in DriverDataSource.initialDriverCandidates) {
             val existing = driverDao.getDriverById(candidate.id)
             if (existing == null) {
                 driverDao.insertDriver(candidate)

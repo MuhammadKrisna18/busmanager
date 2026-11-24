@@ -180,10 +180,8 @@ fun HomeScreen(
         ) {
             CompanyHeader(
                 companyName = state.company?.name ?: "PO TransNusantara",
-                reputation = state.company?.reputation ?: 100,
+                dateTimeText = state.formattedDateTime,
                 balanceFormatted = state.company?.balance?.formatRupiah() ?: "Rp 1.500.000.000",
-                gameDay = state.gameDay,
-                gameHour = state.gameHour,
                 onResetClick = { showResetConfirmDialog = true }
             )
 
@@ -227,10 +225,8 @@ fun HomeScreen(
 @Composable
 private fun CompanyHeader(
     companyName: String,
-    reputation: Int,
+    dateTimeText: String,
     balanceFormatted: String,
-    gameDay: Int,
-    gameHour: Int,
     onResetClick: () -> Unit = {}
 ) {
     Card(
@@ -254,44 +250,27 @@ private fun CompanyHeader(
                         fontSize = 20.sp,
                         fontWeight = FontWeight.ExtraBold
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = "Hari ke-$gameDay • ${String.format("%02d:00 WIB", gameHour)}",
+                        text = dateTimeText,
                         color = TextMuted,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(AppDimens.radiusPill))
-                            .background(AccentBlue)
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text(
-                            text = "⭐ $reputation Reputasi",
-                            color = PrimaryBlueDark,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFFEE2E2))
-                            .clickable(onClick = onResetClick),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "🔄",
-                            fontSize = 14.sp
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFFEE2E2))
+                        .clickable(onClick = onResetClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "🔄",
+                        fontSize = 16.sp
+                    )
                 }
             }
 

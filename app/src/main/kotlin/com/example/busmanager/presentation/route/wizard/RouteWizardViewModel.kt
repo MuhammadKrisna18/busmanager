@@ -84,10 +84,10 @@ class RouteWizardViewModel(
                     }
 
                     state.copy(
-                        availableBuses = buses,
+                        availableBuses = eligibleBuses,
                         selectedBus = selectedBus,
                         selectedOrigin = busTerminalOrigin,
-                        availableDrivers = hiredDrivers,
+                        availableDrivers = eligibleDrivers,
                         selectedDriver = selectedDriver,
                         driverAssignedBusCodes = assignmentMap
                     )

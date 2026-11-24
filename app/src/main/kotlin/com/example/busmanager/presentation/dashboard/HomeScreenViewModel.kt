@@ -12,6 +12,7 @@ import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.ReconcileBusOperatingStateUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
+import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
 import com.example.busmanager.domain.simulation.usecase.ProcessOfflineProgressionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,7 +31,8 @@ class HomeScreenViewModel(
     private val resetGameUseCase: ResetGameUseCase? = null,
     private val getRouteOperationalStatusUseCase: GetRouteOperationalStatusUseCase? = null,
     private val processOfflineProgressionUseCase: ProcessOfflineProgressionUseCase? = null,
-    private val reconcileBusOperatingStateUseCase: ReconcileBusOperatingStateUseCase? = null
+    private val reconcileBusOperatingStateUseCase: ReconcileBusOperatingStateUseCase? = null,
+    private val getSimulationTimeUseCase: GetSimulationTimeUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeScreenUiState())
@@ -41,6 +43,13 @@ class HomeScreenViewModel(
     }
 
     private fun initializeData() {
+        if (getSimulationTimeUseCase != null) {
+            viewModelScope.launch {
+                getSimulationTimeUseCase.invoke().collect { cal ->
+                    _uiState.update { it.copy(gameCalendar = cal) }
+                }
+            }
+        }
         viewModelScope.launch {
             startNewGameUseCase()
             val offlineResult = processOfflineProgressionUseCase?.invoke()

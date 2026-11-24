@@ -5,7 +5,6 @@ import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.finance.model.FinancialTransaction
 import com.example.busmanager.domain.finance.model.TransactionType
 import com.example.busmanager.domain.fleet.model.Bus
-import com.example.busmanager.domain.route.model.BusRoute
 import kotlin.math.abs
 
 enum class TransactionTypeFilter(val displayName: String) {
@@ -18,10 +17,8 @@ data class FinanceUiState(
     val company: Company? = null,
     val transactions: List<FinancialTransaction> = emptyList(),
     val availableBuses: List<Bus> = emptyList(),
-    val availableRoutes: List<BusRoute> = emptyList(),
     val selectedTypeFilter: TransactionTypeFilter = TransactionTypeFilter.ALL,
     val selectedBusId: String? = null,
-    val selectedRouteId: String? = null,
     val isLoading: Boolean = false
 ) {
     val filteredTransactions: List<FinancialTransaction>
@@ -32,8 +29,7 @@ data class FinanceUiState(
                 TransactionTypeFilter.EXPENSE -> tx.type == TransactionType.EXPENSE
             }
             val matchBus = selectedBusId == null || tx.busId == selectedBusId
-            val matchRoute = selectedRouteId == null || tx.routeId == selectedRouteId
-            matchType && matchBus && matchRoute
+            matchType && matchBus
         }
 
     val totalIncome: Money

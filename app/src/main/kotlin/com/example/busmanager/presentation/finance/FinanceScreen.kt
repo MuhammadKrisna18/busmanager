@@ -95,12 +95,9 @@ fun FinanceScreen(
             FinanceFilterSection(
                 selectedType = state.selectedTypeFilter,
                 selectedBusId = state.selectedBusId,
-                selectedRouteId = state.selectedRouteId,
                 buses = state.availableBuses,
-                routes = state.availableRoutes,
                 onSelectType = { viewModel.setTypeFilter(it) },
                 onSelectBus = { viewModel.setBusFilter(it) },
-                onSelectRoute = { viewModel.setRouteFilter(it) },
                 onResetFilters = { viewModel.resetFilters() }
             )
 
@@ -301,12 +298,9 @@ private fun SummaryItem(
 private fun FinanceFilterSection(
     selectedType: TransactionTypeFilter,
     selectedBusId: String?,
-    selectedRouteId: String?,
     buses: List<com.example.busmanager.domain.fleet.model.Bus>,
-    routes: List<com.example.busmanager.domain.route.model.BusRoute>,
     onSelectType: (TransactionTypeFilter) -> Unit,
     onSelectBus: (String?) -> Unit,
-    onSelectRoute: (String?) -> Unit,
     onResetFilters: () -> Unit
 ) {
     Card(
@@ -327,7 +321,7 @@ private fun FinanceFilterSection(
                     fontWeight = FontWeight.Bold,
                     color = TextDark
                 )
-                if (selectedType != TransactionTypeFilter.ALL || selectedBusId != null || selectedRouteId != null) {
+                if (selectedType != TransactionTypeFilter.ALL || selectedBusId != null) {
                     Text(
                         text = "Reset Filter",
                         fontSize = 11.sp,
@@ -379,37 +373,6 @@ private fun FinanceFilterSection(
                             selected = selectedBusId == bus.id,
                             onClick = { onSelectBus(bus.id) },
                             label = { Text(bus.busCode, fontSize = 11.sp) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = IceBlue,
-                                selectedLabelColor = PrimaryBlueDark
-                            )
-                        )
-                    }
-                }
-            }
-
-            if (routes.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    FilterChip(
-                        selected = selectedRouteId == null,
-                        onClick = { onSelectRoute(null) },
-                        label = { Text("Semua Rute", fontSize = 11.sp) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = IceBlue,
-                            selectedLabelColor = PrimaryBlueDark
-                        )
-                    )
-                    routes.forEach { route ->
-                        FilterChip(
-                            selected = selectedRouteId == route.id,
-                            onClick = { onSelectRoute(route.id) },
-                            label = { Text(route.name, fontSize = 11.sp) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = IceBlue,
                                 selectedLabelColor = PrimaryBlueDark

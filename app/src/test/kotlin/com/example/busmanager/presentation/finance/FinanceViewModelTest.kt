@@ -85,9 +85,7 @@ class FinanceViewModelTest {
         assertTrue(state.transactions.isEmpty())
         assertEquals(TransactionTypeFilter.ALL, state.selectedTypeFilter)
         assertNull(state.selectedBusId)
-        assertNull(state.selectedRouteId)
         assertEquals(1, state.availableBuses.size)
-        assertTrue(state.availableRoutes.isNotEmpty())
     }
 
     @Test
@@ -176,7 +174,7 @@ class FinanceViewModelTest {
     }
 
     @Test
-    fun filterByBusAndRoute_filtersTransactionsCorrectly() = runTest {
+    fun filterByBus_filtersTransactionsCorrectly() = runTest {
         val tx1 = FinancialTransaction(
             id = "tx-1",
             dateText = "24/11/2026",
@@ -212,8 +210,9 @@ class FinanceViewModelTest {
         assertEquals(1, viewModel.uiState.value.filteredTransactions.size)
         assertEquals("tx-1", viewModel.uiState.value.filteredTransactions.first().id)
 
-        viewModel.setRouteFilter("route-b")
-        assertEquals(0, viewModel.uiState.value.filteredTransactions.size)
+        viewModel.setBusFilter("bus-2")
+        assertEquals(1, viewModel.uiState.value.filteredTransactions.size)
+        assertEquals("tx-2", viewModel.uiState.value.filteredTransactions.first().id)
 
         viewModel.resetFilters()
         assertEquals(2, viewModel.uiState.value.filteredTransactions.size)

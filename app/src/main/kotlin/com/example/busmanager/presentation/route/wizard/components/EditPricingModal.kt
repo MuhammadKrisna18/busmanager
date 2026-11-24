@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
@@ -52,7 +53,7 @@ fun EditPricingModal(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Atur Tarif Tiket",
+                text = "Atur Tarif Tiket Pulang-Pergi",
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
@@ -60,11 +61,33 @@ fun EditPricingModal(
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "${pricing.originCity} ⇄ ${pricing.destinationCity}",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(IceBlue)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "PP",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = PrimaryBlue
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(3.dp))
                 Text(
-                    text = "${pricing.originCity} ➔ ${pricing.destinationCity}",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = PrimaryBlueDark
+                    text = "Tarif ini otomatis berlaku sama untuk arah sebaliknya",
+                    fontSize = 11.sp,
+                    color = TextMuted
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -74,7 +97,7 @@ fun EditPricingModal(
                         val digits = input.filter { it.isDigit() }
                         priceText = digits
                     },
-                    label = { Text("Harga Tiket (Rp)") },
+                    label = { Text("Harga Tiket PP (Rp)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()

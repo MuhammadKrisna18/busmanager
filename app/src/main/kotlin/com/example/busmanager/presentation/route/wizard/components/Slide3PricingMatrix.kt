@@ -49,9 +49,20 @@ fun Slide3PricingMatrix(
     onDismissEditPricing: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val forwardPricings = uiState.pricings.filter { pricing ->
-        pricing.originTerminalId == uiState.selectedOrigin?.id ||
-                uiState.builtRoute?.transitTerminals?.any { it.id == pricing.originTerminalId } == true
+    val stops = uiState.builtRoute?.let { route ->
+        listOf(route.originTerminal) + route.transitTerminals + listOf(route.destinationTerminal)
+    } ?: emptyList()
+
+    val stopIndexMap = stops.mapIndexed { index, terminal -> terminal.id to index }.toMap()
+
+    val roundTripPricings = uiState.pricings.filter { pricing ->
+        val fromIndex = stopIndexMap[pricing.originTerminalId]
+        val toIndex = stopIndexMap[pricing.destinationTerminalId]
+        if (fromIndex != null && toIndex != null) {
+            fromIndex < toIndex
+        } else {
+            pricing.originTerminalId == uiState.selectedOrigin?.id
+        }
     }.distinctBy { Pair(it.originTerminalId, it.destinationTerminalId) }
 
     LazyColumn(
@@ -102,18 +113,19 @@ fun Slide3PricingMatrix(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Penyesuaian tarif berlaku otomatis untuk perjalanan pulang-pergi",
+                text = "Penyesuaian tarif berlaku otomatis untuk perjalanan pulang-pergi (PP)",
                 fontSize = 12.sp,
                 color = TextMuted
             )
             Spacer(modifier = Modifier.height(10.dp))
         }
 
-        items(forwardPricings) { pricing ->
+        items(roundTripPricings) { pricing ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
+                    .padding(vertical = 4.dp)
+                    .clickable { onStartEditPricing(pricing) },
                 shape = RoundedCornerShape(10.dp),
                 colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
                 border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CardBorder))
@@ -128,14 +140,28 @@ fun Slide3PricingMatrix(
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "${pricing.originCity} ➔ ${pricing.destinationCity}",
+                                text = "${pricing.originCity} ⇄ ${pricing.destinationCity}",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = TextDark
                             )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(IceBlue)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "PP",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = PrimaryBlue
+                                )
+                            }
                         }
                         Text(
-                            text = "Tarif per kursi penumpang",
+                            text = "Tarif Pulang-Pergi (2 Arah)",
                             fontSize = 11.sp,
                             color = TextLight
                         )

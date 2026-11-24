@@ -250,9 +250,9 @@ class RouteWizardViewModel(
 
         _uiState.update { state ->
             val updatedList = state.pricings.map { item ->
-                if (item.id == pricing.id) {
-                    item.copy(price = updatedPrice)
-                } else if (item.originTerminalId == pricing.destinationTerminalId && item.destinationTerminalId == pricing.originTerminalId) {
+                val isForward = (item.originTerminalId == pricing.originTerminalId && item.destinationTerminalId == pricing.destinationTerminalId) || item.id == pricing.id
+                val isReverse = (item.originTerminalId == pricing.destinationTerminalId && item.destinationTerminalId == pricing.originTerminalId)
+                if (isForward || isReverse) {
                     item.copy(price = updatedPrice)
                 } else {
                     item

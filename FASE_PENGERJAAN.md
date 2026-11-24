@@ -29,12 +29,12 @@ Dokumen ini memuat daftar rencana tahapan perbaikan, penyederhanaan informasi, d
 
 ---
 
-### 🟡 Fase 2 [Easy-Medium]: Penyatuan Input Tarif Tiket PP (1 Kolom Harga A-B & B-A) di Wizard Trayek
+### ✅ Fase 2 [Easy-Medium]: Penyatuan Input Tarif Tiket PP (1 Kolom Harga A-B & B-A) di Wizard Trayek - SELESAI
 - **Tujuan**: Menyederhanakan penentuan harga tiket di Langkah 3 Wizard Matriks Tarif agar rute bolak-balik tidak membutuhkan input tarif terpisah.
 - **Deliverables**:
-  1. **Penyatuan Input Tarif Rute PP**: Saat membuat trayek bolak-balik (Round-Trip), matriks tarif menyajikan 1 baris input harga untuk pasangan pergi-pulang (misal `Surabaya ⇄ Jember: Rp [Input]`).
-  2. **Sinkronisasi Dua Arah**: Nilai harga tiket yang diisi pemain otomatis disimpan dan berlaku identik untuk rute pergi (A ➔ B) dan rute pulang (B ➔ A).
-  3. **Pengujian & Git Commit Fase 2**.
+  1. **Penyatuan Input Tarif Rute PP**: Matriks tarif menyajikan 1 baris input harga untuk pasangan pergi-pulang (`Kota A ⇄ Kota B [PP]`), mengeliminasi baris duplikat arah sebaliknya. (Selesai)
+  2. **Sinkronisasi Dua Arah**: Nilai harga tiket yang diatur otomatis disimpan dan berlaku identik untuk rute pergi (A ➔ B) dan rute pulang (B ➔ A) secara konsisten di UI dan database. (Selesai)
+  3. **Pengujian & Git Commit Fase 2**. (Selesai)
 
 ---
 

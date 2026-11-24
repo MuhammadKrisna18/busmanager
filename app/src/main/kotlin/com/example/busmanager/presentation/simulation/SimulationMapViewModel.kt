@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
+import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
@@ -104,5 +105,27 @@ class SimulationMapViewModel(
 
     fun clearSelectedTerminal() {
         _uiState.update { it.copy(selectedTerminal = null, selectedRoute = null) }
+    }
+
+    fun openBusesBottomSheet() {
+        _uiState.update { it.copy(activeBottomSheet = SimulationBottomSheetType.BUSES) }
+    }
+
+    fun openRoutesBottomSheet() {
+        _uiState.update { it.copy(activeBottomSheet = SimulationBottomSheetType.ROUTES) }
+    }
+
+    fun dismissBottomSheet() {
+        _uiState.update { it.copy(activeBottomSheet = SimulationBottomSheetType.NONE) }
+    }
+
+    fun selectRoute(route: BusRoute) {
+        _uiState.update { current ->
+            current.copy(
+                selectedRoute = route,
+                selectedTerminal = route.originTerminal,
+                activeBottomSheet = SimulationBottomSheetType.NONE
+            )
+        }
     }
 }

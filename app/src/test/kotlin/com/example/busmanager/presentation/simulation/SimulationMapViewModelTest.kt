@@ -102,6 +102,7 @@ class SimulationMapViewModelTest {
         assertEquals("Selasa, 24 November 2026", state.formattedDate)
         assertEquals("08:00 WIB", state.formattedTime)
         assertFalse(state.hasActiveFleet)
+        assertEquals(SimulationBottomSheetType.NONE, state.activeBottomSheet)
     }
 
     @Test
@@ -140,6 +141,35 @@ class SimulationMapViewModelTest {
         viewModel.clearSelectedTerminal()
         assertNull(viewModel.uiState.value.selectedTerminal)
         assertNull(viewModel.uiState.value.selectedRoute)
+    }
+
+    @Test
+    fun bottomSheets_openAndDismissCorrectly() = runTest {
+        assertEquals(SimulationBottomSheetType.NONE, viewModel.uiState.value.activeBottomSheet)
+
+        viewModel.openBusesBottomSheet()
+        assertEquals(SimulationBottomSheetType.BUSES, viewModel.uiState.value.activeBottomSheet)
+
+        viewModel.openRoutesBottomSheet()
+        assertEquals(SimulationBottomSheetType.ROUTES, viewModel.uiState.value.activeBottomSheet)
+
+        viewModel.dismissBottomSheet()
+        assertEquals(SimulationBottomSheetType.NONE, viewModel.uiState.value.activeBottomSheet)
+    }
+
+    @Test
+    fun selectRoute_setsRouteAndOriginAndClosesSheet() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val route = viewModel.uiState.value.routes.first()
+        viewModel.openRoutesBottomSheet()
+        assertEquals(SimulationBottomSheetType.ROUTES, viewModel.uiState.value.activeBottomSheet)
+
+        viewModel.selectRoute(route)
+
+        assertEquals(route.id, viewModel.uiState.value.selectedRoute?.id)
+        assertEquals(route.originTerminal.id, viewModel.uiState.value.selectedTerminal?.id)
+        assertEquals(SimulationBottomSheetType.NONE, viewModel.uiState.value.activeBottomSheet)
     }
 
     @Test

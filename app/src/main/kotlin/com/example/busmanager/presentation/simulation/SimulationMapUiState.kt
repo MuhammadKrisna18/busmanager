@@ -6,6 +6,12 @@ import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.simulation.model.GameCalendar
 
+enum class SimulationBottomSheetType {
+    NONE,
+    BUSES,
+    ROUTES
+}
+
 data class SimulationMapUiState(
     val currentTime: GameCalendar = GameCalendar.initial(),
     val isPlaying: Boolean = false,
@@ -19,6 +25,7 @@ data class SimulationMapUiState(
     val routes: List<BusRoute> = emptyList(),
     val selectedTerminal: Terminal? = null,
     val selectedRoute: BusRoute? = null,
+    val activeBottomSheet: SimulationBottomSheetType = SimulationBottomSheetType.NONE,
     val isLoading: Boolean = false
 ) {
     val formattedDateTime: String

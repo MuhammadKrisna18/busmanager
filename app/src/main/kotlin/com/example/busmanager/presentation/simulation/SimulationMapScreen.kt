@@ -1,7 +1,6 @@
 package com.example.busmanager.presentation.simulation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,12 +30,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
 import com.example.busmanager.presentation.route.components.RouteMapLegend
+import com.example.busmanager.presentation.simulation.components.FleetOverviewBottomSheet
+import com.example.busmanager.presentation.simulation.components.RoutesOverviewBottomSheet
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -44,11 +44,9 @@ import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
 import com.example.busmanager.ui.theme.PrimaryBlueDark
-import com.example.busmanager.ui.theme.SuccessGreen
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextMuted
-import com.example.busmanager.ui.theme.WarningAmber
 import com.example.busmanager.ui.theme.WarningAmberLight
 
 @Composable
@@ -122,11 +120,31 @@ fun SimulationMapScreen(
                 SimulationBottomBar(
                     ownedBusCount = state.ownedBusCount,
                     routeCount = state.routes.size,
-                    onNavigateToBuses = onNavigateToBuses,
-                    onNavigateToRoutes = onNavigateToRoutes
+                    onOpenBuses = { viewModel.openBusesBottomSheet() },
+                    onOpenRoutes = { viewModel.openRoutesBottomSheet() }
                 )
             }
         }
+    }
+
+    when (state.activeBottomSheet) {
+        SimulationBottomSheetType.BUSES -> {
+            FleetOverviewBottomSheet(
+                buses = state.ownedBuses,
+                onDismiss = { viewModel.dismissBottomSheet() },
+                onNavigateToShowroom = onNavigateToBuses
+            )
+        }
+        SimulationBottomSheetType.ROUTES -> {
+            RoutesOverviewBottomSheet(
+                routes = state.routes,
+                selectedRoute = state.selectedRoute,
+                onSelectRoute = { viewModel.selectRoute(it) },
+                onDismiss = { viewModel.dismissBottomSheet() },
+                onNavigateToRoutePlanner = onNavigateToRoutes
+            )
+        }
+        SimulationBottomSheetType.NONE -> {}
     }
 }
 
@@ -318,15 +336,15 @@ private fun TerminalInspectionCard(
 private fun SimulationBottomBar(
     ownedBusCount: Int,
     routeCount: Int,
-    onNavigateToBuses: () -> Unit,
-    onNavigateToRoutes: () -> Unit
+    onOpenBuses: () -> Unit,
+    onOpenRoutes: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall)
     ) {
         Button(
-            onClick = onNavigateToBuses,
+            onClick = onOpenBuses,
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(AppDimens.radiusMedium),
             colors = ButtonDefaults.buttonColors(containerColor = SurfaceWhite),
@@ -356,7 +374,7 @@ private fun SimulationBottomBar(
         }
 
         Button(
-            onClick = onNavigateToRoutes,
+            onClick = onOpenRoutes,
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(AppDimens.radiusMedium),
             colors = ButtonDefaults.buttonColors(containerColor = SurfaceWhite),

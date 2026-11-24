@@ -46,10 +46,10 @@ Dokumen ini memuat perencanaan rinci perbaikan aplikasi **TransNusantara (Bus Ma
 
 ---
 
-### 🔹 Fase 5 [Domain Logic]: Aturan Bisnis & Validasi Anti-Konflik Jadwal Keberangkatan
-- [ ] Membuat domain validator / use case pengecekan jadwal armada di trayek yang sama.
-- [ ] Menerapkan aturan: menolak jika Asal, Tujuan, Koridor, dan Jam/Menit keberangkatan sama persis dengan armada lain di trayek tersebut.
-- [ ] Menulis unit test bisnis untuk seluruh skenario validasi jadwal, lalu Git Commit Fase 5.
+### 🔹 Fase 5 [Domain Logic]: Aturan Bisnis & Validasi Anti-Konflik Jadwal Keberangkatan [SELESAI]
+- [x] Membuat domain validator / use case pengecekan jadwal armada di trayek yang sama (`ValidateScheduleConflictUseCase`).
+- [x] Menerapkan aturan: menolak jika Asal, Tujuan, Koridor, dan Jam/Menit keberangkatan sama persis dengan armada lain di trayek tersebut (wajib minimal 1 berbeda).
+- [x] Menulis unit test bisnis untuk seluruh skenario validasi jadwal (`ValidateScheduleConflictUseCaseTest`), lalu Git Commit Fase 5.
 
 ---
 

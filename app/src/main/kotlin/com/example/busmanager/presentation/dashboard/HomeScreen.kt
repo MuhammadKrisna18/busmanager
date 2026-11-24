@@ -62,6 +62,7 @@ import com.example.busmanager.ui.theme.TextMuted
 @Composable
 fun HomeScreen(
     viewModel: HomeScreenViewModel,
+    onNavigateToSimulationMap: () -> Unit = {},
     onNavigateToShowroom: () -> Unit = {},
     onNavigateToGarage: () -> Unit = {},
     onNavigateToRoutes: () -> Unit = {},
@@ -115,7 +116,7 @@ fun HomeScreen(
             PlaySimulationCard(
                 isPlaying = state.isPlaying,
                 ownedBusCount = state.ownedBuses.size,
-                onTogglePlay = { viewModel.togglePlaySimulation() }
+                onOpenSimulation = onNavigateToSimulationMap
             )
 
             Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
@@ -240,10 +241,12 @@ private fun CompanyHeader(
 private fun PlaySimulationCard(
     isPlaying: Boolean,
     ownedBusCount: Int,
-    onTogglePlay: () -> Unit
+    onOpenSimulation: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onOpenSimulation),
         shape = RoundedCornerShape(AppDimens.radiusMedium),
         colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation)
@@ -276,7 +279,7 @@ private fun PlaySimulationCard(
             }
 
             Button(
-                onClick = onTogglePlay,
+                onClick = onOpenSimulation,
                 shape = RoundedCornerShape(AppDimens.radiusPill),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isPlaying) Color(0xFFDC2626) else PrimaryBlue
@@ -284,7 +287,7 @@ private fun PlaySimulationCard(
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
             ) {
                 Text(
-                    text = if (isPlaying) "⏸️ Jeda" else "▶️ PLAY",
+                    text = "▶️ PLAY",
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp

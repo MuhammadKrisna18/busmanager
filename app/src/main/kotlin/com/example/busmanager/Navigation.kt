@@ -12,6 +12,8 @@ import com.example.busmanager.presentation.route.RoutePlannerScreen
 import com.example.busmanager.presentation.route.RoutePlannerViewModel
 import com.example.busmanager.presentation.showroom.ShowroomScreen
 import com.example.busmanager.presentation.showroom.ShowroomViewModel
+import com.example.busmanager.presentation.simulation.SimulationMapScreen
+import com.example.busmanager.presentation.simulation.SimulationMapViewModel
 import com.example.busmanager.presentation.splash.SplashScreen
 
 @Composable
@@ -42,7 +44,32 @@ fun MainNavigation(appContainer: AppContainer) {
                 }
                 HomeScreen(
                     viewModel = viewModel,
+                    onNavigateToSimulationMap = {
+                        backStack.add(SimulationMapRoute)
+                    },
                     onNavigateToShowroom = {
+                        backStack.add(ShowroomRoute)
+                    },
+                    onNavigateToRoutes = {
+                        backStack.add(RoutePlannerRoute)
+                    }
+                )
+            }
+            entry<SimulationMapRoute> {
+                val viewModel: SimulationMapViewModel = viewModel {
+                    SimulationMapViewModel(
+                        getSimulationTimeUseCase = appContainer.getSimulationTimeUseCase,
+                        toggleSimulationPlayUseCase = appContainer.toggleSimulationPlayUseCase,
+                        getCompanyUseCase = appContainer.getCompanyUseCase,
+                        getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase
+                    )
+                }
+                SimulationMapScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        backStack.removeLastOrNull()
+                    },
+                    onNavigateToBuses = {
                         backStack.add(ShowroomRoute)
                     },
                     onNavigateToRoutes = {

@@ -14,3 +14,6 @@ data object RoutePlannerRoute : NavKey
 
 @Serializable
 data object ShowroomRoute : NavKey
+
+@Serializable
+data object SimulationMapRoute : NavKey

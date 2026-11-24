@@ -10,7 +10,8 @@ data class Bus(
     val condition: BusCondition = BusCondition(),
     val isOperating: Boolean = false,
     val routeId: String? = null,
-    val driverId: String? = null
+    val driverId: String? = null,
+    val currentTerminalId: String? = null
 ) {
     init {
         if (body.requiresTronton) {

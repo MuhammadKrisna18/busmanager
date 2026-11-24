@@ -29,7 +29,7 @@ import com.example.busmanager.data.local.entity.TerminalPassengerRecordEntity
         FinancialTransactionEntity::class,
         TerminalPassengerRecordEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class BusManagerDatabase : RoomDatabase() {

@@ -88,14 +88,16 @@ Rilis v2.1.0 menghadirkan perbaikan operasional, penyederhanaan UI, dan sinkroni
 
 ---
 
-## 🛠️ Status Roadmap Pengerjaan & Penyempurnaan (Completed)
+## 📋 Roadmap Pengerjaan Season 4 (Business Rules Hardening, Data Synchronization & Offline Simulation)
 
-Seluruh tahapan roadmap Season 3 (Fase 1 s.d. Fase 5) telah **100% selesai dan terintegrasi** pada rilis **v2.1.0** (merujuk pada `FASE_PENGERJAAN.md`):
-- ✅ **Fase 1**: Pembersihan Informasi Redundan (Sasis/Bodi), Biaya Kelas Bus, Kondisi Mesin, dan Sinkronisasi Trayek Kustom.
-- ✅ **Fase 2**: Penyatuan Input Tarif Tiket Pulang-Pergi (1 Kolom Harga A-B & B-A) di Wizard Trayek.
-- ✅ **Fase 3**: Proteksi Ketersediaan Sopir (Mencegah Sopir Ganda) & Penyelarasan Skema Upah 30% per Rit Dinas.
-- ✅ **Fase 4**: Penyesuaian Kapasitas Kursi Realistis (Chassis & Bodi) + Standardisasi Format Nama Armada (`[Sasis] - [Bodi]`).
-- ✅ **Fase 5**: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.1.0, dan Publikasi Rilis.
+Rencana perbaikan operasional, validasi business rules ketat, penambahan fitur reset & jual armada, dan simulasi latar belakang berdasarkan hasil evaluasi 10 diskusi utama (merujuk pada [FASE_PENGERJAAN.md](file:///c:/Users/Muhammad%20Krisna/Documents/Project%20Portofolio/Project%20Android%20Native/busmanager/FASE_PENGERJAAN.md)):
+- ✅ **Fase 1**: Presistensi Kustomisasi Armada & Sinkronisasi Garasi (Fix Kelas & Kursi saat Beli vs Masuk Garasi).
+- ⏳ **Fase 2**: Pengetatan Validasi Bus & Driver di Wizard Trayek + Perapian Layout Teks Kartu Bus.
+- ⏳ **Fase 3**: Penyempurnaan Simulasi, Penjadwalan Standby & Pembatalan Jadwal (Bus Tuntaskan Perjalanan ke Terminal B Lalu Stay).
+- ⏳ **Fase 4**: Fitur Jual Armada di Garasi (Proteksi Armada Sedang Dinas) & Fitur Reset Akun (Mulai Baru).
+- ⏳ **Fase 5**: Penyelarasan Tanggal Laporan Terminal, BottomSheet Play Hanya Trayek Aktif & Menu Informasi Trayek di HomeScreen.
+- ⏳ **Fase 6**: Engine Simulasi Latar Belakang (Offline Progression Delta Time Catch-Up Saat Aplikasi Ditutup).
+- ⏳ **Fase 7**: QA Menyeluruh, Verifikasi Strict Zero Comments, Bump Versi ke v2.2.0, dan Rilis APK.
 
 ---
 

@@ -20,3 +20,6 @@ data object SimulationMapRoute : NavKey
 
 @Serializable
 data object DriverManagementRoute : NavKey
+
+@Serializable
+data object GarageRoute : NavKey

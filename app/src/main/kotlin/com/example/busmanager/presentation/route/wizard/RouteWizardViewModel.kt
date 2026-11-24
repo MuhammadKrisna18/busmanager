@@ -408,4 +408,23 @@ class RouteWizardViewModel(
             }
         }
     }
+
+    fun dismissSuccessDialog() {
+        resetWizard()
+    }
+
+    fun resetWizard() {
+        _uiState.update { current ->
+            RouteWizardUiState(
+                currentStep = RouteWizardStep.ORIGIN_DESTINATION,
+                allTerminals = current.allTerminals,
+                availableBuses = current.availableBuses,
+                availableDrivers = current.availableDrivers,
+                selectedBus = current.availableBuses.firstOrNull(),
+                selectedDriver = current.availableDrivers.firstOrNull(),
+                launchSuccess = false,
+                launchedRouteId = null
+            )
+        }
+    }
 }

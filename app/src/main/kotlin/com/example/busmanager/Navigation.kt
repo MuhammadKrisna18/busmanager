@@ -10,6 +10,8 @@ import com.example.busmanager.presentation.dashboard.HomeScreen
 import com.example.busmanager.presentation.dashboard.HomeScreenViewModel
 import com.example.busmanager.presentation.driver.DriverManagementScreen
 import com.example.busmanager.presentation.driver.DriverManagementViewModel
+import com.example.busmanager.presentation.garage.GarageScreen
+import com.example.busmanager.presentation.garage.GarageViewModel
 import com.example.busmanager.presentation.route.wizard.RouteWizardScreen
 import com.example.busmanager.presentation.route.wizard.RouteWizardViewModel
 import com.example.busmanager.presentation.showroom.ShowroomScreen
@@ -52,6 +54,9 @@ fun MainNavigation(appContainer: AppContainer) {
                     },
                     onNavigateToShowroom = {
                         backStack.add(ShowroomRoute)
+                    },
+                    onNavigateToGarage = {
+                        backStack.add(GarageRoute)
                     },
                     onNavigateToRoutes = {
                         backStack.add(RoutePlannerRoute)
@@ -126,12 +131,6 @@ fun MainNavigation(appContainer: AppContainer) {
                     viewModel = viewModel,
                     onNavigateBack = {
                         backStack.removeLastOrNull()
-                    },
-                    onRouteLaunched = {
-                        backStack.removeLastOrNull()
-                        if (backStack.lastOrNull() != SimulationMapRoute) {
-                            backStack.add(SimulationMapRoute)
-                        }
                     }
                 )
             }
@@ -151,6 +150,29 @@ fun MainNavigation(appContainer: AppContainer) {
                     viewModel = viewModel,
                     onNavigateBack = {
                         backStack.removeLastOrNull()
+                    }
+                )
+            }
+            entry<GarageRoute> {
+                val viewModel: GarageViewModel = viewModel {
+                    GarageViewModel(
+                        fleetRepository = appContainer.fleetRepository,
+                        driverRepository = appContainer.driverRepository,
+                        routeRepository = appContainer.routeRepository,
+                        routePricingRepository = appContainer.routePricingRepository,
+                        companyRepository = appContainer.companyRepository
+                    )
+                }
+                GarageScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        backStack.removeLastOrNull()
+                    },
+                    onNavigateToShowroom = {
+                        backStack.add(ShowroomRoute)
+                    },
+                    onNavigateToRoutes = {
+                        backStack.add(RoutePlannerRoute)
                     }
                 )
             }

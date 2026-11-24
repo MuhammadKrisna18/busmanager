@@ -9,16 +9,21 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.presentation.route.wizard.components.Slide1OriginDestination
@@ -28,13 +33,15 @@ import com.example.busmanager.presentation.route.wizard.components.Slide4BusDriv
 import com.example.busmanager.presentation.route.wizard.components.WizardBottomBar
 import com.example.busmanager.presentation.route.wizard.components.WizardStepperHeader
 import com.example.busmanager.ui.theme.BackgroundWhite
+import com.example.busmanager.ui.theme.PrimaryBlue
+import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.WarningAmber
 
 @Composable
 fun RouteWizardScreen(
     viewModel: RouteWizardViewModel,
     onNavigateBack: () -> Unit,
-    onRouteLaunched: (routeId: String) -> Unit,
+    onRouteLaunched: (routeId: String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -44,12 +51,6 @@ fun RouteWizardScreen(
         val error = uiState.errorMessage
         if (error != null) {
             snackbarHostState.showSnackbar(error)
-        }
-    }
-
-    LaunchedEffect(uiState.launchSuccess) {
-        if (uiState.launchSuccess && uiState.launchedRouteId != null) {
-            onRouteLaunched(uiState.launchedRouteId!!)
         }
     }
 
@@ -142,5 +143,46 @@ fun RouteWizardScreen(
                 }
             }
         }
+    }
+
+    if (uiState.launchSuccess) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissSuccessDialog() },
+            title = {
+                Text(
+                    text = "🎉 Trayek Berhasil Diluncurkan!",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextDark
+                )
+            },
+            text = {
+                Text(
+                    text = "Armada ${uiState.selectedBus?.busCode ?: ""} kini resmi ditugaskan melayani rute ${uiState.builtRoute?.name ?: ""} dan siap berdinas mencari pemasukan.\n\nAnda dapat memantau pergerakan armada secara langsung melalui tombol Play Simulasi di Layar Utama.",
+                    fontSize = 13.sp,
+                    color = TextDark
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.dismissSuccessDialog()
+                        onNavigateBack()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                ) {
+                    Text("Kembali ke Menu")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.dismissSuccessDialog()
+                    }
+                ) {
+                    Text("Buka Trayek Lain")
+                }
+            }
+        )
     }
 }

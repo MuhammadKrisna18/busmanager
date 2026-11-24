@@ -15,10 +15,11 @@ Dokumen ini memuat perencanaan rinci perbaikan aplikasi **TransNusantara (Bus Ma
 
 ## 📋 Pembagian 7 Fase Pengerjaan Ramping (Season 8)
 
-### 🔹 Fase 1 [Kritis]: Perbaikan Logika Perjalanan Pulang-Pergi (A ➔ B ➔ A ➔ B)
-- [ ] Memperbaiki pergantian arah rute bolak-balik (`ORIGIN_TO_DESTINATION` ⇄ `DESTINATION_TO_ORIGIN`) saat jeda *headway* selesai di terminal tujuan.
-- [ ] Memastikan armada parkir di terminal yang tepat dan menyusuri polyline jalur secara terbalik tanpa glitch posisi meloncat reset.
-- [ ] Pengujian unit test logika perputaran armada, verifikasi jalan bolak-balik, dan Git Commit Fase 1.
+### 🔹 Fase 1 [Kritis]: Perbaikan Logika Perjalanan Pulang-Pergi (A ➔ B ➔ A ➔ B) [SELESAI]
+- [x] Memperbaiki pergantian arah rute bolak-balik (`ORIGIN_TO_DESTINATION` ⇄ `DESTINATION_TO_ORIGIN`) saat jeda *headway* selesai di terminal tujuan.
+- [x] Memastikan armada parkir di terminal yang tepat dan menyusuri polyline jalur secara terbalik tanpa glitch posisi meloncat reset.
+- [x] Menerapkan jeda keberangkatan (*headway*) dan waktu berhenti ampiran (*transit dwell*) secara presisi sesuai input konfigurasi pengguna.
+- [x] Pengujian unit test logika perputaran armada, verifikasi jalan bolak-balik, dan Git Commit Fase 1.
 
 ---
 

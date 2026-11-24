@@ -151,6 +151,11 @@ class SimulationMapViewModel(
                 } else {
                     trip.route.originTerminal
                 }
+                val returnDir = if (trip.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                    RouteDirection.DESTINATION_TO_ORIGIN
+                } else {
+                    RouteDirection.ORIGIN_TO_DESTINATION
+                }
 
                 val currentTime = _uiState.value.currentTime
                 val dateText = "${currentTime.dayOfWeekName()}, ${currentTime.formatDate()}"
@@ -176,46 +181,105 @@ class SimulationMapViewModel(
                 )
 
                 val bus = _uiState.value.ownedBuses.find { it.id == trip.busId }
-                if (bus != null && fleetRepository != null) {
+                if (bus != null) {
                     if (trip.cancelNextSchedule) {
+                        val updatedBus = bus.copy(
+                            isOperating = false,
+                            routeId = null,
+                            currentTerminalId = destTerminal.id
+                        )
+                        _uiState.update { current ->
+                            current.copy(
+                                ownedBuses = current.ownedBuses.map { if (it.id == bus.id) updatedBus else it }
+                            )
+                        }
+                        fleetRepository?.updateBus(updatedBus)
                         routeScheduleRepository?.getSchedulesListForRoute(trip.route.id)
                             ?.filter { it.assignedBusId == bus.id }
                             ?.forEach { routeScheduleRepository.deleteSchedule(it.id) }
-                        fleetRepository.updateBus(
-                            bus.copy(
-                                isOperating = false,
-                                routeId = null,
-                                currentTerminalId = destTerminal.id
-                            )
-                        )
                     } else {
-                        fleetRepository.updateBus(
-                            bus.copy(
-                                isOperating = false,
-                                currentTerminalId = destTerminal.id
-                            )
+                        val updatedBus = bus.copy(
+                            isOperating = false,
+                            currentTerminalId = destTerminal.id
                         )
-                        val busSchedules = routeScheduleRepository?.getSchedulesForBus(bus.id)
-                        val schedule = busSchedules?.firstOrNull { it.routeId == trip.route.id }
-                            ?: busSchedules?.firstOrNull()
-                        if (schedule != null && routeScheduleRepository != null) {
-                            val currentTotalMinutes = currentTime.day * 1440L + currentTime.hour * 60L + currentTime.minute
-                            val nextDepMinutes = currentTotalMinutes + schedule.headwayMinutes
-                            val nextDepHour = ((currentTime.hour * 60 + currentTime.minute + schedule.headwayMinutes) / 60) % 24
-                            val nextDepMin = (currentTime.minute + schedule.headwayMinutes) % 60
-                            val returnDir = if (trip.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
-                                RouteDirection.DESTINATION_TO_ORIGIN
-                            } else {
-                                RouteDirection.ORIGIN_TO_DESTINATION
-                            }
-                            routeScheduleRepository.updateSchedule(
-                                schedule.copy(
-                                    departureHour = nextDepHour,
-                                    departureMinute = nextDepMin,
-                                    direction = returnDir,
-                                    nextDepartureEpochMinutes = nextDepMinutes
-                                )
+                        _uiState.update { current ->
+                            current.copy(
+                                ownedBuses = current.ownedBuses.map { if (it.id == bus.id) updatedBus else it }
                             )
+                        }
+                        fleetRepository?.updateBus(updatedBus)
+
+                        val busSchedules = (routeScheduleRepository?.getSchedulesForBus(bus.id)
+                            ?.filter { it.routeId == trip.route.id }
+                            ?: emptyList()).ifEmpty {
+                            _uiState.value.schedules.filter { it.assignedBusId == bus.id && it.routeId == trip.route.id }
+                        }
+
+                        val currentTotalMinutes = currentTime.day * 1440L + currentTime.hour * 60L + currentTime.minute
+                        val effectiveHeadway = trip.headwayMinutes.coerceAtLeast(15)
+                        val effectiveDwell = trip.transitDwellMinutes.coerceIn(0, 15)
+                        val nextDepMinutes = currentTotalMinutes + effectiveHeadway
+                        var resolvedMinutes = nextDepMinutes
+                        var resolvedHour = (((resolvedMinutes) % 1440L) / 60L).toInt()
+                        var resolvedMin = ((resolvedMinutes) % 60L).toInt()
+
+                        if (busSchedules.isNotEmpty()) {
+                            val returnSchedule = busSchedules.find { it.direction == returnDir }
+                            val targetScheduleId = returnSchedule?.id ?: busSchedules.first().id
+                            if (routeScheduleRepository != null) {
+                                while (routeScheduleRepository.checkConflict(trip.route.id, returnDir, resolvedHour, resolvedMin, targetScheduleId)) {
+                                    resolvedMinutes += 5
+                                    resolvedHour = (((resolvedMinutes) % 1440L) / 60L).toInt()
+                                    resolvedMin = ((resolvedMinutes) % 60L).toInt()
+                                }
+                            }
+
+                            if (returnSchedule != null) {
+                                val updatedReturnSchedule = returnSchedule.copy(
+                                    departureHour = resolvedHour,
+                                    departureMinute = resolvedMin,
+                                    direction = returnDir,
+                                    headwayMinutes = effectiveHeadway,
+                                    transitDwellMinutes = effectiveDwell,
+                                    nextDepartureEpochMinutes = resolvedMinutes
+                                )
+                                routeScheduleRepository?.updateSchedule(updatedReturnSchedule)
+
+                                val otherSchedules = busSchedules.filter { it.id != returnSchedule.id }
+                                otherSchedules.forEach { other ->
+                                    val updatedOther = other.copy(
+                                        nextDepartureEpochMinutes = resolvedMinutes + trip.estimatedArrivalMinutes + effectiveHeadway
+                                    )
+                                    routeScheduleRepository?.updateSchedule(updatedOther)
+                                }
+
+                                _uiState.update { current ->
+                                    current.copy(
+                                        schedules = current.schedules.map { s ->
+                                            if (s.id == returnSchedule.id) updatedReturnSchedule else s
+                                        }
+                                    )
+                                }
+                            } else {
+                                val activeSchedule = busSchedules.first()
+                                val updatedSchedule = activeSchedule.copy(
+                                    departureHour = resolvedHour,
+                                    departureMinute = resolvedMin,
+                                    direction = returnDir,
+                                    headwayMinutes = effectiveHeadway,
+                                    transitDwellMinutes = effectiveDwell,
+                                    nextDepartureEpochMinutes = resolvedMinutes
+                                )
+                                routeScheduleRepository?.updateSchedule(updatedSchedule)
+
+                                _uiState.update { current ->
+                                    current.copy(
+                                        schedules = current.schedules.map { s ->
+                                            if (s.id == activeSchedule.id) updatedSchedule else s
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -316,10 +380,16 @@ class SimulationMapViewModel(
         val activeTrips = _uiState.value.activeTrips
         val routes = _uiState.value.routes
         val currentTotalMinutes = time.day * 1440L + time.hour * 60L + time.minute
+        val currentDayMinutes = time.hour * 60 + time.minute
+        val dispatchedBusIds = mutableSetOf<String>()
 
         for (schedule in schedules) {
             val busId = schedule.assignedBusId ?: continue
+            if (dispatchedBusIds.contains(busId)) continue
+
             val bus = buses.find { it.id == busId } ?: continue
+            if (bus.isOperating) continue
+
             val isAlreadyOnTrip = activeTrips.any { it.busId == bus.id }
             if (isAlreadyOnTrip) continue
 
@@ -328,19 +398,26 @@ class SimulationMapViewModel(
 
             val route = routes.find { it.id == schedule.routeId } ?: continue
 
-            val shouldDepart = if (schedule.nextDepartureEpochMinutes <= 0L) {
-                true
+            val expectedDepartureTerminal = if (schedule.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                route.originTerminal
             } else {
+                route.destinationTerminal
+            }
+
+            if (bus.currentTerminalId != null && bus.currentTerminalId != expectedDepartureTerminal.id) {
+                continue
+            }
+
+            val shouldDepart = if (schedule.nextDepartureEpochMinutes > 0L) {
                 currentTotalMinutes >= schedule.nextDepartureEpochMinutes
+            } else {
+                val schedDayMinutes = schedule.departureHour * 60 + schedule.departureMinute
+                currentDayMinutes >= schedDayMinutes
             }
 
             if (shouldDepart) {
-                val direction = if (bus.currentTerminalId == route.destinationTerminal.id) {
-                    RouteDirection.DESTINATION_TO_ORIGIN
-                } else {
-                    RouteDirection.ORIGIN_TO_DESTINATION
-                }
-                executeDispatchAndRevenue(bus, route, direction, time)
+                dispatchedBusIds.add(bus.id)
+                executeDispatchAndRevenue(bus, route, schedule.direction, time)
             }
         }
     }
@@ -351,7 +428,11 @@ class SimulationMapViewModel(
         direction: RouteDirection,
         currentTime: GameCalendar
     ) {
-        val schedule = _uiState.value.schedules.find { it.assignedBusId == bus.id && it.routeId == route.id }
+        val schedule = _uiState.value.schedules.find {
+            it.assignedBusId == bus.id && it.routeId == route.id && it.direction == direction
+        } ?: _uiState.value.schedules.find {
+            it.assignedBusId == bus.id && it.routeId == route.id
+        }
         val headway = schedule?.headwayMinutes ?: 60
         val dwell = schedule?.transitDwellMinutes ?: 10
         val trip = dispatchBusUseCase(
@@ -363,8 +444,21 @@ class SimulationMapViewModel(
             transitDwellMinutes = dwell
         )
 
+        val depTerminal = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+            route.originTerminal
+        } else {
+            route.destinationTerminal
+        }
+
+        val updatedBus = bus.copy(isOperating = true, currentTerminalId = depTerminal.id)
+        _uiState.update { current ->
+            current.copy(
+                ownedBuses = current.ownedBuses.map { if (it.id == bus.id) updatedBus else it }
+            )
+        }
+
         viewModelScope.launch {
-            fleetRepository?.updateBus(bus.copy(isOperating = true))
+            fleetRepository?.updateBus(updatedBus)
             val pricings = routePricingRepository?.getPricingsListForRoute(route.id) ?: emptyList()
             val avgTicketPrice = if (pricings.isNotEmpty()) {
                 pricings.map { it.price.amount }.average().toLong().coerceAtLeast(50_000L)
@@ -597,7 +691,19 @@ class SimulationMapViewModel(
                     }
                 }
             }
-            _uiState.update { it.copy(editingScheduleTarget = null) }
+            _uiState.update { current ->
+                current.copy(
+                    editingScheduleTarget = null,
+                    schedules = current.schedules.map { sched ->
+                        if (sched.assignedBusId == busId || (sched.routeId == target.route.id && sched.assignedBusId == null)) {
+                            sched.copy(
+                                headwayMinutes = headwayMinutes,
+                                transitDwellMinutes = transitDwellMinutes
+                            )
+                        } else sched
+                    }
+                )
+            }
         }
     }
 }

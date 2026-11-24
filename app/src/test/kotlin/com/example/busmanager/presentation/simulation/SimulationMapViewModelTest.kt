@@ -732,6 +732,161 @@ class SimulationMapViewModelTest {
         assertEquals(Money.rupiah(75_000L), state.routePricings["route-1"]?.first()?.price)
     }
 
+    @Test
+    fun roundTrip_continuousAlternationAndHeadwayEnforcement() = runTest(testDispatcher) {
+        val scheduleRepo = FakeRouteScheduleRepository()
+        val fleetRepo = FakeFleetRepository()
+        val bus = createDummyBus("BUS-PP-01").copy(
+            id = "bus-pp-01",
+            routeId = "route_sby_mlg_toll",
+            currentTerminalId = "term_purabaya"
+        )
+        fleetRepo.emitBuses(listOf(bus))
+
+        val schedule = RouteSchedule(
+            id = "sched-pp-01",
+            routeId = "route_sby_mlg_toll",
+            departureHour = 8,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            assignedBusId = bus.id,
+            headwayMinutes = 60,
+            transitDwellMinutes = 10
+        )
+        scheduleRepo.addSchedule(schedule)
+
+        val vm = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(simulationTripRepo),
+            routeScheduleRepository = scheduleRepo,
+            fleetRepository = fleetRepo
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        simulationTimeRepo.play()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        var trips = simulationTripRepo.activeTrips.value
+        assertEquals(1, trips.size)
+        val trip1 = trips.first()
+        assertEquals(bus.id, trip1.busId)
+        assertEquals(RouteDirection.ORIGIN_TO_DESTINATION, trip1.direction)
+        assertEquals(60, trip1.headwayMinutes)
+        assertEquals(10, trip1.transitDwellMinutes)
+
+        simulationTimeRepo.advanceMinutes(trip1.estimatedArrivalMinutes)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        trips = simulationTripRepo.activeTrips.value
+        assertEquals(0, trips.size)
+
+        val updatedSchedulesAfterTrip1 = scheduleRepo.getSchedulesForBus(bus.id)
+        assertEquals(1, updatedSchedulesAfterTrip1.size)
+        val nextSched = updatedSchedulesAfterTrip1.first()
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, nextSched.direction)
+        assertEquals(60, nextSched.headwayMinutes)
+        assertEquals(10, nextSched.transitDwellMinutes)
+        assertTrue(nextSched.nextDepartureEpochMinutes > 0L)
+
+        val busAfterTrip1 = fleetRepo.getBusById(bus.id)
+        assertNotNull(busAfterTrip1)
+        assertEquals("term_arjosari", busAfterTrip1?.currentTerminalId)
+        assertFalse(busAfterTrip1?.isOperating ?: true)
+
+        simulationTimeRepo.advanceMinutes(30)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, simulationTripRepo.activeTrips.value.size)
+
+        val remainingMinutesToHeadway = (nextSched.nextDepartureEpochMinutes - (simulationTimeRepo.currentTime.value.day * 1440L + simulationTimeRepo.currentTime.value.hour * 60L + simulationTimeRepo.currentTime.value.minute)).toInt()
+        simulationTimeRepo.advanceMinutes(remainingMinutesToHeadway.coerceAtLeast(1))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        trips = simulationTripRepo.activeTrips.value
+        assertEquals(1, trips.size)
+        val trip2 = trips.first()
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, trip2.direction)
+        assertEquals(60, trip2.headwayMinutes)
+        assertEquals(10, trip2.transitDwellMinutes)
+
+        simulationTimeRepo.advanceMinutes(trip2.estimatedArrivalMinutes)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, simulationTripRepo.activeTrips.value.size)
+
+        val busAfterTrip2 = fleetRepo.getBusById(bus.id)
+        assertNotNull(busAfterTrip2)
+        assertEquals("term_purabaya", busAfterTrip2?.currentTerminalId)
+        assertFalse(busAfterTrip2?.isOperating ?: true)
+
+        val updatedSchedulesAfterTrip2 = scheduleRepo.getSchedulesForBus(bus.id)
+        val finalSched = updatedSchedulesAfterTrip2.first()
+        assertEquals(RouteDirection.ORIGIN_TO_DESTINATION, finalSched.direction)
+        assertEquals(60, finalSched.headwayMinutes)
+        assertEquals(10, finalSched.transitDwellMinutes)
+    }
+
+    @Test
+    fun roundTrip_preservesUserConfiguredHeadwayAndTransitDwell() = runTest(testDispatcher) {
+        val scheduleRepo = FakeRouteScheduleRepository()
+        val fleetRepo = FakeFleetRepository()
+        val bus = createDummyBus("BUS-PP-CUSTOM").copy(
+            id = "bus-pp-custom",
+            routeId = "route_sby_mlg_toll",
+            currentTerminalId = "term_purabaya"
+        )
+        fleetRepo.emitBuses(listOf(bus))
+
+        val schedule = RouteSchedule(
+            id = "sched-pp-custom",
+            routeId = "route_sby_mlg_toll",
+            departureHour = 8,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            assignedBusId = bus.id,
+            headwayMinutes = 90,
+            transitDwellMinutes = 15
+        )
+        scheduleRepo.addSchedule(schedule)
+
+        val vm = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(simulationTripRepo),
+            routeScheduleRepository = scheduleRepo,
+            fleetRepository = fleetRepo
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        simulationTimeRepo.play()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val trips = simulationTripRepo.activeTrips.value
+        assertEquals(1, trips.size)
+        val trip = trips.first()
+        assertEquals(90, trip.headwayMinutes)
+        assertEquals(15, trip.transitDwellMinutes)
+
+        simulationTimeRepo.advanceMinutes(trip.estimatedArrivalMinutes)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val nextSched = scheduleRepo.getSchedulesForBus(bus.id).first()
+        assertEquals(90, nextSched.headwayMinutes)
+        assertEquals(15, nextSched.transitDwellMinutes)
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, nextSched.direction)
+    }
+
     private class FakeFinancialTransactionRepository : FinancialTransactionRepository {
         private val list = mutableListOf<FinancialTransaction>()
         private val flow = MutableStateFlow<List<FinancialTransaction>>(emptyList())
@@ -799,15 +954,36 @@ class SimulationMapViewModelTest {
         override fun getAllSchedules(): Flow<List<RouteSchedule>> = flow
         override suspend fun getSchedulesListForRoute(routeId: String): List<RouteSchedule> = schedules
         override suspend fun getScheduleById(id: String): RouteSchedule? = schedules.find { it.id == id }
+        override suspend fun getSchedulesForBus(busId: String): List<RouteSchedule> = schedules.filter { it.assignedBusId == busId }
+        override fun getSchedulesForBusFlow(busId: String): Flow<List<RouteSchedule>> = flow
         override suspend fun addSchedule(schedule: RouteSchedule): Result<Unit> {
             schedules.add(schedule)
             flow.value = schedules.toList()
             return Result.success(Unit)
         }
-        override suspend fun updateSchedule(schedule: RouteSchedule): Result<Unit> = Result.success(Unit)
-        override suspend fun assignBusToSchedule(scheduleId: String, busId: String): Boolean = true
+        override suspend fun updateSchedule(schedule: RouteSchedule): Result<Unit> {
+            val index = schedules.indexOfFirst { it.id == schedule.id }
+            if (index != -1) {
+                schedules[index] = schedule
+            } else {
+                schedules.add(schedule)
+            }
+            flow.value = schedules.toList()
+            return Result.success(Unit)
+        }
+        override suspend fun assignBusToSchedule(scheduleId: String, busId: String): Boolean {
+            val index = schedules.indexOfFirst { it.id == scheduleId }
+            if (index != -1) {
+                schedules[index] = schedules[index].copy(assignedBusId = busId)
+                flow.value = schedules.toList()
+            }
+            return true
+        }
         override suspend fun unassignBusFromSchedule(scheduleId: String) {}
-        override suspend fun deleteSchedule(scheduleId: String) {}
+        override suspend fun deleteSchedule(scheduleId: String) {
+            schedules.removeAll { it.id == scheduleId }
+            flow.value = schedules.toList()
+        }
         override suspend fun checkConflict(
             routeId: String,
             direction: RouteDirection,
@@ -884,14 +1060,25 @@ class SimulationMapViewModelTest {
 
         override fun getOwnedBuses(): Flow<List<Bus>> = state
 
-        override suspend fun getBusById(id: String): Bus? = null
+        override suspend fun getBusById(id: String): Bus? = state.value.find { it.id == id }
 
         override suspend fun addBus(bus: Bus) {
             state.value = state.value + bus
         }
 
-        override suspend fun updateBus(bus: Bus) {}
+        override suspend fun updateBus(bus: Bus) {
+            val list = state.value.toMutableList()
+            val index = list.indexOfFirst { it.id == bus.id }
+            if (index != -1) {
+                list[index] = bus
+            } else {
+                list.add(bus)
+            }
+            state.value = list
+        }
 
-        override suspend fun removeBus(busId: String) {}
+        override suspend fun removeBus(busId: String) {
+            state.value = state.value.filterNot { it.id == busId }
+        }
     }
 }

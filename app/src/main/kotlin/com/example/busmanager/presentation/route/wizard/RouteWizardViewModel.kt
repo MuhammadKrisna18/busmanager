@@ -500,7 +500,8 @@ class RouteWizardViewModel(
                 fleetRepository.updateBus(
                     bus.copy(
                         routeId = route.id,
-                        driverId = driver.id
+                        driverId = driver.id,
+                        currentTerminalId = bus.currentTerminalId ?: route.originTerminal.id
                     )
                 )
 

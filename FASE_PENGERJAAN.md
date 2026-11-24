@@ -117,7 +117,7 @@ Dokumen ini memuat susunan pengerjaan terperinci untuk Season 9 yang dipecah men
 
 ---
 
-### 🔹 Fase 5 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi Baru & Rilis APK
-- [ ] Full regression testing seluruh unit tests business rules (memastikan 100% lulus).
-- [ ] Audit zero comments (`0` komentar di seluruh file Kotlin proyek).
-- [ ] Bump versi aplikasi, generate signed release APK, buat Git Tag rilis baru, dan push ke GitHub Releases.
+### 🔹 Fase 5 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi Baru & Rilis APK [SELESAI]
+- [x] Full regression testing seluruh unit tests business rules (memastikan 100% lulus).
+- [x] Audit zero comments (`0` komentar di seluruh file Kotlin proyek).
+- [x] Bump versi aplikasi ke `v2.8.0` (versionCode 16), generate signed release APK, buat Git Tag rilis baru, dan push ke GitHub Releases.

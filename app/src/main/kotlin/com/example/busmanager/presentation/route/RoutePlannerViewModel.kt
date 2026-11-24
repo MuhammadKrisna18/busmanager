@@ -2,16 +2,29 @@ package com.example.busmanager.presentation.route
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.busmanager.domain.company.model.Money
+import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
+import com.example.busmanager.domain.route.model.RoutePricing
+import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.route.repository.RouteRepository
+import com.example.busmanager.domain.route.usecase.AddRouteScheduleUseCase
+import com.example.busmanager.domain.route.usecase.AssignBusToScheduleUseCase
 import com.example.busmanager.domain.route.usecase.CalculateRouteCostUseCase
+import com.example.busmanager.domain.route.usecase.DeleteRouteScheduleUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableRoutesUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
+import com.example.busmanager.domain.route.usecase.GetRoutePricingsUseCase
+import com.example.busmanager.domain.route.usecase.GetRouteSchedulesUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteTransitStopsUseCase
+import com.example.busmanager.domain.route.usecase.InitializeDefaultRoutePricingsUseCase
+import com.example.busmanager.domain.route.usecase.SaveRoutePricingUseCase
+import com.example.busmanager.domain.simulation.model.RouteDirection
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,11 +37,22 @@ class RoutePlannerViewModel(
     private val getRouteTransitStopsUseCase: GetRouteTransitStopsUseCase,
     private val calculateRouteCostUseCase: CalculateRouteCostUseCase,
     private val getOwnedFleetUseCase: GetOwnedFleetUseCase,
-    private val routeRepository: RouteRepository
+    private val routeRepository: RouteRepository,
+    private val getRoutePricingsUseCase: GetRoutePricingsUseCase? = null,
+    private val saveRoutePricingUseCase: SaveRoutePricingUseCase? = null,
+    private val initializeDefaultRoutePricingsUseCase: InitializeDefaultRoutePricingsUseCase? = null,
+    private val getRouteSchedulesUseCase: GetRouteSchedulesUseCase? = null,
+    private val addRouteScheduleUseCase: AddRouteScheduleUseCase? = null,
+    private val assignBusToScheduleUseCase: AssignBusToScheduleUseCase? = null,
+    private val deleteRouteScheduleUseCase: DeleteRouteScheduleUseCase? = null,
+    private val getHiredDriversUseCase: GetHiredDriversUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RoutePlannerUiState())
     val uiState: StateFlow<RoutePlannerUiState> = _uiState.asStateFlow()
+
+    private var pricingJob: Job? = null
+    private var scheduleJob: Job? = null
 
     init {
         initializeData()
@@ -64,6 +88,16 @@ class RoutePlannerViewModel(
                 recalculateEstimate()
             }
         }
+
+        viewModelScope.launch {
+            getHiredDriversUseCase?.invoke()?.collect { drivers ->
+                _uiState.update { it.copy(hiredDrivers = drivers) }
+            }
+        }
+    }
+
+    fun selectTab(tab: RouteDetailTab) {
+        _uiState.update { it.copy(activeTab = tab) }
     }
 
     fun selectOrigin(terminal: Terminal) {
@@ -114,6 +148,7 @@ class RoutePlannerViewModel(
             )
         }
         recalculateEstimate()
+        loadRoutePricingsAndSchedules(route)
     }
 
     fun selectBus(bus: Bus) {
@@ -131,6 +166,101 @@ class RoutePlannerViewModel(
             currentDestination == null || terminal.id == currentDestination.id -> selectDestination(terminal)
             else -> selectDestination(terminal)
         }
+    }
+
+    fun openEditPricing(pricing: RoutePricing) {
+        _uiState.update { it.copy(editingPricing = pricing) }
+    }
+
+    fun closeEditPricing() {
+        _uiState.update { it.copy(editingPricing = null) }
+    }
+
+    fun savePricing(pricingId: String, newPriceAmount: Long) {
+        viewModelScope.launch {
+            val pricing = _uiState.value.pricings.find { it.id == pricingId } ?: return@launch
+            val updated = pricing.copy(price = Money.rupiah(newPriceAmount))
+            saveRoutePricingUseCase?.invoke(updated)
+            _uiState.update {
+                it.copy(
+                    editingPricing = null,
+                    successMessage = "Tarif ${updated.originCity} - ${updated.destinationCity} berhasil diubah ke ${updated.price.formatRupiah()}"
+                )
+            }
+        }
+    }
+
+    fun openAddScheduleDialog() {
+        _uiState.update { it.copy(isAddScheduleDialogOpen = true, errorMessage = null) }
+    }
+
+    fun closeAddScheduleDialog() {
+        _uiState.update { it.copy(isAddScheduleDialogOpen = false, errorMessage = null) }
+    }
+
+    fun addSchedule(departureHour: Int, departureMinute: Int, direction: RouteDirection) {
+        val route = _uiState.value.selectedRoute ?: return
+        viewModelScope.launch {
+            val scheduleId = "sched-${route.id}-${direction.name.lowercase()}-$departureHour-$departureMinute-${System.currentTimeMillis()}"
+            val schedule = RouteSchedule(
+                id = scheduleId,
+                routeId = route.id,
+                departureHour = departureHour,
+                departureMinute = departureMinute,
+                direction = direction
+            )
+            val result = addRouteScheduleUseCase?.invoke(schedule) ?: Result.success(Unit)
+            if (result.isSuccess) {
+                _uiState.update {
+                    it.copy(
+                        isAddScheduleDialogOpen = false,
+                        errorMessage = null,
+                        successMessage = "Jadwal keberangkatan ${schedule.formattedTime} berhasil ditambahkan!"
+                    )
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        errorMessage = result.exceptionOrNull()?.message ?: "Gagal menambahkan jadwal"
+                    )
+                }
+            }
+        }
+    }
+
+    fun deleteSchedule(scheduleId: String) {
+        viewModelScope.launch {
+            deleteRouteScheduleUseCase?.invoke(scheduleId)
+            _uiState.update { it.copy(successMessage = "Jadwal keberangkatan berhasil dihapus") }
+        }
+    }
+
+    fun openAssignBusDialog(schedule: RouteSchedule) {
+        _uiState.update { it.copy(selectedScheduleForBusAssignment = schedule) }
+    }
+
+    fun closeAssignBusDialog() {
+        _uiState.update { it.copy(selectedScheduleForBusAssignment = null) }
+    }
+
+    fun assignBusToSchedule(scheduleId: String, busId: String) {
+        viewModelScope.launch {
+            val success = assignBusToScheduleUseCase?.invoke(scheduleId, busId) ?: false
+            if (success) {
+                _uiState.update {
+                    it.copy(
+                        selectedScheduleForBusAssignment = null,
+                        successMessage = "Armada berhasil ditugaskan ke jadwal!"
+                    )
+                }
+            } else {
+                _uiState.update { it.copy(errorMessage = "Gagal menugaskan armada ke jadwal") }
+            }
+        }
+    }
+
+    fun clearMessages() {
+        _uiState.update { it.copy(errorMessage = null, successMessage = null) }
     }
 
     private fun loadRoutes() {
@@ -156,6 +286,31 @@ class RoutePlannerViewModel(
         }
 
         recalculateEstimate()
+
+        if (selected != null) {
+            loadRoutePricingsAndSchedules(selected)
+        }
+    }
+
+    private fun loadRoutePricingsAndSchedules(route: BusRoute) {
+        pricingJob?.cancel()
+        scheduleJob?.cancel()
+
+        viewModelScope.launch {
+            initializeDefaultRoutePricingsUseCase?.invoke(route)
+        }
+
+        pricingJob = viewModelScope.launch {
+            getRoutePricingsUseCase?.invoke(route.id)?.collect { pricingsList ->
+                _uiState.update { it.copy(pricings = pricingsList) }
+            }
+        }
+
+        scheduleJob = viewModelScope.launch {
+            getRouteSchedulesUseCase?.invoke(route.id)?.collect { schedulesList ->
+                _uiState.update { it.copy(schedules = schedulesList) }
+            }
+        }
     }
 
     private fun recalculateEstimate() {

@@ -111,7 +111,15 @@ fun MainNavigation(appContainer: AppContainer) {
                         getRouteTransitStopsUseCase = appContainer.getRouteTransitStopsUseCase,
                         calculateRouteCostUseCase = appContainer.calculateRouteCostUseCase,
                         getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
-                        routeRepository = appContainer.routeRepository
+                        routeRepository = appContainer.routeRepository,
+                        getRoutePricingsUseCase = appContainer.getRoutePricingsUseCase,
+                        saveRoutePricingUseCase = appContainer.saveRoutePricingUseCase,
+                        initializeDefaultRoutePricingsUseCase = appContainer.initializeDefaultRoutePricingsUseCase,
+                        getRouteSchedulesUseCase = appContainer.getRouteSchedulesUseCase,
+                        addRouteScheduleUseCase = appContainer.addRouteScheduleUseCase,
+                        assignBusToScheduleUseCase = appContainer.assignBusToScheduleUseCase,
+                        deleteRouteScheduleUseCase = appContainer.deleteRouteScheduleUseCase,
+                        getHiredDriversUseCase = appContainer.getHiredDriversUseCase
                     )
                 }
                 RoutePlannerScreen(

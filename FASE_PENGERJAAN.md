@@ -91,3 +91,63 @@ Dokumen ini merangkum rencana tahapan pengerjaan untuk 6 fitur dan penyempurnaan
   3. **Pembersihan Dead Code & Verifikasi Zero Comments**.
   4. **Pengujian Penuh (Seluruh Unit Tests Passing)**.
   5. **Bump Versi ke v1.5.0, Build Signed Release APK, dan Git Tag Rilis**.
+
+---
+
+# 🚀 ROADMAP SEASON 2: Operasional Realistis & Laporan Terminal
+
+Dokumen perencanaan fitur lanjutan Season 2 mencakup personalisasi armada bertahap, simulasi pasar penumpang dinamis, pelaporan kinerja terminal harian, dan sistem kompensasi ritase sopir.
+
+---
+
+### 🟢 Fase 1 [Easy-Medium]: Pemilihan Bus Modular (Custom Bus Builder Flow)
+- **Tujuan**: Mengubah alur pembelian armada di Showroom menjadi bertahap layaknya memesan bus di dunia nyata.
+- **Deliverables**:
+  1. **Flow Wizard Perakitan 4 Langkah**:
+     - **Langkah 1 (Pilih Sasis)**: Hino, Mercedes-Benz, Scania dengan spesifikasi mesin, tenaga kuda, dan kapasitas beban.
+     - **Langkah 2 (Pilih Bodi Karoseri)**: Adiputro, Laksana, Tentrem yang kompatibel dengan sasis terpilih.
+     - **Langkah 3 (Pilih Kelas Layanan & Interior)**: Ekonomi, Bisnis AC, VIP, Eksekutif, Sleeper Suite (menentukan kapasitas kursi dan kenyamanan).
+     - **Langkah 4 (Review & Penamaan Armada)**: Menentukan plat nomor/kode armada (misal: TN-03), ringkasan harga total, dan konfirmasi transaksi potong saldo kas.
+  2. **Pengujian & Git Commit Fase 1 (Season 2)**.
+
+---
+
+### 🟡 Fase 2 [Medium]: Kedinamisan Pasar Penumpang & Naik-Turun Acak
+- **Tujuan**: Menghilangkan okupansi statis (85%) agar jumlah penumpang bervariasi secara dinamis dan realistis di setiap titik terminal.
+- **Deliverables**:
+  1. **Algoritma Permintaan Acak (*Random Demand Generator*)**:
+     - Penumpang di terminal awal tidak selalu penuh (bervariasi misal 40% - 95% tergantung kelas armada dan reputasi).
+  2. **Simulasi Naik-Turun di Kota Transit (Multi-Stop)**:
+     - Saat bus tiba di terminal transit/antara: sebagian penumpang turun (misal 15% - 40%), dan penumpang baru naik mengisi kursi yang kosong.
+     - Proteksi kapasitas mutlak: penumpang naik tidak boleh melebihi sisa kursi kosong (`passengerCount <= capacity`).
+  3. **Penurunan Total di Terminal Akhir**: Seluruh sisa penumpang turun dan tiket perjalanan selesai.
+  4. **Pengujian & Git Commit Fase 2 (Season 2)**.
+
+---
+
+### 🟠 Fase 3 [Hard]: Log & Layar Laporan Terminal per Hari + Detail per Armada
+- **Tujuan**: Memberikan visibilitas kinerja tiap terminal per tanggal untuk melihat arus penumpang naik dan turun.
+- **Deliverables**:
+  1. **Model & Tabel Database `TerminalPassengerRecord` (Room DB)**:
+     - Mencatat event terminal: tanggal game, terminal ID/nama, bus ID/kode, rute ID, jumlah naik (`boardedCount`), dan jumlah turun (`alightedCount`).
+  2. **Layar Laporan Terminal (`TerminalReportScreen`)**:
+     - Pemilihan terminal (Dropdown / chip selector kota).
+     - Filter Tanggal/Hari game.
+     - Kartu Ringkasan: Total Penumpang Naik & Total Penumpang Turun di terminal tersebut pada hari yang dipilih.
+     - **Tombol & Modal Detail per Armada**: Menampilkan daftar bus yang singgah di terminal tersebut beserta rincian jumlah penumpang naik dan turun per armada.
+  3. **Pengujian & Git Commit Fase 3 (Season 2)**.
+
+---
+
+### 🔴 Fase 4 [Hard]: Sistem Penggajian Sopir Berbasis Ritase PP (Round-Trip Revenue Deduction)
+- **Tujuan**: Mengubah skema upah harian menjadi upah ritase (per 1 Pulang-Pergi) yang langsung dipotong dari hasil tiket bus.
+- **Deliverables**:
+  1. **State Tracking Ritase Pulang-Pergi (Round-Trip State Machine)**:
+     - Melacak leg perjalanan armada: Leg 1 (A ➔ B) selesai, lalu saat Leg 2 (B ➔ A) selesai, siklus 1 PP tercapai.
+  2. **Pemotongan Otomatis dari Pendapatan Tiket**:
+     - Upah sopir langsung dipotong dari hasil penjualan tiket trip kepulangan tersebut (Net Earnings = Tiket - Upah Sopir PP).
+     - Mutasi kas keluar dicatat otomatis di Buku Kas (`FinancialTransaction`) dengan kategori `DRIVER_WAGE_PER_TRIP`.
+  3. **Proteksi & Fallback System**:
+     - Menghindari sopir tidak digaji jika armada hanya menjalankan rute satu arah (One-Way) atau menginap di terminal tujuan.
+     - Penanganan defisit jika penerimaan tiket lebih kecil dari upah ritase sopir.
+  4. **Pengujian & Git Commit Fase 4 (Season 2)**.

@@ -8,6 +8,8 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.busmanager.di.AppContainer
 import com.example.busmanager.presentation.dashboard.HomeScreen
 import com.example.busmanager.presentation.dashboard.HomeScreenViewModel
+import com.example.busmanager.presentation.driver.DriverManagementScreen
+import com.example.busmanager.presentation.driver.DriverManagementViewModel
 import com.example.busmanager.presentation.route.RoutePlannerScreen
 import com.example.busmanager.presentation.route.RoutePlannerViewModel
 import com.example.busmanager.presentation.showroom.ShowroomScreen
@@ -39,6 +41,7 @@ fun MainNavigation(appContainer: AppContainer) {
                         getCompanyUseCase = appContainer.getCompanyUseCase,
                         getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
                         startNewGameUseCase = appContainer.startNewGameUseCase,
+                        getHiredDriversUseCase = appContainer.getHiredDriversUseCase,
                         appUpdateManager = appContainer.appUpdateManager
                     )
                 }
@@ -52,6 +55,9 @@ fun MainNavigation(appContainer: AppContainer) {
                     },
                     onNavigateToRoutes = {
                         backStack.add(RoutePlannerRoute)
+                    },
+                    onNavigateToDrivers = {
+                        backStack.add(DriverManagementRoute)
                     }
                 )
             }
@@ -109,6 +115,25 @@ fun MainNavigation(appContainer: AppContainer) {
                     )
                 }
                 RoutePlannerScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        backStack.removeLastOrNull()
+                    }
+                )
+            }
+            entry<DriverManagementRoute> {
+                val viewModel: DriverManagementViewModel = viewModel {
+                    DriverManagementViewModel(
+                        getAvailableDriversUseCase = appContainer.getAvailableDriversUseCase,
+                        getHiredDriversUseCase = appContainer.getHiredDriversUseCase,
+                        hireDriverUseCase = appContainer.hireDriverUseCase,
+                        assignDriverToBusUseCase = appContainer.assignDriverToBusUseCase,
+                        getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
+                        getCompanyUseCase = appContainer.getCompanyUseCase,
+                        driverRepository = appContainer.driverRepository
+                    )
+                }
+                DriverManagementScreen(
                     viewModel = viewModel,
                     onNavigateBack = {
                         backStack.removeLastOrNull()

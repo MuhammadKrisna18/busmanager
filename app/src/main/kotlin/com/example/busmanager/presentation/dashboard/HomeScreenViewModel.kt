@@ -7,11 +7,13 @@ import com.example.busmanager.core.update.AppUpdateManager
 import com.example.busmanager.core.update.UpdateInfo
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
+import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -19,6 +21,7 @@ class HomeScreenViewModel(
     private val getCompanyUseCase: GetCompanyUseCase,
     private val getOwnedFleetUseCase: GetOwnedFleetUseCase,
     private val startNewGameUseCase: StartNewGameUseCase,
+    private val getHiredDriversUseCase: GetHiredDriversUseCase? = null,
     private val appUpdateManager: AppUpdateManager = AppUpdateManager()
 ) : ViewModel() {
 
@@ -32,14 +35,17 @@ class HomeScreenViewModel(
     private fun initializeData() {
         viewModelScope.launch {
             startNewGameUseCase()
+            val driversFlow = getHiredDriversUseCase?.invoke() ?: flowOf(emptyList())
             combine(
                 getCompanyUseCase(),
-                getOwnedFleetUseCase()
-            ) { company, buses ->
+                getOwnedFleetUseCase(),
+                driversFlow
+            ) { company, buses, drivers ->
                 _uiState.update { current ->
                     current.copy(
                         company = company,
                         ownedBuses = buses,
+                        hiredDriverCount = drivers.size,
                         isLoading = false
                     )
                 }

@@ -17,3 +17,6 @@ data object ShowroomRoute : NavKey
 
 @Serializable
 data object SimulationMapRoute : NavKey
+
+@Serializable
+data object DriverManagementRoute : NavKey

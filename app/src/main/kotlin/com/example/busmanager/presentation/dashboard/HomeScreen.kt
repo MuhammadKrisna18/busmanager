@@ -66,6 +66,7 @@ fun HomeScreen(
     onNavigateToShowroom: () -> Unit = {},
     onNavigateToGarage: () -> Unit = {},
     onNavigateToRoutes: () -> Unit = {},
+    onNavigateToDrivers: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -131,9 +132,11 @@ fun HomeScreen(
 
             MenuGrid(
                 ownedBusCount = state.ownedBuses.size,
+                hiredDriverCount = state.hiredDriverCount,
                 onNavigateToShowroom = onNavigateToShowroom,
                 onNavigateToGarage = onNavigateToGarage,
                 onNavigateToRoutes = onNavigateToRoutes,
+                onNavigateToDrivers = onNavigateToDrivers,
                 modifier = Modifier.weight(1f)
             )
 
@@ -300,9 +303,11 @@ private fun PlaySimulationCard(
 @Composable
 private fun MenuGrid(
     ownedBusCount: Int,
+    hiredDriverCount: Int,
     onNavigateToShowroom: () -> Unit,
     onNavigateToGarage: () -> Unit,
     onNavigateToRoutes: () -> Unit,
+    onNavigateToDrivers: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -349,8 +354,9 @@ private fun MenuGrid(
                 title = "Kru & Supir",
                 subtitle = "Rekrutmen & Gaji",
                 iconEmoji = "👨‍✈️",
-                badgeText = "Segera Hadir",
-                isActive = false
+                badgeText = if (hiredDriverCount > 0) "$hiredDriverCount Sopir" else "Rekrut",
+                isActive = true,
+                onClick = onNavigateToDrivers
             )
         }
 

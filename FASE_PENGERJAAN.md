@@ -61,7 +61,7 @@ Dokumen ini memuat perencanaan rinci perbaikan aplikasi **TransNusantara (Bus Ma
 
 ---
 
-### 🔹 Fase 7 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi v2.6.0 & Rilis APK
-- [ ] Audit zero comments (`0` komentar di seluruh file Kotlin).
-- [ ] Full regression testing seluruh unit test (100% passing).
-- [ ] Bump versi ke `v2.6.0` (versionCode 13), build signed release APK (`app-release.apk`), dan publikasi Git Tag Rilis `v2.6.0`.
+### 🔹 Fase 7 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi v2.7.0 & Rilis APK [SELESAI]
+- [x] Audit zero comments (`0` komentar di seluruh file Kotlin proyek).
+- [x] Full regression testing seluruh unit test (100% passing).
+- [x] Bump versi ke `v2.7.0` (versionCode 14), build signed release APK (`app-release.apk`), dan publikasi Git Tag Rilis `v2.7.0`.

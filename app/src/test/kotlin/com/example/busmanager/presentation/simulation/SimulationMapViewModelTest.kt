@@ -34,9 +34,11 @@ import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.RouteDirection
+import com.example.busmanager.domain.simulation.model.SimulationSpeed
 import com.example.busmanager.domain.simulation.usecase.DispatchBusUseCase
 import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
+import com.example.busmanager.domain.simulation.usecase.SetSimulationSpeedUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -117,6 +119,7 @@ class SimulationMapViewModelTest {
         assertEquals(8, state.currentTime.hour)
         assertEquals(0, state.currentTime.minute)
         assertFalse(state.isPlaying)
+        assertEquals(SimulationSpeed.NORMAL, state.currentSpeed)
         assertEquals("Selasa, 24 November 2026 • 08:00 WIB", state.formattedDateTime)
         assertEquals("Selasa, 24 November 2026", state.formattedDate)
         assertEquals("08:00 WIB", state.formattedTime)
@@ -124,6 +127,32 @@ class SimulationMapViewModelTest {
         assertEquals(SimulationBottomSheetType.NONE, state.activeBottomSheet)
         assertTrue(state.activeTrips.isEmpty())
         assertNull(state.selectedTrip)
+    }
+
+    @Test
+    fun setSpeed_updatesUiStateSpeed() = runTest {
+        val setSpeedUseCase = SetSimulationSpeedUseCase(simulationTimeRepo)
+        val customViewModel = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fakeFleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(simulationTripRepo),
+            setSimulationSpeedUseCase = setSpeedUseCase
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(SimulationSpeed.NORMAL, customViewModel.uiState.value.currentSpeed)
+
+        customViewModel.setSpeed(SimulationSpeed.FAST)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(SimulationSpeed.FAST, customViewModel.uiState.value.currentSpeed)
+
+        customViewModel.setSpeed(SimulationSpeed.VERY_FAST)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(SimulationSpeed.VERY_FAST, customViewModel.uiState.value.currentSpeed)
     }
 
     @Test

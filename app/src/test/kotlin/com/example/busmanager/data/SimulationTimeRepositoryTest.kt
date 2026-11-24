@@ -2,7 +2,9 @@ package com.example.busmanager.data
 
 import com.example.busmanager.data.repository.SimulationTimeRepositoryImpl
 import com.example.busmanager.domain.simulation.model.GameCalendar
+import com.example.busmanager.domain.simulation.model.SimulationSpeed
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
+import com.example.busmanager.domain.simulation.usecase.SetSimulationSpeedUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -24,6 +26,7 @@ class SimulationTimeRepositoryTest {
 
         assertEquals(initial, repository.currentTime.value)
         assertFalse(repository.isPlaying.value)
+        assertEquals(SimulationSpeed.NORMAL, repository.currentSpeed.value)
     }
 
     @Test
@@ -68,6 +71,22 @@ class SimulationTimeRepositoryTest {
     }
 
     @Test
+    fun setSpeed_updatesCurrentSpeed() {
+        val repository = SimulationTimeRepositoryImpl()
+
+        assertEquals(SimulationSpeed.NORMAL, repository.currentSpeed.value)
+
+        repository.setSpeed(SimulationSpeed.FAST)
+        assertEquals(SimulationSpeed.FAST, repository.currentSpeed.value)
+
+        repository.setSpeed(SimulationSpeed.VERY_FAST)
+        assertEquals(SimulationSpeed.VERY_FAST, repository.currentSpeed.value)
+
+        repository.setSpeed(SimulationSpeed.NORMAL)
+        assertEquals(SimulationSpeed.NORMAL, repository.currentSpeed.value)
+    }
+
+    @Test
     fun ticker_whenPlaying_advancesTimeAtIntervals() = runTest {
         val testDispatcher = StandardTestDispatcher(testScheduler)
         val testScope = TestScope(testDispatcher)
@@ -94,19 +113,52 @@ class SimulationTimeRepositoryTest {
     }
 
     @Test
+    fun ticker_speedFast_advancesTimeFaster() = runTest {
+        val testDispatcher = StandardTestDispatcher(testScheduler)
+        val testScope = TestScope(testDispatcher)
+        val initial = GameCalendar(2026, 11, 24, 8, 0)
+
+        val repository = SimulationTimeRepositoryImpl(
+            initialTime = initial,
+            scope = testScope,
+            tickIntervalMillis = 1000L,
+            minutesPerTick = 10
+        )
+
+        repository.setSpeed(SimulationSpeed.FAST)
+        repository.play()
+
+        testScope.advanceTimeBy(350L)
+        assertEquals(10, repository.currentTime.value.minute)
+
+        testScope.advanceTimeBy(350L)
+        assertEquals(20, repository.currentTime.value.minute)
+
+        testScope.advanceTimeBy(350L)
+        assertEquals(30, repository.currentTime.value.minute)
+
+        repository.pause()
+    }
+
+    @Test
     fun useCases_wireCorrectly() {
         val initial = GameCalendar(2026, 11, 24, 8, 0)
         val repository = SimulationTimeRepositoryImpl(initialTime = initial)
         val getTimeUseCase = GetSimulationTimeUseCase(repository)
         val togglePlayUseCase = ToggleSimulationPlayUseCase(repository)
+        val setSpeedUseCase = SetSimulationSpeedUseCase(repository)
 
         assertEquals(initial, getTimeUseCase().value)
         assertFalse(togglePlayUseCase.isPlaying().value)
+        assertEquals(SimulationSpeed.NORMAL, setSpeedUseCase.getSpeed().value)
 
         togglePlayUseCase()
         assertTrue(togglePlayUseCase.isPlaying().value)
 
         togglePlayUseCase()
         assertFalse(togglePlayUseCase.isPlaying().value)
+
+        setSpeedUseCase(SimulationSpeed.VERY_FAST)
+        assertEquals(SimulationSpeed.VERY_FAST, setSpeedUseCase.getSpeed().value)
     }
 }

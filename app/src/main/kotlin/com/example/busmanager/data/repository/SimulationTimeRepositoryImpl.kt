@@ -1,6 +1,7 @@
 package com.example.busmanager.data.repository
 
 import com.example.busmanager.domain.simulation.model.GameCalendar
+import com.example.busmanager.domain.simulation.model.SimulationSpeed
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +29,9 @@ class SimulationTimeRepositoryImpl(
     private val _isPlaying = MutableStateFlow(false)
     override val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
+    private val _currentSpeed = MutableStateFlow(SimulationSpeed.NORMAL)
+    override val currentSpeed: StateFlow<SimulationSpeed> = _currentSpeed.asStateFlow()
+
     private var tickerJob: Job? = null
 
     override fun play() {
@@ -46,6 +50,13 @@ class SimulationTimeRepositoryImpl(
         if (_isPlaying.value) pause() else play()
     }
 
+    override fun setSpeed(speed: SimulationSpeed) {
+        _currentSpeed.value = speed
+        if (_isPlaying.value) {
+            startTicker()
+        }
+    }
+
     override fun advanceMinutes(minutes: Int) {
         _currentTime.update { it.advanceMinutes(minutes) }
         simulationTripRepository?.advanceTripsTime(minutes)
@@ -57,9 +68,11 @@ class SimulationTimeRepositoryImpl(
 
     private fun startTicker() {
         tickerJob?.cancel()
+        val speed = _currentSpeed.value
+        val interval = (tickIntervalMillis / speed.multiplier).coerceAtLeast(50L)
         tickerJob = scope.launch {
             while (isActive && _isPlaying.value) {
-                delay(tickIntervalMillis)
+                delay(interval)
                 advanceMinutes(minutesPerTick)
             }
         }

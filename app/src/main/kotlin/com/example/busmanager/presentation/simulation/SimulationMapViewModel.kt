@@ -19,9 +19,11 @@ import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.RouteDirection
+import com.example.busmanager.domain.simulation.model.SimulationSpeed
 import com.example.busmanager.domain.simulation.usecase.DispatchBusUseCase
 import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
+import com.example.busmanager.domain.simulation.usecase.SetSimulationSpeedUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +31,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 class SimulationMapViewModel(
     private val getSimulationTimeUseCase: GetSimulationTimeUseCase,
@@ -44,14 +45,15 @@ class SimulationMapViewModel(
     private val routeScheduleRepository: RouteScheduleRepository? = null,
     private val routePricingRepository: RoutePricingRepository? = null,
     private val companyRepository: CompanyRepository? = null,
-    private val driverRepository: DriverRepository? = null
+    private val driverRepository: DriverRepository? = null,
+    private val setSimulationSpeedUseCase: SetSimulationSpeedUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SimulationMapUiState())
     val uiState: StateFlow<SimulationMapUiState> = _uiState.asStateFlow()
 
-    private val dispatchedSchedulesInCurrentHour = mutableSetOf<String>()
-    private var lastObservedHour = -1
+    private val dispatchedSchedulesInCurrentDay = mutableSetOf<String>()
+    private var lastObservedDay = -1
 
     init {
         observeSimulationEngine()
@@ -63,14 +65,17 @@ class SimulationMapViewModel(
 
     private fun observeSimulationEngine() {
         viewModelScope.launch {
+            val speedFlow = setSimulationSpeedUseCase?.getSpeed() ?: MutableStateFlow(SimulationSpeed.NORMAL)
             combine(
                 getSimulationTimeUseCase(),
-                toggleSimulationPlayUseCase.isPlaying()
-            ) { time, playing ->
+                toggleSimulationPlayUseCase.isPlaying(),
+                speedFlow
+            ) { time, playing, speed ->
                 _uiState.update { current ->
                     current.copy(
                         currentTime = time,
-                        isPlaying = playing
+                        isPlaying = playing,
+                        currentSpeed = speed
                     )
                 }
 
@@ -155,9 +160,9 @@ class SimulationMapViewModel(
     }
 
     private suspend fun handleScheduledDepartures(time: GameCalendar) {
-        if (time.hour != lastObservedHour) {
-            dispatchedSchedulesInCurrentHour.clear()
-            lastObservedHour = time.hour
+        if (time.day != lastObservedDay) {
+            dispatchedSchedulesInCurrentDay.clear()
+            lastObservedDay = time.day
         }
 
         val schedules = _uiState.value.schedules
@@ -167,8 +172,8 @@ class SimulationMapViewModel(
 
         for (schedule in schedules) {
             val busId = schedule.assignedBusId ?: continue
-            val scheduleKey = "${schedule.id}-${time.day}-${time.hour}"
-            if (dispatchedSchedulesInCurrentHour.contains(scheduleKey)) continue
+            val scheduleKey = "${schedule.id}-${time.day}"
+            if (dispatchedSchedulesInCurrentDay.contains(scheduleKey)) continue
 
             val bus = buses.find { it.id == busId } ?: continue
             val isAlreadyOnTrip = activeTrips.any { it.busId == bus.id }
@@ -177,10 +182,13 @@ class SimulationMapViewModel(
             val status = validateBusOperationUseCase?.invoke(bus)
             if (status != null && !status.canOperate) continue
 
-            val isTimeMatching = schedule.departureHour == time.hour && abs(schedule.departureMinute - time.minute) <= 15
+            val scheduleMinutes = schedule.departureHour * 60 + schedule.departureMinute
+            val currentMinutes = time.hour * 60 + time.minute
+            val isTimeMatching = currentMinutes >= scheduleMinutes && (currentMinutes - scheduleMinutes) <= 30
+
             if (isTimeMatching) {
                 val route = routes.find { it.id == schedule.routeId } ?: continue
-                dispatchedSchedulesInCurrentHour.add(scheduleKey)
+                dispatchedSchedulesInCurrentDay.add(scheduleKey)
                 executeDispatchAndRevenue(bus, route, schedule.direction, time)
             }
         }
@@ -220,6 +228,10 @@ class SimulationMapViewModel(
 
     fun togglePlay() {
         toggleSimulationPlayUseCase()
+    }
+
+    fun setSpeed(speed: SimulationSpeed) {
+        setSimulationSpeedUseCase?.invoke(speed)
     }
 
     fun onTerminalClick(terminal: Terminal) {

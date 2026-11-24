@@ -81,7 +81,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         routeScheduleRepository = appContainer.routeScheduleRepository,
                         routePricingRepository = appContainer.routePricingRepository,
                         companyRepository = appContainer.companyRepository,
-                        driverRepository = appContainer.driverRepository
+                        driverRepository = appContainer.driverRepository,
+                        setSimulationSpeedUseCase = appContainer.setSimulationSpeedUseCase
                     )
                 }
                 SimulationMapScreen(

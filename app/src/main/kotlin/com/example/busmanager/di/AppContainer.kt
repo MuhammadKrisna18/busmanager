@@ -55,6 +55,7 @@ import com.example.busmanager.domain.simulation.repository.SimulationTripReposit
 import com.example.busmanager.domain.simulation.usecase.DispatchBusUseCase
 import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
+import com.example.busmanager.domain.simulation.usecase.SetSimulationSpeedUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
 
 class AppContainer(context: Context) {
@@ -122,6 +123,7 @@ class AppContainer(context: Context) {
 
     val getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepository)
     val toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepository)
+    val setSimulationSpeedUseCase = SetSimulationSpeedUseCase(simulationTimeRepository)
     val getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepository)
     val dispatchBusUseCase = DispatchBusUseCase(simulationTripRepository)
 

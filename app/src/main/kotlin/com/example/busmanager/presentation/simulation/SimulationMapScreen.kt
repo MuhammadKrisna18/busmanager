@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.domain.simulation.model.SimulationSpeed
 import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
 import com.example.busmanager.presentation.route.components.RouteMapLegend
 import com.example.busmanager.presentation.simulation.components.BusLiveTrackingCard
@@ -75,7 +76,9 @@ fun SimulationMapScreen(
                     dateText = state.formattedDate,
                     timeText = state.formattedTime,
                     isPlaying = state.isPlaying,
+                    currentSpeed = state.currentSpeed,
                     onTogglePlay = { viewModel.togglePlay() },
+                    onSetSpeed = { viewModel.setSpeed(it) },
                     onNavigateBack = onNavigateBack
                 )
 
@@ -168,7 +171,9 @@ private fun SimulationTopBar(
     dateText: String,
     timeText: String,
     isPlaying: Boolean,
+    currentSpeed: SimulationSpeed,
     onTogglePlay: () -> Unit,
+    onSetSpeed: (SimulationSpeed) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     Card(
@@ -177,65 +182,104 @@ private fun SimulationTopBar(
         colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
         elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(AppDimens.paddingSmall),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(AppDimens.paddingSmall)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(IceBlue)
-                    .clickable(onClick = onNavigateBack),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "◀",
-                    color = PrimaryBlueDark,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(IceBlue)
+                        .clickable(onClick = onNavigateBack),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "◀",
+                        color = PrimaryBlueDark,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = dateText,
+                        color = TextDark,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = timeText,
+                        color = PrimaryBlue,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
+
+                Button(
+                    onClick = onTogglePlay,
+                    shape = RoundedCornerShape(AppDimens.radiusPill),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isPlaying) Color(0xFFDC2626) else PrimaryBlue
+                    ),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = if (isPlaying) "⏸️ Jeda" else "▶️ PLAY",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = dateText,
-                    color = TextDark,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
+                    text = "Kecepatan:",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextMuted
                 )
-                Text(
-                    text = timeText,
-                    color = PrimaryBlue,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-            }
-
-            Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
-
-            Button(
-                onClick = onTogglePlay,
-                shape = RoundedCornerShape(AppDimens.radiusPill),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isPlaying) Color(0xFFDC2626) else PrimaryBlue
-                ),
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
-            ) {
-                Text(
-                    text = if (isPlaying) "⏸️ Jeda" else "▶️ PLAY",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp
-                )
+                Spacer(modifier = Modifier.width(8.dp))
+                SimulationSpeed.entries.forEach { speed ->
+                    val isSelected = currentSpeed == speed
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (isSelected) PrimaryBlue else IceBlue)
+                            .clickable { onSetSpeed(speed) }
+                            .padding(horizontal = 14.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = speed.displayName,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSelected) Color.White else PrimaryBlueDark
+                        )
+                    }
+                }
             }
         }
     }

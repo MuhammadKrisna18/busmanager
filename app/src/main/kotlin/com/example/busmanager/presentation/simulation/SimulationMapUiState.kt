@@ -9,6 +9,7 @@ import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.GameCalendar
+import com.example.busmanager.domain.simulation.model.SimulationSpeed
 
 enum class SimulationBottomSheetType {
     NONE,
@@ -19,6 +20,7 @@ enum class SimulationBottomSheetType {
 data class SimulationMapUiState(
     val currentTime: GameCalendar = GameCalendar.initial(),
     val isPlaying: Boolean = false,
+    val currentSpeed: SimulationSpeed = SimulationSpeed.NORMAL,
     val companyName: String = "PO TransNusantara",
     val balanceFormatted: String = "Rp 0",
     val ownedBusCount: Int = 0,

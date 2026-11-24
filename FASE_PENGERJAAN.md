@@ -150,9 +150,12 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 4 [Medium]: Auto-Seeding Database Terpusat & Integritas Relasi Data
-- Auto-seeding data awal perusahaan & 6 sopir kandidat sejak pertama kali database dibuat.
-- Pengujian unit test & Git Commit Fase 4.
+### ✅ Fase 4 [Medium]: Auto-Seeding Database Terpusat & Integritas Relasi Data - SELESAI
+- Auto-seeding database terpusat sejak peluncuran aplikasi pertama kali (`StartNewGameUseCase`): menjamin perusahaan terinisialisasi modal Rp 50.000.000.000 & 100 reputasi, serta 6 sopir kandidat default langsung tersedia di database Room. (Selesai)
+- Peningkatan keamanan `seedCandidateDriversIfEmpty`: memeriksa dan memasukkan setiap kandidat pengemudi secara presisi tanpa menduplikasi data yang sudah ada. (Selesai)
+- Integritas relasi data dan pembersihan berantai (*Cascading Cleanup*): `SellBusUseCase` kini menghapus seluruh jadwal yang terikat pada armada yang dijual via `deleteSchedulesForBus` dan `deleteSchedule`, mencegah terciptanya *orphan schedule* di database. (Selesai)
+- Proteksi integritas trayek kustom: penghapusan rute kustom (`deleteRoute`) otomatis membersihkan jadwal (`deleteSchedulesByRouteSync`) dan daftar tarif (`deletePricingsByRouteSync`) terkait. (Selesai)
+- Pengujian unit test & Git Commit Fase 4. (Selesai)
 
 ---
 

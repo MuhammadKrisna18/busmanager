@@ -82,7 +82,9 @@ class AppContainer(context: Context) {
     val terminalRepository: TerminalRepository = TerminalCatalogRepositoryImpl()
     val routeRepository: RouteRepository = RouteCatalogRepositoryImpl(
         customRouteDao = database.customRouteDao(),
-        terminalRepository = terminalRepository
+        terminalRepository = terminalRepository,
+        routeScheduleDao = database.routeScheduleDao(),
+        routePricingDao = database.routePricingDao()
     )
     val simulationStateRepository: SimulationStateRepository = SimulationStateRepositoryImpl(context)
     val simulationTripRepository: SimulationTripRepository = SimulationTripRepositoryImpl()
@@ -115,7 +117,7 @@ class AppContainer(context: Context) {
         database.terminalPassengerRecordDao()
     )
 
-    val startNewGameUseCase = StartNewGameUseCase(companyRepository)
+    val startNewGameUseCase = StartNewGameUseCase(companyRepository, driverRepository)
     val resetGameUseCase = ResetGameUseCase(
         companyRepository = companyRepository,
         fleetRepository = fleetRepository,

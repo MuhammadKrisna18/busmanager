@@ -1,6 +1,8 @@
 package com.example.busmanager.data.repository
 
 import com.example.busmanager.data.local.dao.CustomRouteDao
+import com.example.busmanager.data.local.dao.RoutePricingDao
+import com.example.busmanager.data.local.dao.RouteScheduleDao
 import com.example.busmanager.data.local.datasource.RouteDataSource
 import com.example.busmanager.data.mapper.toCustomRouteEntity
 import com.example.busmanager.data.mapper.toDomain
@@ -13,7 +15,9 @@ import com.example.busmanager.domain.route.repository.TerminalRepository
 class RouteCatalogRepositoryImpl(
     private val dataSource: RouteDataSource = RouteDataSource(),
     private val customRouteDao: CustomRouteDao? = null,
-    private val terminalRepository: TerminalRepository? = null
+    private val terminalRepository: TerminalRepository? = null,
+    private val routeScheduleDao: RouteScheduleDao? = null,
+    private val routePricingDao: RoutePricingDao? = null
 ) : RouteRepository {
 
     private val segmentMap = dataSource.getAllSegments().associateBy { it.id }
@@ -83,6 +87,8 @@ class RouteCatalogRepositoryImpl(
             customRoutes.removeAll { it.id == routeId }
         }
         customRouteDao?.deleteCustomRouteById(routeId)
+        routeScheduleDao?.deleteSchedulesByRouteSync(routeId)
+        routePricingDao?.deletePricingsByRouteSync(routeId)
     }
 
     override fun deleteAllCustomRoutes() {

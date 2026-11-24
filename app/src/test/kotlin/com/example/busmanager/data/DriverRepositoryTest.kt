@@ -52,6 +52,15 @@ class DriverRepositoryTest {
     }
 
     @Test
+    fun seedCandidatesDoesNotDuplicateExistingDrivers() = runBlocking {
+        driverRepository.seedCandidateDriversIfEmpty()
+        driverRepository.seedCandidateDriversIfEmpty()
+
+        val allDrivers = getAvailableDriversUseCase().first()
+        assertEquals(6, allDrivers.size)
+    }
+
+    @Test
     fun hireDriverUpdatesHiredStatus() = runBlocking {
         driverRepository.seedCandidateDriversIfEmpty()
 

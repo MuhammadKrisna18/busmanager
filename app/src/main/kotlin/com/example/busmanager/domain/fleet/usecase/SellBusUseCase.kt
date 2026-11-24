@@ -43,6 +43,7 @@ class SellBusUseCase(
             driverRepository.unassignDriver(bus.driverId)
         }
 
+        routeScheduleRepository.deleteSchedulesForBus(bus.id)
         if (bus.routeId != null) {
             val schedules = routeScheduleRepository.getSchedulesListForRoute(bus.routeId)
             schedules.filter { it.assignedBusId == bus.id }.forEach { schedule ->

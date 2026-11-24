@@ -72,17 +72,19 @@ class DriverRepositoryImpl(
     }
 
     override suspend fun seedCandidateDriversIfEmpty() {
-        val existing = driverDao.getDriverById("driver-1")
-        if (existing == null) {
-            val initialCandidates = listOf(
-                DriverEntity("driver-1", "Pak Bambang Purwanto", 180_000L, null, false),
-                DriverEntity("driver-2", "Pak Joko Widodo", 200_000L, null, false),
-                DriverEntity("driver-3", "Mas Agus Santoso", 150_000L, null, false),
-                DriverEntity("driver-4", "Pak Slamet Riyadi", 220_000L, null, false),
-                DriverEntity("driver-5", "Mas Budi Hartono", 160_000L, null, false),
-                DriverEntity("driver-6", "Pak Sutrisno", 190_000L, null, false)
-            )
-            driverDao.insertDrivers(initialCandidates)
+        val initialCandidates = listOf(
+            DriverEntity("driver-1", "Pak Bambang Purwanto", 180_000L, null, false),
+            DriverEntity("driver-2", "Pak Joko Widodo", 200_000L, null, false),
+            DriverEntity("driver-3", "Mas Agus Santoso", 150_000L, null, false),
+            DriverEntity("driver-4", "Pak Slamet Riyadi", 220_000L, null, false),
+            DriverEntity("driver-5", "Mas Budi Hartono", 160_000L, null, false),
+            DriverEntity("driver-6", "Pak Sutrisno", 190_000L, null, false)
+        )
+        for (candidate in initialCandidates) {
+            val existing = driverDao.getDriverById(candidate.id)
+            if (existing == null) {
+                driverDao.insertDriver(candidate)
+            }
         }
     }
 

@@ -132,6 +132,7 @@ class SellBusUseCaseTest {
         assertEquals(expectedRefund, success.refundAmount)
         assertEquals(0, fakeFleetRepo.buses.size)
         assertTrue(fakeDriverRepo.unassignedDriverIds.contains("driver-1"))
+        assertEquals(listOf("bus-1"), fakeScheduleRepo.deletedBusIds)
         assertEquals(expectedRefund, fakeCompanyRepo.currentBalance)
     }
 
@@ -183,6 +184,7 @@ class SellBusUseCaseTest {
 
     private class FakeRouteScheduleRepository : RouteScheduleRepository {
         val deletedScheduleIds = mutableListOf<String>()
+        val deletedBusIds = mutableListOf<String>()
 
         override fun getSchedulesForRoute(routeId: String) = MutableStateFlow(emptyList<RouteSchedule>())
         override fun getAllSchedules() = MutableStateFlow(emptyList<RouteSchedule>())
@@ -194,6 +196,9 @@ class SellBusUseCaseTest {
         override suspend fun unassignBusFromSchedule(scheduleId: String) {}
         override suspend fun deleteSchedule(scheduleId: String) {
             deletedScheduleIds.add(scheduleId)
+        }
+        override suspend fun deleteSchedulesForBus(busId: String) {
+            deletedBusIds.add(busId)
         }
         override suspend fun checkConflict(routeId: String, direction: RouteDirection, hour: Int, minute: Int, excludeScheduleId: String?) = false
     }

@@ -4,10 +4,13 @@ import com.example.busmanager.domain.company.model.Company
 import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
+import com.example.busmanager.domain.driver.model.Driver
+import com.example.busmanager.domain.driver.repository.DriverRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -36,6 +39,27 @@ class StartNewGameUseCaseTest {
         val existing = startNewGameUseCase("PO Kedua")
 
         assertEquals("PO Pertama", existing.name)
+    }
+
+    @Test
+    fun startNewGameSeedsCandidateDriversWhenDriverRepoProvided() = runBlocking {
+        var seeded = false
+        val fakeDriverRepo = object : DriverRepository {
+            override fun getAllDrivers(): Flow<List<Driver>> = kotlinx.coroutines.flow.emptyFlow()
+            override fun getHiredDrivers(): Flow<List<Driver>> = kotlinx.coroutines.flow.emptyFlow()
+            override suspend fun getDriverById(id: String): Driver? = null
+            override suspend fun hireDriver(driverId: String): Boolean = true
+            override suspend fun assignDriverToBus(driverId: String, busId: String): Boolean = true
+            override suspend fun unassignDriver(driverId: String) {}
+            override suspend fun fireDriver(driverId: String) {}
+            override suspend fun seedCandidateDriversIfEmpty() {
+                seeded = true
+            }
+            override suspend fun resetAllDrivers() {}
+        }
+        val useCase = StartNewGameUseCase(fakeCompanyRepo, fakeDriverRepo)
+        useCase("PO Nusantara")
+        assertTrue(seeded)
     }
 
     private class FakeCompanyRepository : CompanyRepository {

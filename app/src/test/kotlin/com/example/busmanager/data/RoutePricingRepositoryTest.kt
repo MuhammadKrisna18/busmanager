@@ -175,12 +175,16 @@ class RoutePricingRepositoryTest {
             pricingFlow.value = pricingMap.values.toList()
         }
 
-        override suspend fun deletePricingsByRoute(routeId: String): Int {
+        override fun deletePricingsByRouteSync(routeId: String): Int {
             val count = pricingMap.values.count { it.routeId == routeId }
             val keysToRemove = pricingMap.filter { it.value.routeId == routeId }.keys
             keysToRemove.forEach { pricingMap.remove(it) }
             pricingFlow.value = pricingMap.values.toList()
             return count
+        }
+
+        override suspend fun deletePricingsByRoute(routeId: String): Int {
+            return deletePricingsByRouteSync(routeId)
         }
 
         override suspend fun deleteAllPricings(): Int {

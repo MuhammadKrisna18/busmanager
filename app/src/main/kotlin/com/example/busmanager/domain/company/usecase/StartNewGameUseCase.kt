@@ -3,12 +3,15 @@ package com.example.busmanager.domain.company.usecase
 import com.example.busmanager.domain.company.model.Company
 import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.company.repository.CompanyRepository
+import com.example.busmanager.domain.driver.repository.DriverRepository
 import kotlinx.coroutines.flow.first
 
 class StartNewGameUseCase(
-    private val companyRepository: CompanyRepository
+    private val companyRepository: CompanyRepository,
+    private val driverRepository: DriverRepository? = null
 ) {
     suspend operator fun invoke(companyName: String = DEFAULT_COMPANY_NAME): Company {
+        driverRepository?.seedCandidateDriversIfEmpty()
         val existing = companyRepository.getCompany().first()
         if (existing != null) {
             if (existing.balance < DEFAULT_STARTING_BALANCE) {

@@ -93,6 +93,14 @@ class RouteScheduleRepositoryImpl(
         scheduleDao.deleteScheduleById(scheduleId)
     }
 
+    override suspend fun deleteSchedulesForBus(busId: String) {
+        scheduleDao.deleteSchedulesByBusId(busId)
+    }
+
+    override suspend fun deleteSchedulesForRoute(routeId: String) {
+        scheduleDao.deleteSchedulesByRoute(routeId)
+    }
+
     override suspend fun checkConflict(
         routeId: String,
         direction: RouteDirection,

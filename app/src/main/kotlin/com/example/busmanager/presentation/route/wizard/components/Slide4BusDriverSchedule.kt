@@ -109,20 +109,51 @@ fun Slide4BusDriverSchedule(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         } else {
+            val hasEligibleBus = uiState.availableBuses.any { !it.isOperating && !it.hasRoute && !it.hasDriver }
+            if (!hasEligibleBus) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
+                    ) {
+                        Text(
+                            text = "Seluruh armada di garasi sudah memiliki penugasan trayek/sopir. Silakan beli bus baru di Showroom atau lepaskan dinas bus yang ada.",
+                            modifier = Modifier.padding(12.dp),
+                            fontSize = 12.sp,
+                            color = Color(0xFFB45309)
+                        )
+                    }
+                }
+            }
+
             items(uiState.availableBuses) { bus ->
+                val isBusEligible = !bus.isOperating && !bus.hasRoute && !bus.hasDriver
                 val isSelected = uiState.selectedBus?.id == bus.id
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .clickable { onSelectBus(bus) },
+                        .clickable(enabled = isBusEligible) { onSelectBus(bus) },
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isSelected) IceBlue else SurfaceWhite
+                        containerColor = when {
+                            !isBusEligible -> Color(0xFFF8FAFC)
+                            isSelected -> IceBlue
+                            else -> SurfaceWhite
+                        }
                     ),
                     border = CardDefaults.outlinedCardBorder().copy(
-                        brush = SolidColor(if (isSelected) PrimaryBlue else CardBorder)
+                        brush = SolidColor(
+                            when {
+                                !isBusEligible -> CardBorder
+                                isSelected -> PrimaryBlue
+                                else -> CardBorder
+                            }
+                        )
                     )
                 ) {
                     Row(
@@ -132,22 +163,55 @@ fun Slide4BusDriverSchedule(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = bus.busCode,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = PrimaryBlueDark
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "• ${bus.fullName}",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = TextDark
-                                )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isBusEligible) IceBlue else Color(0xFFF1F5F9))
+                                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                                ) {
+                                    Text(
+                                        text = bus.busCode,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isBusEligible) PrimaryBlueDark else TextMuted
+                                    )
+                                }
+                                if (!isBusEligible) {
+                                    val reasonBadge = when {
+                                        bus.isOperating -> "Sedang Berdinas"
+                                        bus.hasRoute && bus.hasDriver -> "Sudah Ada Trayek & Sopir"
+                                        bus.hasRoute -> "Sudah Ada Trayek"
+                                        bus.hasDriver -> "Sudah Ada Sopir"
+                                        else -> "Tidak Tersedia"
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(99.dp))
+                                            .background(Color(0xFFFEE2E2))
+                                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = reasonBadge,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFDC2626)
+                                        )
+                                    }
+                                }
                             }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = bus.fullName,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (isBusEligible) TextDark else TextMuted
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "${bus.body.busClass.displayName} • ${bus.body.passengerCapacity} Kursi",
                                 fontSize = 11.sp,
@@ -155,7 +219,8 @@ fun Slide4BusDriverSchedule(
                             )
                         }
 
-                        if (isSelected) {
+                        if (isSelected && isBusEligible) {
+                            Spacer(modifier = Modifier.width(8.dp))
                             Box(
                                 modifier = Modifier
                                     .size(24.dp)
@@ -210,9 +275,29 @@ fun Slide4BusDriverSchedule(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         } else {
+            val hasEligibleDriver = uiState.availableDrivers.any { uiState.driverAssignedBusCodes[it.id] == null && !it.isAssigned }
+            if (!hasEligibleDriver) {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
+                    ) {
+                        Text(
+                            text = "Seluruh sopir sudah bertugas di armada lain. Silakan rekrut sopir baru di menu Manajemen Kru.",
+                            modifier = Modifier.padding(12.dp),
+                            fontSize = 12.sp,
+                            color = Color(0xFFB45309)
+                        )
+                    }
+                }
+            }
+
             items(uiState.availableDrivers) { driver ->
                 val assignedBusCode = uiState.driverAssignedBusCodes[driver.id]
-                val isAssignedToOtherBus = assignedBusCode != null && (uiState.selectedBus == null || assignedBusCode != uiState.selectedBus.busCode)
+                val isDriverAssigned = assignedBusCode != null || driver.isAssigned
                 val isSelected = uiState.selectedDriver?.id == driver.id
 
                 Card(
@@ -220,11 +305,11 @@ fun Slide4BusDriverSchedule(
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .clickable(enabled = !isAssignedToOtherBus) { onSelectDriver(driver) },
+                        .clickable(enabled = !isDriverAssigned) { onSelectDriver(driver) },
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = when {
-                            isAssignedToOtherBus -> Color(0xFFF8FAFC)
+                            isDriverAssigned -> Color(0xFFF8FAFC)
                             isSelected -> IceBlue
                             else -> SurfaceWhite
                         }
@@ -232,7 +317,7 @@ fun Slide4BusDriverSchedule(
                     border = CardDefaults.outlinedCardBorder().copy(
                         brush = SolidColor(
                             when {
-                                isAssignedToOtherBus -> CardBorder
+                                isDriverAssigned -> CardBorder
                                 isSelected -> PrimaryBlue
                                 else -> CardBorder
                             }
@@ -247,15 +332,18 @@ fun Slide4BusDriverSchedule(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
                                 Text(
                                     text = driver.name,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = if (isAssignedToOtherBus) TextMuted else TextDark
+                                    color = if (isDriverAssigned) TextMuted else TextDark
                                 )
-                                if (isAssignedToOtherBus) {
-                                    Spacer(modifier = Modifier.width(6.dp))
+                                if (isDriverAssigned) {
+                                    val badgeLabel = if (assignedBusCode != null) "Bertugas di $assignedBusCode" else "Sedang Bertugas"
                                     Box(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(99.dp))
@@ -263,7 +351,7 @@ fun Slide4BusDriverSchedule(
                                             .padding(horizontal = 8.dp, vertical = 2.dp)
                                     ) {
                                         Text(
-                                            text = "Bertugas di $assignedBusCode",
+                                            text = badgeLabel,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = Color(0xFFDC2626)
@@ -273,7 +361,7 @@ fun Slide4BusDriverSchedule(
                             }
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = if (isAssignedToOtherBus) {
+                                text = if (isDriverAssigned) {
                                     "Bagi Hasil: 30% per Rit Dinas • Sedang Bertugas"
                                 } else {
                                     "Bagi Hasil: 30% per Rit Dinas • Status: Siap Dinas"
@@ -283,7 +371,8 @@ fun Slide4BusDriverSchedule(
                             )
                         }
 
-                        if (isSelected) {
+                        if (isSelected && !isDriverAssigned) {
+                            Spacer(modifier = Modifier.width(8.dp))
                             Box(
                                 modifier = Modifier
                                     .size(24.dp)

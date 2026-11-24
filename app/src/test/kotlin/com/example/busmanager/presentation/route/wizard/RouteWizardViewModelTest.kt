@@ -466,6 +466,56 @@ class RouteWizardViewModelTest {
         assertTrue(viewModel.uiState.value.isSelectedDriverAvailable)
     }
 
+    @Test
+    fun busAssignment_blocksSelectionOfBusWithRouteOrDriver() = runTest {
+        advanceUntilIdle()
+        val busWithRoute = Bus(
+            id = "bus-route",
+            busCode = "MK01",
+            chassis = ChassisDataSource().getChassisList().first(),
+            body = KaroseriBodyDataSource().getKaroseriBodyList().first(),
+            routeId = "route-1"
+        )
+        val busWithDriver = Bus(
+            id = "bus-driver",
+            busCode = "MK02",
+            chassis = ChassisDataSource().getChassisList().first(),
+            body = KaroseriBodyDataSource().getKaroseriBodyList().first(),
+            driverId = "driver-1"
+        )
+        val busOperating = Bus(
+            id = "bus-operating",
+            busCode = "MK03",
+            chassis = ChassisDataSource().getChassisList().first(),
+            body = KaroseriBodyDataSource().getKaroseriBodyList().first(),
+            isOperating = true
+        )
+        val freeBus = Bus(
+            id = "bus-free",
+            busCode = "MK04",
+            chassis = ChassisDataSource().getChassisList().first(),
+            body = KaroseriBodyDataSource().getKaroseriBodyList().first()
+        )
+
+        fakeFleetRepo.setBuses(listOf(busWithRoute, busWithDriver, busOperating, freeBus))
+        advanceUntilIdle()
+
+        assertEquals(freeBus.id, viewModel.uiState.value.selectedBus?.id)
+        assertTrue(viewModel.uiState.value.isSelectedBusAvailable)
+
+        viewModel.selectBus(busWithRoute)
+        assertEquals(freeBus.id, viewModel.uiState.value.selectedBus?.id)
+
+        viewModel.selectBus(busWithDriver)
+        assertEquals(freeBus.id, viewModel.uiState.value.selectedBus?.id)
+
+        viewModel.selectBus(busOperating)
+        assertEquals(freeBus.id, viewModel.uiState.value.selectedBus?.id)
+
+        viewModel.selectBus(freeBus)
+        assertEquals(freeBus.id, viewModel.uiState.value.selectedBus?.id)
+    }
+
     private class FakeRoutePricingRepository : RoutePricingRepository {
         private val list = mutableListOf<RoutePricing>()
         private val flow = MutableStateFlow<List<RoutePricing>>(emptyList())

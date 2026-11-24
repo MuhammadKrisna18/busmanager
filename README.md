@@ -92,7 +92,7 @@ Rilis v2.1.0 menghadirkan perbaikan operasional, penyederhanaan UI, dan sinkroni
 
 Rencana perbaikan operasional, validasi business rules ketat, penambahan fitur reset & jual armada, dan simulasi latar belakang berdasarkan hasil evaluasi 10 diskusi utama (merujuk pada [FASE_PENGERJAAN.md](file:///c:/Users/Muhammad%20Krisna/Documents/Project%20Portofolio/Project%20Android%20Native/busmanager/FASE_PENGERJAAN.md)):
 - ✅ **Fase 1**: Presistensi Kustomisasi Armada & Sinkronisasi Garasi (Fix Kelas & Kursi saat Beli vs Masuk Garasi).
-- ⏳ **Fase 2**: Pengetatan Validasi Bus & Driver di Wizard Trayek + Perapian Layout Teks Kartu Bus.
+- ✅ **Fase 2**: Pengetatan Validasi Bus & Driver di Wizard Trayek + Perapian Layout Teks Kartu Bus.
 - ⏳ **Fase 3**: Penyempurnaan Simulasi, Penjadwalan Standby & Pembatalan Jadwal (Bus Tuntaskan Perjalanan ke Terminal B Lalu Stay).
 - ⏳ **Fase 4**: Fitur Jual Armada di Garasi (Proteksi Armada Sedang Dinas) & Fitur Reset Akun (Mulai Baru).
 - ⏳ **Fase 5**: Penyelarasan Tanggal Laporan Terminal, BottomSheet Play Hanya Trayek Aktif & Menu Informasi Trayek di HomeScreen.

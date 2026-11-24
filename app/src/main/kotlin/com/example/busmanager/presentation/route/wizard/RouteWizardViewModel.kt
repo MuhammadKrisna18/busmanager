@@ -57,8 +57,9 @@ class RouteWizardViewModel(
                 Pair(buses, drivers)
             }.collect { (buses, drivers) ->
                 _uiState.update { state ->
-                    val availableBuses = buses.filter { !it.isOperating }
-                    val selectedBus = state.selectedBus?.let { sel -> availableBuses.find { it.id == sel.id } } ?: availableBuses.firstOrNull()
+                    val eligibleBuses = buses.filter { !it.isOperating && !it.hasRoute && !it.hasDriver }
+                    val selectedBus = state.selectedBus?.takeIf { sel -> eligibleBuses.any { it.id == sel.id } }
+                        ?: eligibleBuses.firstOrNull()
 
                     val hiredDrivers = drivers.filter { it.isHired }
 
@@ -70,18 +71,14 @@ class RouteWizardViewModel(
                         }
                     }
 
-                    val selectedDriver = state.selectedDriver?.let { sel ->
-                        val assignedBusCode = assignmentMap[sel.id]
-                        if (assignedBusCode == null || (selectedBus != null && assignedBusCode == selectedBus.busCode)) {
-                            hiredDrivers.find { it.id == sel.id }
-                        } else null
-                    } ?: hiredDrivers.firstOrNull { driver ->
-                        val assignedBusCode = assignmentMap[driver.id]
-                        assignedBusCode == null || (selectedBus != null && assignedBusCode == selectedBus.busCode)
+                    val eligibleDrivers = hiredDrivers.filter { driver ->
+                        assignmentMap[driver.id] == null && !driver.isAssigned
                     }
+                    val selectedDriver = state.selectedDriver?.takeIf { sel -> eligibleDrivers.any { it.id == sel.id } }
+                        ?: eligibleDrivers.firstOrNull()
 
                     state.copy(
-                        availableBuses = availableBuses,
+                        availableBuses = buses,
                         selectedBus = selectedBus,
                         availableDrivers = hiredDrivers,
                         selectedDriver = selectedDriver,
@@ -280,26 +277,15 @@ class RouteWizardViewModel(
     }
 
     fun selectBus(bus: Bus) {
+        if (bus.isOperating || bus.hasRoute || bus.hasDriver) return
         _uiState.update { current ->
-            val assignedBusCode = current.driverAssignedBusCodes[current.selectedDriver?.id]
-            val isCurrentDriverConflicted = assignedBusCode != null && assignedBusCode != bus.busCode
-            val updatedDriver = if (isCurrentDriverConflicted) {
-                current.availableDrivers.firstOrNull { d ->
-                    val code = current.driverAssignedBusCodes[d.id]
-                    code == null || code == bus.busCode
-                }
-            } else {
-                current.selectedDriver
-            }
-            current.copy(selectedBus = bus, selectedDriver = updatedDriver)
+            current.copy(selectedBus = bus)
         }
     }
 
     fun selectDriver(driver: Driver) {
         val assignedBusCode = _uiState.value.driverAssignedBusCodes[driver.id]
-        val currentBus = _uiState.value.selectedBus
-        val isAssignedToOtherBus = assignedBusCode != null && (currentBus == null || assignedBusCode != currentBus.busCode)
-        if (isAssignedToOtherBus) return
+        if (assignedBusCode != null || driver.isAssigned) return
         _uiState.update { it.copy(selectedDriver = driver) }
     }
 
@@ -465,7 +451,7 @@ class RouteWizardViewModel(
         val bus = state.selectedBus ?: return
         val driver = state.selectedDriver ?: return
 
-        if (state.hasConflict || state.isSaving) return
+        if (!state.isSelectedBusAvailable || !state.isSelectedDriverAvailable || state.hasConflict || state.isSaving) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, errorMessage = null) }

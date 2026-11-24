@@ -76,11 +76,11 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 2 [High]: Pengetatan Validasi Bus & Driver di Wizard Trayek + Perapian UI (Fix Diskusi 1)
-- Pengetatan aturan seleksi bus: Bus ber-trayek/ber-driver/berdinas dinonaktifkan (`enabled = false`) dengan badge merah.
-- Pengetatan aturan seleksi driver: Driver ber-bus dinonaktifkan (`enabled = false`) dengan badge penugasan.
-- Perbaikan layout nama bus di `Slide4BusDriverSchedule.kt` agar kode armada dan spesifikasi bus tidak wrap terpotong.
-- Pengujian unit test & Git Commit Fase 2.
+### ✅ Fase 2 [High]: Pengetatan Validasi Bus & Driver di Wizard Trayek + Perapian UI (Fix Diskusi 1) - SELESAI
+- Pengetatan aturan seleksi bus: Bus ber-trayek/ber-driver/berdinas dinonaktifkan (`enabled = false`) dengan badge merah. (Selesai)
+- Pengetatan aturan seleksi driver: Driver ber-bus dinonaktifkan (`enabled = false`) dengan badge penugasan. (Selesai)
+- Perbaikan layout nama bus di `Slide4BusDriverSchedule.kt` agar kode armada dan spesifikasi bus tidak wrap terpotong. (Selesai)
+- Pengujian unit test & Git Commit Fase 2. (Selesai)
 
 ---
 

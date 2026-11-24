@@ -108,14 +108,19 @@ data class RouteWizardUiState(
     val canProceedFromStep3: Boolean
         get() = pricings.isNotEmpty()
 
+    val isSelectedBusAvailable: Boolean
+        get() {
+            val bus = selectedBus ?: return false
+            return !bus.isOperating && !bus.hasRoute && !bus.hasDriver
+        }
+
     val isSelectedDriverAvailable: Boolean
         get() {
             val driver = selectedDriver ?: return false
-            val bus = selectedBus ?: return false
             val assignedCode = driverAssignedBusCodes[driver.id]
-            return assignedCode == null || assignedCode == bus.busCode
+            return assignedCode == null && !driver.isAssigned
         }
 
     val canLaunchFromStep4: Boolean
-        get() = selectedBus != null && selectedDriver != null && isSelectedDriverAvailable && !hasConflict && !isSaving
+        get() = selectedBus != null && isSelectedBusAvailable && selectedDriver != null && isSelectedDriverAvailable && !hasConflict && !isSaving
 }

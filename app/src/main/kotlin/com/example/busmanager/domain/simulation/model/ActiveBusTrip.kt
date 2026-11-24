@@ -21,7 +21,8 @@ data class ActiveBusTrip(
     val maxCapacity: Int = 40,
     val visitedTransitStopIndices: Set<Int> = emptySet(),
     val totalBoardedPassengers: Int = passengerCount,
-    val totalAlightedPassengers: Int = 0
+    val totalAlightedPassengers: Int = 0,
+    val cancelNextSchedule: Boolean = false
 ) {
     val remainingMinutes: Int
         get() = (estimatedArrivalMinutes - elapsedMinutes).coerceAtLeast(0)

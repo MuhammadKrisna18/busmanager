@@ -23,4 +23,12 @@ class DispatchBusUseCase(
             currentTime = currentTime
         )
     }
+
+    fun markCancelNextSchedule(tripId: String, cancel: Boolean) {
+        simulationTripRepository.markCancelNextSchedule(tripId, cancel)
+    }
+
+    fun completeTrip(tripId: String) {
+        simulationTripRepository.completeTrip(tripId)
+    }
 }

@@ -26,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -73,6 +74,7 @@ fun FleetOverviewBottomSheet(
     busOperationStatuses: Map<String, BusOperationStatus> = emptyMap(),
     onDispatchBus: (Bus, BusRoute) -> Unit,
     onTrackBus: (ActiveBusTrip) -> Unit,
+    onCancelNextSchedule: (ActiveBusTrip) -> Unit = {},
     onDismiss: () -> Unit,
     onNavigateToShowroom: () -> Unit
 ) {
@@ -212,7 +214,8 @@ fun FleetOverviewBottomSheet(
                                 onTrack = {
                                     onTrackBus(trip)
                                     onDismiss()
-                                }
+                                },
+                                onCancelNextSchedule = { onCancelNextSchedule(trip) }
                             )
                         }
                     }
@@ -281,7 +284,8 @@ fun FleetOverviewBottomSheet(
 private fun ActiveBusDetailCard(
     trip: ActiveBusTrip,
     bus: Bus?,
-    onTrack: () -> Unit
+    onTrack: () -> Unit,
+    onCancelNextSchedule: () -> Unit = {}
 ) {
     val capacity = bus?.body?.passengerCapacity ?: 30
     val remainingSeats = (capacity - trip.passengerCount).coerceAtLeast(0)
@@ -405,6 +409,40 @@ private fun ActiveBusDetailCard(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            if (trip.cancelNextSchedule) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFFFEF3C7))
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "🛑 Jadwal berikutnya dibatalkan. Bus akan standby di ${trip.currentDestinationName}.",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFFB45309)
+                    )
+                }
+            } else {
+                OutlinedButton(
+                    onClick = onCancelNextSchedule,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(AppDimens.radiusMedium),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFDC2626)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFDC2626)),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "🛑 Batalkan Jadwal Berikutnya",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

@@ -516,6 +516,30 @@ class RouteWizardViewModelTest {
         assertEquals(freeBus.id, viewModel.uiState.value.selectedBus?.id)
     }
 
+    @Test
+    fun busWithLocation_locksOriginTerminalAndRejectsDifferentOrigin() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+        val busAtArjosari = Bus(
+            id = "bus-arjosari",
+            busCode = "MK-ARJ",
+            chassis = ChassisDataSource().getChassisList().first(),
+            body = KaroseriBodyDataSource().getKaroseriBodyList().first(),
+            currentTerminalId = arjosari.id
+        )
+
+        fakeFleetRepo.setBuses(listOf(busAtArjosari))
+        advanceUntilIdle()
+
+        viewModel.selectBus(busAtArjosari)
+        assertEquals(arjosari.id, viewModel.uiState.value.selectedOrigin?.id)
+
+        viewModel.selectOrigin(purabaya)
+        assertEquals(arjosari.id, viewModel.uiState.value.selectedOrigin?.id)
+        assertNotNull(viewModel.uiState.value.errorMessage)
+    }
+
     private class FakeRoutePricingRepository : RoutePricingRepository {
         private val list = mutableListOf<RoutePricing>()
         private val flow = MutableStateFlow<List<RoutePricing>>(emptyList())

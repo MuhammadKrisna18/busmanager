@@ -75,27 +75,16 @@ class SimulationTripRepositoryImpl(
                 val newProgress = (newElapsed.toFloat() / trip.estimatedArrivalMinutes).coerceIn(0.0f, 1.0f)
 
                 if (newProgress >= 1.0f) {
-                    val flippedDirection = when (trip.direction) {
-                        RouteDirection.ORIGIN_TO_DESTINATION -> RouteDirection.DESTINATION_TO_ORIGIN
-                        RouteDirection.DESTINATION_TO_ORIGIN -> RouteDirection.ORIGIN_TO_DESTINATION
-                    }
-                    val resetCoord = BusMovementInterpolator.interpolatePosition(
+                    val finalCoord = BusMovementInterpolator.interpolatePosition(
                         waypoints = trip.route.allWaypoints,
-                        fraction = 0.0f,
-                        direction = flippedDirection
+                        fraction = 1.0f,
+                        direction = trip.direction
                     )
-                    val returnPassengers = passengerDemandGenerator.generateInitialLoad(trip.maxCapacity)
-                    val farePerKm = 650L
-                    val returnEarnings = Money.rupiah(farePerKm * trip.route.totalDistanceKm.toLong() * returnPassengers)
                     trip.copy(
-                        direction = flippedDirection,
-                        elapsedMinutes = 0,
-                        progressFraction = 0.0f,
-                        currentCoordinate = resetCoord,
-                        passengerCount = returnPassengers,
-                        ticketEarnings = returnEarnings,
-                        visitedTransitStopIndices = emptySet(),
-                        totalBoardedPassengers = returnPassengers,
+                        elapsedMinutes = trip.estimatedArrivalMinutes,
+                        progressFraction = 1.0f,
+                        currentCoordinate = finalCoord,
+                        isCompleted = true,
                         totalAlightedPassengers = trip.passengerCount
                     )
                 } else {
@@ -160,5 +149,17 @@ class SimulationTripRepositoryImpl(
 
     override fun clearTrips() {
         _activeTrips.value = emptyList()
+    }
+
+    override fun markCancelNextSchedule(tripId: String, cancel: Boolean) {
+        _activeTrips.update { list ->
+            list.map { if (it.id == tripId) it.copy(cancelNextSchedule = cancel) else it }
+        }
+    }
+
+    override fun completeTrip(tripId: String) {
+        _activeTrips.update { list ->
+            list.filterNot { it.id == tripId }
+        }
     }
 }

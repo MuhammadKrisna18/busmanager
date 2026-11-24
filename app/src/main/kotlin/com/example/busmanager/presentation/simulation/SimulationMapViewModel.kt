@@ -11,6 +11,7 @@ import com.example.busmanager.domain.finance.model.TransactionCategory
 import com.example.busmanager.domain.finance.model.TransactionType
 import com.example.busmanager.domain.finance.usecase.RecordFinancialTransactionUseCase
 import com.example.busmanager.domain.fleet.model.Bus
+import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.fleet.usecase.BusOperationStatus
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.ValidateBusOperationUseCase
@@ -54,7 +55,8 @@ class SimulationMapViewModel(
     private val driverRepository: DriverRepository? = null,
     private val setSimulationSpeedUseCase: SetSimulationSpeedUseCase? = null,
     private val recordFinancialTransactionUseCase: RecordFinancialTransactionUseCase? = null,
-    private val terminalPassengerRepository: TerminalPassengerRepository? = null
+    private val terminalPassengerRepository: TerminalPassengerRepository? = null,
+    private val fleetRepository: FleetRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SimulationMapUiState())
@@ -117,16 +119,83 @@ class SimulationMapViewModel(
     private fun observeActiveTrips() {
         viewModelScope.launch {
             getActiveTripsUseCase().collect { trips ->
+                val completedTrips = trips.filter { it.isCompleted }
+                val ongoingTrips = trips.filterNot { it.isCompleted }
+
+                if (completedTrips.isNotEmpty()) {
+                    handleCompletedTrips(completedTrips)
+                }
+
                 _uiState.update { current ->
-                    val updatedSelectedTrip = current.selectedTrip?.let { sel -> trips.find { it.id == sel.id } }
-                    val updatedTrackedId = if (trips.any { it.id == current.trackedTripId }) current.trackedTripId else null
+                    val updatedSelectedTrip = current.selectedTrip?.let { sel -> ongoingTrips.find { it.id == sel.id } }
+                    val updatedTrackedId = if (ongoingTrips.any { it.id == current.trackedTripId }) current.trackedTripId else null
                     current.copy(
-                        activeTrips = trips,
-                        activeBusCount = trips.size,
+                        activeTrips = ongoingTrips,
+                        activeBusCount = ongoingTrips.size,
                         selectedTrip = updatedSelectedTrip,
                         trackedTripId = updatedTrackedId
                     )
                 }
+            }
+        }
+    }
+
+    private fun handleCompletedTrips(completedTrips: List<ActiveBusTrip>) {
+        viewModelScope.launch {
+            for (trip in completedTrips) {
+                val destTerminal = if (trip.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                    trip.route.destinationTerminal
+                } else {
+                    trip.route.originTerminal
+                }
+
+                val currentTime = _uiState.value.currentTime
+                val dateText = "${currentTime.dayOfWeekName()}, ${currentTime.formatDate()}"
+                val timeText = currentTime.formatTime()
+
+                terminalPassengerRepository?.recordPassengerExchange(
+                    TerminalPassengerRecord(
+                        id = "rec-term-arr-${trip.busId}-${System.nanoTime()}",
+                        terminalId = destTerminal.id,
+                        terminalName = destTerminal.name,
+                        busId = trip.busId,
+                        busCode = trip.busCode,
+                        routeId = trip.route.id,
+                        routeName = trip.route.name,
+                        day = currentTime.day,
+                        month = currentTime.month,
+                        year = currentTime.year,
+                        dateFormatted = dateText,
+                        timeFormatted = timeText,
+                        boardedCount = 0,
+                        alightedCount = trip.passengerCount
+                    )
+                )
+
+                val bus = _uiState.value.ownedBuses.find { it.id == trip.busId }
+                if (bus != null && fleetRepository != null) {
+                    if (trip.cancelNextSchedule) {
+                        routeScheduleRepository?.getSchedulesListForRoute(trip.route.id)
+                            ?.filter { it.assignedBusId == bus.id }
+                            ?.forEach { routeScheduleRepository.deleteSchedule(it.id) }
+                        fleetRepository.updateBus(
+                            bus.copy(
+                                isOperating = false,
+                                routeId = null,
+                                currentTerminalId = destTerminal.id
+                            )
+                        )
+                    } else {
+                        fleetRepository.updateBus(
+                            bus.copy(
+                                isOperating = false,
+                                currentTerminalId = destTerminal.id
+                            )
+                        )
+                    }
+                }
+
+                dispatchBusUseCase.completeTrip(trip.id)
             }
         }
     }
@@ -203,12 +272,21 @@ class SimulationMapViewModel(
             val status = validateBusOperationUseCase?.invoke(bus)
             if (status != null && !status.canOperate) continue
 
+            val route = routes.find { it.id == schedule.routeId } ?: continue
+            val originTerminalForSchedule = if (schedule.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                route.originTerminal
+            } else {
+                route.destinationTerminal
+            }
+            if (bus.currentTerminalId != null && bus.currentTerminalId != originTerminalForSchedule.id) {
+                continue
+            }
+
             val scheduleMinutes = schedule.departureHour * 60 + schedule.departureMinute
             val currentMinutes = time.hour * 60 + time.minute
             val isTimeMatching = currentMinutes >= scheduleMinutes && (currentMinutes - scheduleMinutes) <= 30
 
             if (isTimeMatching) {
-                val route = routes.find { it.id == schedule.routeId } ?: continue
                 dispatchedSchedulesInCurrentDay.add(scheduleKey)
                 executeDispatchAndRevenue(bus, route, schedule.direction, time)
             }
@@ -229,6 +307,7 @@ class SimulationMapViewModel(
         )
 
         viewModelScope.launch {
+            fleetRepository?.updateBus(bus.copy(isOperating = true))
             val pricings = routePricingRepository?.getPricingsListForRoute(route.id) ?: emptyList()
             val avgTicketPrice = if (pricings.isNotEmpty()) {
                 pricings.map { it.price.amount }.average().toLong().coerceAtLeast(50_000L)
@@ -399,12 +478,21 @@ class SimulationMapViewModel(
     }
 
     fun dispatchBus(bus: Bus, route: BusRoute) {
+        val direction = if (bus.currentTerminalId == route.destinationTerminal.id) {
+            RouteDirection.DESTINATION_TO_ORIGIN
+        } else {
+            RouteDirection.ORIGIN_TO_DESTINATION
+        }
         executeDispatchAndRevenue(
             bus = bus,
             route = route,
-            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            direction = direction,
             currentTime = _uiState.value.currentTime
         )
         _uiState.update { it.copy(activeBottomSheet = SimulationBottomSheetType.NONE) }
+    }
+
+    fun cancelNextSchedule(tripId: String) {
+        dispatchBusUseCase.markCancelNextSchedule(tripId, true)
     }
 }

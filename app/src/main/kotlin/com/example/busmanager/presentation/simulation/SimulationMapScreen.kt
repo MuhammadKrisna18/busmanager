@@ -116,7 +116,8 @@ fun SimulationMapScreen(
                 if (state.selectedTrip != null) {
                     BusLiveTrackingCard(
                         trip = state.selectedTrip!!,
-                        onClose = { viewModel.clearSelectedTrip() }
+                        onClose = { viewModel.clearSelectedTrip() },
+                        onCancelNextSchedule = { viewModel.cancelNextSchedule(state.selectedTrip!!.id) }
                     )
                     Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
                 } else if (state.selectedTerminal != null) {
@@ -152,6 +153,7 @@ fun SimulationMapScreen(
                 busOperationStatuses = state.busOperationStatuses,
                 onDispatchBus = { bus, route -> viewModel.dispatchBus(bus, route) },
                 onTrackBus = { viewModel.trackBus(it) },
+                onCancelNextSchedule = { viewModel.cancelNextSchedule(it.id) },
                 onDismiss = { viewModel.dismissBottomSheet() },
                 onNavigateToShowroom = onNavigateToBuses
             )

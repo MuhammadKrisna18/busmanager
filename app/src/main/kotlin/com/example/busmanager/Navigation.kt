@@ -94,7 +94,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         driverRepository = appContainer.driverRepository,
                         setSimulationSpeedUseCase = appContainer.setSimulationSpeedUseCase,
                         recordFinancialTransactionUseCase = appContainer.recordFinancialTransactionUseCase,
-                        terminalPassengerRepository = appContainer.terminalPassengerRepository
+                        terminalPassengerRepository = appContainer.terminalPassengerRepository,
+                        fleetRepository = appContainer.fleetRepository
                     )
                 }
                 SimulationMapScreen(

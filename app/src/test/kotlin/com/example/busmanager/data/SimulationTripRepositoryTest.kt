@@ -63,7 +63,7 @@ class SimulationTripRepositoryTest {
     }
 
     @Test
-    fun advanceTripsTime_advancesTripProgressAndFlipsOnCompletion() {
+    fun advanceTripsTime_advancesTripProgressAndCompletesAtDestination() {
         val bus = createTestBus()
         val route = routeDataSource.getPredefinedRoutes().first()
         val calendar = GameCalendar.initial()
@@ -82,9 +82,27 @@ class SimulationTripRepositoryTest {
         assertTrue(halfTrip.progressFraction in 0.4f..0.6f)
 
         repository.advanceTripsTime(duration)
-        val returnTrip = repository.activeTrips.value.first()
-        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, returnTrip.direction)
-        assertEquals(0.0f, returnTrip.progressFraction, 0.001f)
+        val completedTrip = repository.activeTrips.value.first()
+        assertEquals(1.0f, completedTrip.progressFraction, 0.001f)
+        assertTrue(completedTrip.isCompleted)
+    }
+
+    @Test
+    fun markCancelNextSchedule_and_completeTrip() {
+        val bus = createTestBus()
+        val route = routeDataSource.getPredefinedRoutes().first()
+        val trip = repository.dispatchBus(
+            bus = bus,
+            route = route,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            currentTime = GameCalendar.initial()
+        )
+
+        repository.markCancelNextSchedule(trip.id, true)
+        assertTrue(repository.activeTrips.value.first().cancelNextSchedule)
+
+        repository.completeTrip(trip.id)
+        assertTrue(repository.activeTrips.value.isEmpty())
     }
 
     @Test

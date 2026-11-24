@@ -22,4 +22,8 @@ interface SimulationTripRepository {
     fun cancelTrip(tripId: String)
 
     fun clearTrips()
+
+    fun markCancelNextSchedule(tripId: String, cancel: Boolean)
+
+    fun completeTrip(tripId: String)
 }

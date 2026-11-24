@@ -77,9 +77,16 @@ class RouteWizardViewModel(
                     val selectedDriver = state.selectedDriver?.takeIf { sel -> eligibleDrivers.any { it.id == sel.id } }
                         ?: eligibleDrivers.firstOrNull()
 
+                    val busTerminalOrigin = if (state.selectedOrigin == null && selectedBus?.currentTerminalId != null) {
+                        terminals.find { it.id == selectedBus.currentTerminalId }
+                    } else {
+                        state.selectedOrigin
+                    }
+
                     state.copy(
                         availableBuses = buses,
                         selectedBus = selectedBus,
+                        selectedOrigin = busTerminalOrigin,
                         availableDrivers = hiredDrivers,
                         selectedDriver = selectedDriver,
                         driverAssignedBusCodes = assignmentMap
@@ -90,6 +97,12 @@ class RouteWizardViewModel(
     }
 
     fun selectOrigin(terminal: Terminal) {
+        val currentBus = _uiState.value.selectedBus
+        if (currentBus?.currentTerminalId != null && terminal.id != currentBus.currentTerminalId) {
+            val busTerminalName = _uiState.value.allTerminals.find { it.id == currentBus.currentTerminalId }?.name ?: currentBus.currentTerminalId
+            _uiState.update { it.copy(errorMessage = "Armada ${currentBus.busCode} saat ini berada di $busTerminalName. Terminal asal harus dari lokasi armada.") }
+            return
+        }
         _uiState.update {
             val updated = it.copy(selectedOrigin = terminal, errorMessage = null)
             if (updated.selectedDestination != null && updated.selectedDestination.id != terminal.id) {
@@ -279,7 +292,23 @@ class RouteWizardViewModel(
     fun selectBus(bus: Bus) {
         if (bus.isOperating || bus.hasRoute || bus.hasDriver) return
         _uiState.update { current ->
-            current.copy(selectedBus = bus)
+            val updated = current.copy(selectedBus = bus, errorMessage = null)
+            if (bus.currentTerminalId != null) {
+                val originTerm = current.allTerminals.find { it.id == bus.currentTerminalId }
+                if (originTerm != null && current.selectedOrigin?.id != originTerm.id) {
+                    val dest = if (current.selectedDestination?.id == originTerm.id) null else current.selectedDestination
+                    val withOrigin = updated.copy(selectedOrigin = originTerm, selectedDestination = dest)
+                    if (dest != null) {
+                        calculatePathsForTerminals(originTerm, dest, withOrigin)
+                    } else {
+                        withOrigin.copy(availablePaths = emptyList(), builtRoute = null, pricings = emptyList())
+                    }
+                } else {
+                    updated
+                }
+            } else {
+                updated
+            }
         }
     }
 

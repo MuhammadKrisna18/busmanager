@@ -217,6 +217,16 @@ fun Slide4BusDriverSchedule(
                                 fontSize = 11.sp,
                                 color = TextMuted
                             )
+                            if (bus.currentTerminalId != null) {
+                                val termName = uiState.allTerminals.find { it.id == bus.currentTerminalId }?.name ?: bus.currentTerminalId
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "📍 Posisi: Terminal $termName",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = PrimaryBlueDark
+                                )
+                            }
                         }
 
                         if (isSelected && isBusEligible) {

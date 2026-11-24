@@ -314,6 +314,10 @@ class GarageViewModelTest {
 
         override fun cancelTrip(tripId: String) {}
 
+        override fun markCancelNextSchedule(tripId: String, cancel: Boolean) {}
+
+        override fun completeTrip(tripId: String) {}
+
         override fun clearTrips() {}
     }
 }

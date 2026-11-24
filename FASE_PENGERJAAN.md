@@ -84,11 +84,12 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 3 [High]: Penyempurnaan Simulasi, Penjadwalan Standby & Pembatalan Jadwal (Finish Leg di Terminal) (Fix Diskusi 5 & 9)
-- Bus standby di terminal asal hingga jam jadwal keberangkatan dinas tiba.
-- Saat tiba di terminal akhir, bus berhenti di terminal tujuan menunggu jadwal kepulangan (tidak memutar otomatis tanpa jadwal).
-- Fitur "Batalkan Jadwal Berikutnya": Jika dibatalkan saat bus di perjalanan A ➔ B ➔ C, bus menuntaskan perjalanan sampai di B, lalu STAY / STANDBY di B. Penugasan rute baru wajib bermula dari terminal B.
-- Pengujian unit test & Git Commit Fase 3.
+### ✅ Fase 3 [High]: Penyempurnaan Simulasi, Penjadwalan Standby & Pembatalan Jadwal (Finish Leg di Terminal) (Fix Diskusi 5 & 9) - SELESAI
+- Bus standby di terminal asal hingga jam jadwal keberangkatan dinas tiba, mencocokkan terminal posisi bus saat ini. (Selesai)
+- Saat tiba di terminal tujuan, bus berhenti (`isCompleted = true, progressFraction = 1.0f`) dan mencatatkan alighted passengers, serta posisi `currentTerminalId` terupdate di database Room. (Selesai)
+- Fitur "Batalkan Jadwal Berikutnya": Jika dibatalkan saat bus di perjalanan A ➔ B ➔ C, bus menuntaskan perjalanan sampai di B lebih dulu (`cancelNextSchedule = true`), kemudian jadwal lanjutan dihapus dan bus STAY / STANDBY di Terminal B. (Selesai)
+- Physical Location Lock: Saat bus standby di suatu terminal, Route Wizard mengunci terminal asal keberangkatan trayek baru wajib bermula dari lokasi fisik armada tersebut. (Selesai)
+- Pengujian unit test & Git Commit Fase 3. (Selesai)
 
 ---
 

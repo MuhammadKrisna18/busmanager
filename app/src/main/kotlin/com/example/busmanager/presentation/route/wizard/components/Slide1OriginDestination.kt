@@ -66,20 +66,50 @@ fun Slide1OriginDestination(
                 color = TextMuted
             )
             Spacer(modifier = Modifier.height(10.dp))
+
+            val busTerminalId = uiState.selectedBus?.currentTerminalId
+            if (busTerminalId != null) {
+                val termName = uiState.allTerminals.find { it.id == busTerminalId }?.name ?: busTerminalId
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 10.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = IceBlue)
+                ) {
+                    Text(
+                        text = "📍 Armada ${uiState.selectedBus.busCode} saat ini berada di Terminal $termName. Keberangkatan trayek baru wajib dimulai dari terminal ini.",
+                        modifier = Modifier.padding(12.dp),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = PrimaryBlueDark
+                    )
+                }
+            }
         }
 
         item {
+            val busTerminalId = uiState.selectedBus?.currentTerminalId
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 uiState.allTerminals.forEach { terminal ->
                     val isSelected = uiState.selectedOrigin?.id == terminal.id
                     val isDest = uiState.selectedDestination?.id == terminal.id
+                    val isOriginBlocked = busTerminalId != null && terminal.id != busTerminalId
+                    val isDisabled = isDest || isOriginBlocked
+                    val badgeLabel = when {
+                        isSelected && busTerminalId != null -> "Lokasi Armada (Terkunci)"
+                        isSelected -> "Titik Awal"
+                        isDest -> "Tujuan Akhir"
+                        isOriginBlocked -> "Armada di Terminal Lain"
+                        else -> null
+                    }
 
                     TerminalSelectCard(
                         terminal = terminal,
                         isSelected = isSelected,
-                        isDisabled = isDest,
-                        badgeLabel = if (isSelected) "Titik Awal" else if (isDest) "Tujuan Akhir" else null,
-                        onClick = { if (!isDest) onSelectOrigin(terminal) }
+                        isDisabled = isDisabled,
+                        badgeLabel = badgeLabel,
+                        onClick = { if (!isDisabled) onSelectOrigin(terminal) }
                     )
                 }
             }

@@ -246,6 +246,25 @@ class SimulationMapViewModelTest {
     }
 
     @Test
+    fun cancelNextSchedule_marksTripForCancellation() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val bus = createDummyBus("TN-01")
+        val route = viewModel.uiState.value.routes.first()
+
+        viewModel.dispatchBus(bus, route)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val tripId = viewModel.uiState.value.activeTrips.first().id
+        assertFalse(viewModel.uiState.value.activeTrips.first().cancelNextSchedule)
+
+        viewModel.cancelNextSchedule(tripId)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.activeTrips.first().cancelNextSchedule)
+    }
+
+    @Test
     fun onTripClickAndClear_handlesTripSelection() = runTest {
         testDispatcher.scheduler.advanceUntilIdle()
 

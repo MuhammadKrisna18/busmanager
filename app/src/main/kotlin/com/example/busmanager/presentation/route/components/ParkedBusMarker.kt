@@ -67,24 +67,14 @@ fun ParkedBusMarker(
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(busDiameter)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .shadow(3.dp, CircleShape)
-                    .clip(CircleShape)
-                    .background(Color(0xFF64748B))
-                    .border(1.5.dp, Color.White, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "🚌",
-                    fontSize = 10.sp
-                )
-            }
+            IsometricBus25D(
+                headingAngle = 0f,
+                statusColor = Color(0xFF6366F1),
+                isTracking = false
+            )
         }
     }
 }

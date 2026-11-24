@@ -43,6 +43,13 @@ data class ActiveBusTrip(
             RouteDirection.ORIGIN_TO_DESTINATION -> route.originTerminal.city
             RouteDirection.DESTINATION_TO_ORIGIN -> route.destinationTerminal.city
         }
+
+    val headingAngle: Float
+        get() = BusMovementInterpolator.calculateHeadingAngle(
+            waypoints = route.allWaypoints,
+            fraction = progressFraction,
+            direction = direction
+        )
 }
 
 data class TransitExchangeInfo(

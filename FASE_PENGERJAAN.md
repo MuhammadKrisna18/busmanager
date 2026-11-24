@@ -107,13 +107,13 @@ Dokumen ini memuat susunan pengerjaan terperinci untuk Season 9 yang dipecah men
 
 ---
 
-### 🔹 Fase 4 [Armada 2.5D & Indikator Warna]: Rendering Bus 3D Isometrik & Cincin Status Perjalanan
-- [ ] Mengimplementasikan rendering armada 2.5D Isometrik pada Canvas (atap ber-AC, bodi bus bersudut, kaca depan/samping, dan bayangan dinamis di aspal) yang berotasi otomatis mengikuti sudut lintasan (*heading angle*).
-- [ ] Menerapkan cincin indikator warna status armada secara real-time:
+### 🔹 Fase 4 [Armada 2.5D & Indikator Warna]: Rendering Bus 3D Isometrik & Cincin Status Perjalanan [SELESAI]
+- [x] Mengimplementasikan rendering armada 2.5D Isometrik pada Canvas (atap ber-AC, bodi bus bersudut, kaca depan/samping, dan bayangan dinamis di aspal) yang berotasi otomatis mengikuti sudut lintasan (*heading angle*).
+- [x] Menerapkan cincin indikator warna status armada secara real-time:
   - 🟢 **Hijau Neon:** Sedang bergerak melayani rute (*In Transit*).
   - 🟡 **Kuning / Oranye:** Sedang berhenti di terminal ampiran (*Transit Dwell*).
   - 🔵 **Biru / Ungu:** Sedang berada di terminal utama A / B (*Peron / Layover*).
-- [ ] Verifikasi performa rendering 60 FPS, kelancaran rotasi armada, dan Git Commit Fase 4.
+- [x] Verifikasi performa rendering 60 FPS, kelancaran rotasi armada, dan Git Commit Fase 4.
 
 ---
 

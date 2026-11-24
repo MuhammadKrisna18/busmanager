@@ -38,8 +38,12 @@ fun MovingBusMarker(
     modifier: Modifier = Modifier,
     isTracking: Boolean = false
 ) {
-    val busRadius = 13.dp
-    val busDiameter = busRadius * 2
+    val busRadius = 16.dp
+    val statusColor = when {
+        trip.isDwellingAtTransit -> Color(0xFFF59E0B)
+        trip.progressFraction <= 0.01f || trip.progressFraction >= 0.99f -> Color(0xFF6366F1)
+        else -> Color(0xFF22C55E)
+    }
 
     Box(
         modifier = modifier.wrapContentSize(Alignment.Center, unbounded = true),
@@ -133,32 +137,14 @@ fun MovingBusMarker(
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(busDiameter)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
-            if (isTracking) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                        .background(Color(0x332563EB))
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .size(24.dp)
-                    .shadow(if (isTracking) 8.dp else 4.dp, CircleShape)
-                    .clip(CircleShape)
-                    .background(if (isTracking) Color(0xFF2563EB) else PrimaryBlue)
-                    .border(if (isTracking) 2.5.dp else 2.dp, Color.White, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "🚌",
-                    fontSize = 12.sp
-                )
-            }
+            IsometricBus25D(
+                headingAngle = trip.headingAngle,
+                statusColor = statusColor,
+                isTracking = isTracking
+            )
         }
     }
 }

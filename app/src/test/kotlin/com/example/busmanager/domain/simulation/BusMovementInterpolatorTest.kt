@@ -83,4 +83,41 @@ class BusMovementInterpolatorTest {
         assertEquals(0.5f, coord3Quarter.x, 0.001f)
         assertEquals(0.25f, coord3Quarter.y, 0.001f)
     }
+
+    @Test
+    fun calculateHeadingAngle_movingEast_returns90Degrees() {
+        val wp1 = MapCoordinate(0.0f, 0.5f, -7.0, 112.0)
+        val wp2 = MapCoordinate(1.0f, 0.5f, -7.0, 113.0)
+        val angle = BusMovementInterpolator.calculateHeadingAngle(listOf(wp1, wp2), 0.3f)
+        assertEquals(90.0f, angle, 0.5f)
+    }
+
+    @Test
+    fun calculateHeadingAngle_movingSouth_returns180Degrees() {
+        val wp1 = MapCoordinate(0.5f, 0.0f, -7.0, 112.0)
+        val wp2 = MapCoordinate(0.5f, 1.0f, -8.0, 112.0)
+        val angle = BusMovementInterpolator.calculateHeadingAngle(listOf(wp1, wp2), 0.5f)
+        assertEquals(180.0f, angle, 0.5f)
+    }
+
+    @Test
+    fun calculateHeadingAngle_reverseDirection_invertsAngle() {
+        val wp1 = MapCoordinate(0.0f, 0.5f, -7.0, 112.0)
+        val wp2 = MapCoordinate(1.0f, 0.5f, -7.0, 113.0)
+        val angle = BusMovementInterpolator.calculateHeadingAngle(
+            listOf(wp1, wp2),
+            0.3f,
+            RouteDirection.DESTINATION_TO_ORIGIN
+        )
+        assertEquals(270.0f, angle, 0.5f)
+    }
+
+    @Test
+    fun calculateHeadingAngle_insufficientWaypoints_returnsZero() {
+        val wp1 = MapCoordinate(0.5f, 0.5f, -7.0, 112.0)
+        val angleEmpty = BusMovementInterpolator.calculateHeadingAngle(emptyList(), 0.5f)
+        val angleSingle = BusMovementInterpolator.calculateHeadingAngle(listOf(wp1), 0.5f)
+        assertEquals(0.0f, angleEmpty, 0.001f)
+        assertEquals(0.0f, angleSingle, 0.001f)
+    }
 }

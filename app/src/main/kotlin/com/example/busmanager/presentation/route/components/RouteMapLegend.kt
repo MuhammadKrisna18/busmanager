@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,90 +43,141 @@ fun RouteMapLegend(
             .clip(RoundedCornerShape(AppDimens.radiusMedium))
             .background(SurfaceWhite)
             .border(1.dp, CardBorder, RoundedCornerShape(AppDimens.radiusMedium))
-            .padding(horizontal = AppDimens.paddingMedium, vertical = AppDimens.paddingSmall)
+            .padding(horizontal = AppDimens.paddingMedium, vertical = 6.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .width(18.dp)
-                        .height(4.dp)
-                        .clip(RoundedCornerShape(AppDimens.radiusPill))
-                        .background(Color(0xFFF59E0B))
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Tol (Emas)",
-                    color = TextDark,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .width(18.dp)
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(Color(0xFFF59E0B))
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Tol (Emas)",
+                        color = TextDark,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .width(18.dp)
+                            .height(3.dp)
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(Color(0xFF0284C7))
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Non-Tol (Biru)",
+                        color = TextDark,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(SuccessGreen)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Asal",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(PrimaryBlue)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Tujuan",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
+                }
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .width(18.dp)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(AppDimens.radiusPill))
-                        .background(Color(0xFF0284C7))
-                )
-                Spacer(modifier = Modifier.width(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "Non-Tol (Biru)",
-                    color = TextDark,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(SuccessGreen)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Asal",
+                    text = "Armada 2.5D:",
                     color = TextMuted,
-                    fontSize = 11.sp
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium
                 )
-            }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(WarningAmber)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Transit",
-                    color = TextMuted,
-                    fontSize = 11.sp
-                )
-            }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF22C55E))
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Jalan",
+                        color = TextDark,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(PrimaryBlue)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Tujuan",
-                    color = TextMuted,
-                    fontSize = 11.sp
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFF59E0B))
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Ampiran",
+                        color = TextDark,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF6366F1))
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Terminal A/B",
+                        color = TextDark,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }

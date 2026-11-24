@@ -77,4 +77,54 @@ object BusMovementInterpolator {
 
         return orderedPoints.last()
     }
+
+    fun calculateHeadingAngle(
+        waypoints: List<MapCoordinate>,
+        fraction: Float,
+        direction: RouteDirection = RouteDirection.ORIGIN_TO_DESTINATION
+    ): Float {
+        if (waypoints.size < 2) return 0f
+
+        val orderedPoints = if (direction == RouteDirection.DESTINATION_TO_ORIGIN) {
+            waypoints.reversed()
+        } else {
+            waypoints
+        }
+
+        val clampedFraction = fraction.coerceIn(0.0f, 1.0f)
+        val segmentLengths = mutableListOf<Float>()
+        var totalLength = 0.0f
+
+        for (i in 0 until orderedPoints.size - 1) {
+            val p1 = orderedPoints[i]
+            val p2 = orderedPoints[i + 1]
+            val length = hypot(p2.x - p1.x, p2.y - p1.y)
+            segmentLengths.add(length)
+            totalLength += length
+        }
+
+        if (totalLength <= 0.0001f) return 0f
+
+        val targetDistance = totalLength * clampedFraction
+        var accumulatedDistance = 0.0f
+
+        for (i in 0 until segmentLengths.size) {
+            val segmentLength = segmentLengths[i]
+            val nextAccumulated = accumulatedDistance + segmentLength
+
+            if (targetDistance <= nextAccumulated || i == segmentLengths.size - 1) {
+                val start = orderedPoints[i]
+                val end = orderedPoints[i + 1]
+                val dx = end.x - start.x
+                val dy = end.y - start.y
+                val angleRad = kotlin.math.atan2(dy.toDouble(), dx.toDouble())
+                val angleDeg = Math.toDegrees(angleRad).toFloat()
+                return angleDeg + 90f
+            }
+
+            accumulatedDistance = nextAccumulated
+        }
+
+        return 0f
+    }
 }

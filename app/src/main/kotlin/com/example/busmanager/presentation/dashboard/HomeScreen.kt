@@ -86,6 +86,7 @@ fun HomeScreen(
     onNavigateToDrivers: () -> Unit = {},
     onNavigateToFinance: () -> Unit = {},
     onNavigateToTerminalReport: () -> Unit = {},
+    onNavigateToRouteInfo: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -214,7 +215,7 @@ fun HomeScreen(
                 onNavigateToDrivers = onNavigateToDrivers,
                 onNavigateToFinance = onNavigateToFinance,
                 onNavigateToTerminalReport = onNavigateToTerminalReport,
-                onOpenRouteInfo = { viewModel.openRouteInfoModal() },
+                onOpenRouteInfo = onNavigateToRouteInfo,
                 modifier = Modifier.weight(1f)
             )
 

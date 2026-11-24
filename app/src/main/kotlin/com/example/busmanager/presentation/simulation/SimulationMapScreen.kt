@@ -59,6 +59,7 @@ fun SimulationMapScreen(
     onNavigateBack: () -> Unit,
     onNavigateToBuses: () -> Unit = {},
     onNavigateToRoutes: () -> Unit = {},
+    onNavigateToRouteInfo: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -175,7 +176,8 @@ fun SimulationMapScreen(
                     viewModel.openEditSchedule(bus, route, headway, dwell)
                 },
                 onDismiss = { viewModel.dismissBottomSheet() },
-                onNavigateToRoutePlanner = onNavigateToRoutes
+                onNavigateToRoutePlanner = onNavigateToRoutes,
+                onNavigateToRouteInfo = onNavigateToRouteInfo
             )
         }
         SimulationBottomSheetType.NONE -> {}

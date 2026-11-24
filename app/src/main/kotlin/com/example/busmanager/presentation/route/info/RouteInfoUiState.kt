@@ -1,0 +1,26 @@
+package com.example.busmanager.presentation.route.info
+
+import com.example.busmanager.domain.route.model.RouteOperationalInfo
+import com.example.busmanager.domain.route.model.RoutePricing
+
+enum class RouteInfoFilter(val displayName: String) {
+    ALL("Semua"),
+    OPERATING("Berdinas"),
+    STANDBY("Standby")
+}
+
+data class RouteDetailItem(
+    val operationalInfo: RouteOperationalInfo,
+    val pricings: List<RoutePricing> = emptyList(),
+    val isPricingsExpanded: Boolean = false
+)
+
+data class RouteInfoUiState(
+    val allRoutes: List<RouteDetailItem> = emptyList(),
+    val filteredRoutes: List<RouteDetailItem> = emptyList(),
+    val selectedFilter: RouteInfoFilter = RouteInfoFilter.ALL,
+    val totalRouteCount: Int = 0,
+    val operatingRouteCount: Int = 0,
+    val standbyRouteCount: Int = 0,
+    val isLoading: Boolean = true
+)

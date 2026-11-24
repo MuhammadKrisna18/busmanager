@@ -103,11 +103,11 @@ Dokumen ini memuat detail perencanaan perbaikan arsitektural, logika simulasi, d
 
 ---
 
-### 🔹 Fase 4 [Medium]: UI Refinement, Wizard Rute & Layar Informasi Trayek
-- Kartu kalkulasi estimasi proyeksi omzet, komisi sopir, dan laba bersih perusahaan secara live saat input tarif di Langkah 3 Wizard (Fix Diskusi 2).
-- Perapian desain dan tata letak kartu koridor di Langkah 2 Wizard Trayek agar nyaman dibaca (Fix Diskusi 14).
-- Pembuatan layar penuh tersendiri **Halaman Informasi Trayek** (`RouteInfoScreen`) menggantikan kartu modal sebelumnya (Fix Diskusi 12).
-- Pengujian unit test & Git Commit Fase 4.
+### 🔹 Fase 4 [Medium]: UI Refinement, Wizard Rute & Layar Informasi Trayek - [SELESAI]
+- [x] Kartu kalkulasi estimasi proyeksi omzet, komisi sopir, dan laba bersih perusahaan secara live saat input tarif di Langkah 3 Wizard (Fix Diskusi 2).
+- [x] Perapian desain dan tata letak kartu koridor di Langkah 2 Wizard Trayek agar nyaman dibaca (Fix Diskusi 14).
+- [x] Pembuatan layar penuh tersendiri **Halaman Informasi Trayek** (`RouteInfoScreen`) menggantikan kartu modal sebelumnya (Fix Diskusi 12).
+- [x] Pengujian unit test & Git Commit Fase 4.
 
 ---
 

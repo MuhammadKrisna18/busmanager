@@ -29,3 +29,6 @@ data object FinanceRoute : NavKey
 
 @Serializable
 data object TerminalReportRoute : NavKey
+
+@Serializable
+data object RouteInfoRoute : NavKey

@@ -33,6 +33,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.presentation.route.wizard.RouteWizardUiState
+import com.example.busmanager.ui.theme.AccentBlue
+import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
@@ -68,35 +70,96 @@ fun Slide2PathAndStops(
                     fontWeight = FontWeight.Bold,
                     color = TextDark
                 )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Tersedia beberapa alternatif koridor untuk menghubungkan kota asal dan tujuan",
+                    fontSize = 11.sp,
+                    color = TextMuted
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     uiState.availablePaths.forEachIndexed { index, path ->
                         val isSelected = index == uiState.selectedPathIndex
-                        val viaCity = if (path.size > 2) path[1].city else "Langsung"
+                        val transitCities = path.drop(1).dropLast(1).map { it.city }
+                        val viaDescription = if (transitCities.isNotEmpty()) {
+                            "Via: " + transitCities.joinToString(" ➔ ")
+                        } else {
+                            "Jalur Langsung (Tanpa Transit)"
+                        }
 
-                        FilterChip(
-                            selected = isSelected,
-                            onClick = { onSelectPath(index) },
-                            label = {
-                                Text(
-                                    text = "Jalur ${index + 1} (Via $viaCity)",
-                                    fontSize = 12.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                )
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = IceBlue,
-                                selectedLabelColor = PrimaryBlueDark
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onSelectPath(index) },
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isSelected) AccentBlue else SurfaceWhite
                             ),
-                            border = FilterChipDefaults.filterChipBorder(
-                                enabled = true,
-                                selected = isSelected,
-                                borderColor = if (isSelected) PrimaryBlue else CardBorder
+                            border = androidx.compose.foundation.BorderStroke(
+                                if (isSelected) 2.dp else 1.dp,
+                                if (isSelected) PrimaryBlue else CardBorder
                             )
-                        )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Koridor Jalur ${index + 1}",
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isSelected) PrimaryBlueDark else TextDark
+                                        )
+                                        if (isSelected) {
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Box(
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(AppDimens.radiusPill))
+                                                    .background(PrimaryBlue)
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            ) {
+                                                Text(
+                                                    text = "Dipilih",
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.White
+                                                )
+                                            }
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(3.dp))
+                                    Text(
+                                        text = viaDescription,
+                                        fontSize = 11.sp,
+                                        color = TextMuted,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(22.dp)
+                                        .clip(CircleShape)
+                                        .background(if (isSelected) PrimaryBlue else Color(0xFFE2E8F0)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (isSelected) {
+                                        Text(
+                                            text = "✓",
+                                            color = Color.White,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(14.dp))
@@ -118,30 +181,24 @@ fun Slide2PathAndStops(
                             fontWeight = FontWeight.Bold,
                             color = TextDark
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
                         val hours = route.totalEstimatedDurationMinutes / 60
                         val mins = route.totalEstimatedDurationMinutes % 60
                         val durationStr = if (hours > 0) "${hours}j ${mins}m" else "${mins} mnt"
 
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF8FAFC))
+                                .padding(10.dp),
+                            horizontalArrangement = Arrangement.SpaceAround
                         ) {
-                            Text(
-                                text = "Jarak: ${route.totalDistanceKm.toInt()} km",
-                                fontSize = 12.sp,
-                                color = TextMuted
-                            )
-                            Text(
-                                text = "Waktu: $durationStr",
-                                fontSize = 12.sp,
-                                color = TextMuted
-                            )
-                            Text(
-                                text = "Tol: ${route.totalTollFee.formatRupiah()}",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = if (route.totalTollFee.amount > 0) WarningAmber else SuccessGreen
+                            RouteSpecItem(label = "Jarak", value = "${route.totalDistanceKm.toInt()} km")
+                            RouteSpecItem(label = "Waktu", value = durationStr)
+                            RouteSpecItem(
+                                label = "Biaya Tol",
+                                value = if (route.totalTollFee.amount > 0) route.totalTollFee.formatRupiah() else "Gratis (Arteri)"
                             )
                         }
                     }
@@ -326,5 +383,14 @@ private fun SegmentTypeBadge(
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = if (isSelected) Color.White else TextMuted
         )
+    }
+}
+
+@Composable
+private fun RouteSpecItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = label, fontSize = 10.sp, color = TextMuted)
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextDark)
     }
 }

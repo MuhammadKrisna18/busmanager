@@ -29,13 +29,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.route.model.RoutePricing
+import com.example.busmanager.domain.route.model.RouteRevenueProjection
 import com.example.busmanager.presentation.route.wizard.RouteWizardUiState
+import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
 import com.example.busmanager.ui.theme.PrimaryBlueDark
 import com.example.busmanager.ui.theme.SuccessGreen
+import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextLight
@@ -64,6 +68,23 @@ fun Slide3PricingMatrix(
             pricing.originTerminalId == uiState.selectedOrigin?.id
         }
     }.distinctBy { Pair(it.originTerminalId, it.destinationTerminalId) }
+
+    val assumedCapacity = uiState.selectedBus?.body?.passengerCapacity
+        ?: uiState.availableBuses.firstOrNull()?.body?.passengerCapacity
+        ?: 30
+
+    val mainPricing = roundTripPricings.find {
+        it.originTerminalId == uiState.selectedOrigin?.id && it.destinationTerminalId == uiState.selectedDestination?.id
+    } ?: roundTripPricings.firstOrNull()
+
+    val mainTicketPrice = mainPricing?.price ?: Money.rupiah(50_000)
+    val tollFee = uiState.builtRoute?.totalTollFee ?: Money.ZERO
+
+    val projection = RouteRevenueProjection(
+        seatCapacity = assumedCapacity,
+        ticketPrice = mainTicketPrice,
+        tollFee = tollFee
+    )
 
     LazyColumn(
         modifier = modifier
@@ -101,6 +122,16 @@ fun Slide3PricingMatrix(
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(14.dp))
+        }
+
+        item {
+            RevenueProjectionCard(
+                projection = projection,
+                originCity = uiState.selectedOrigin?.city ?: "Asal",
+                destinationCity = uiState.selectedDestination?.city ?: "Tujuan",
+                hasToll = tollFee.amount > 0L
+            )
             Spacer(modifier = Modifier.height(16.dp))
         }
 
@@ -204,6 +235,164 @@ fun Slide3PricingMatrix(
             onSave = { newAmount ->
                 onSaveEditedPrice(uiState.editingPricing, newAmount)
             }
+        )
+    }
+}
+
+@Composable
+private fun RevenueProjectionCard(
+    projection: RouteRevenueProjection,
+    originCity: String,
+    destinationCity: String,
+    hasToll: Boolean
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "📊", fontSize = 16.sp)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Proyeksi Pendapatan & Laba",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextDark
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(AppDimens.radiusPill))
+                        .background(IceBlue)
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = "${projection.seatCapacity} Kursi (Full Seat)",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                text = "Simulasi pendapatan trayek $originCity ⇄ $destinationCity berdasarkan tarif utama ${projection.ticketPrice.formatRupiah()}",
+                fontSize = 11.sp,
+                color = TextMuted
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFF8FAFC))
+                    .padding(10.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                ProjectionDetailRow(
+                    label = "Omzet Tiket (1x Jalan):",
+                    amount = "+ ${projection.grossRevenueOneWay.formatRupiah()}",
+                    color = TextDark,
+                    subtext = "PP: + ${projection.grossRevenueRoundTrip.formatRupiah()}"
+                )
+
+                ProjectionDetailRow(
+                    label = "Gaji / Bagi Hasil Sopir (30%):",
+                    amount = "- ${projection.driverWageOneWay.formatRupiah()}",
+                    color = Color(0xFFDC2626),
+                    subtext = "PP: - ${projection.driverWageRoundTrip.formatRupiah()}"
+                )
+
+                if (hasToll) {
+                    ProjectionDetailRow(
+                        label = "Biaya Tol Jalur Cepat:",
+                        amount = "- ${projection.tollFee.formatRupiah()}",
+                        color = Color(0xFFD97706),
+                        subtext = "PP: - ${projection.tollFeeRoundTrip.formatRupiah()}"
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(SuccessGreenLight)
+                    .padding(10.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Laba Bersih Perusahaan:",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextDark
+                        )
+                        Text(
+                            text = "Pulang-Pergi (PP): + ${projection.netProfitRoundTrip.formatRupiah()}",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = SuccessGreen
+                        )
+                    }
+
+                    Text(
+                        text = "+ ${projection.netProfitOneWay.formatRupiah()}",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = SuccessGreen
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProjectionDetailRow(
+    label: String,
+    amount: String,
+    color: Color,
+    subtext: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(text = label, fontSize = 11.sp, color = TextMuted)
+            Text(text = subtext, fontSize = 9.sp, color = TextLight)
+        }
+        Text(
+            text = amount,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = color
         )
     }
 }

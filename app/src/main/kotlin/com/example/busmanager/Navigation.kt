@@ -15,6 +15,8 @@ import com.example.busmanager.presentation.finance.FinanceScreen
 import com.example.busmanager.presentation.finance.FinanceViewModel
 import com.example.busmanager.presentation.garage.GarageScreen
 import com.example.busmanager.presentation.garage.GarageViewModel
+import com.example.busmanager.presentation.route.info.RouteInfoScreen
+import com.example.busmanager.presentation.route.info.RouteInfoViewModel
 import com.example.busmanager.presentation.route.wizard.RouteWizardScreen
 import com.example.busmanager.presentation.route.wizard.RouteWizardViewModel
 import com.example.busmanager.presentation.showroom.ShowroomScreen
@@ -81,6 +83,9 @@ fun MainNavigation(appContainer: AppContainer) {
                     },
                     onNavigateToTerminalReport = {
                         backStack.add(TerminalReportRoute)
+                    },
+                    onNavigateToRouteInfo = {
+                        backStack.add(RouteInfoRoute)
                     }
                 )
             }
@@ -116,6 +121,9 @@ fun MainNavigation(appContainer: AppContainer) {
                     },
                     onNavigateToRoutes = {
                         backStack.add(RoutePlannerRoute)
+                    },
+                    onNavigateToRouteInfo = {
+                        backStack.add(RouteInfoRoute)
                     }
                 )
             }
@@ -238,6 +246,23 @@ fun MainNavigation(appContainer: AppContainer) {
                     viewModel = viewModel,
                     onNavigateBack = {
                         backStack.removeLastOrNull()
+                    }
+                )
+            }
+            entry<RouteInfoRoute> {
+                val viewModel: RouteInfoViewModel = viewModel {
+                    RouteInfoViewModel(
+                        getRouteOperationalStatusUseCase = appContainer.getRouteOperationalStatusUseCase,
+                        routePricingRepository = appContainer.routePricingRepository
+                    )
+                }
+                RouteInfoScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        backStack.removeLastOrNull()
+                    },
+                    onNavigateToNewRoute = {
+                        backStack.add(RoutePlannerRoute)
                     }
                 )
             }

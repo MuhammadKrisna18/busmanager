@@ -66,7 +66,8 @@ fun RoutesOverviewBottomSheet(
     onSelectRoute: (BusRoute) -> Unit,
     onEditSchedule: (Bus, BusRoute, Int, Int) -> Unit = { _, _, _, _ -> },
     onDismiss: () -> Unit,
-    onNavigateToRoutePlanner: () -> Unit = {}
+    onNavigateToRoutePlanner: () -> Unit = {},
+    onNavigateToRouteInfo: () -> Unit = {}
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -109,15 +110,39 @@ fun RoutesOverviewBottomSheet(
                     )
                 }
 
-                Box(
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .background(IceBlue)
-                        .clickable(onClick = onDismiss),
-                    contentAlignment = Alignment.Center
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(text = "✕", fontSize = 13.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(IceBlue)
+                            .clickable {
+                                onDismiss()
+                                onNavigateToRouteInfo()
+                            }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "📋 Halaman Penuh ➔",
+                            color = PrimaryBlueDark,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(CircleShape)
+                            .background(IceBlue)
+                            .clickable(onClick = onDismiss),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "✕", fontSize = 13.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
 

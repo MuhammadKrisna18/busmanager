@@ -168,3 +168,69 @@ Dokumen perencanaan fitur lanjutan Season 2 mencakup personalisasi armada bertah
   3. **Pembersihan Dead Code & Verifikasi Zero Comments**.
   4. **Pengujian Penuh (Seluruh Unit Tests Passing)**.
   5. **Bump Versi ke v2.0.0 (VersionCode 7), Integrasi Menu Laporan Terminal di Dashboard, dan Rilis Season 2**.
+
+---
+
+# 🛠️ ROADMAP SEASON 3: Sinkronisasi Ekosistem, Konsistensi Data & Realisme Operasional (Fase Perbaikan)
+
+Dokumen rencana perbaikan menyeluruh berdasarkan evaluasi tangkapan layar operasional lapangan (Garasi, Wizard Trayek, dan Peta Simulasi). Fokus utama adalah memastikan data antar modul sinkron secara reaktif, format penamaan konsisten, serta mekanisme simulasi tarif dan kapasitas realistis.
+
+---
+
+### 🟢 Fase 1 [Medium]: Sinkronisasi Status Armada di Garasi & Peta Simulasi [SELESAI ✅]
+- **Tujuan**: Menghilangkan inkonsistensi status bus antara Garasi dan Peta Simulasi di mana bus yang sedang berdinas di peta tercatat 0 di Garasi.
+- **Deliverables**:
+  1. **Reaktif Flow Integration**: Menghubungkan `GetActiveTripsUseCase` ke `GarageViewModel` via `combine`.
+  2. **Dinamisasi Tab Filter**:
+     - Bus yang sedang jalan di peta otomatis masuk ke tab **Berdinas** dengan badge status hijau `● Berdinas`.
+     - Bus yang standby berada di tab **Di Garasi** dengan status `Siap Beroperasi`.
+  3. **Informasi Rute & Perjalanan Nyata**: Kartu garasi menampilkan rute aktif yang sedang ditempuh beserta arah (`Malang ➔ Surabaya`) dan persentase progres secara real-time.
+  4. **Peningkatan Empty State UX**: Menghadirkan kartu empty state yang jelas ketika tab Berdinas atau Di Garasi tidak memiliki armada.
+  5. **Pengujian Unit & Git Commit Fase 1 (Season 3)**.
+
+---
+
+### 🟡 Fase 2 [Easy-Medium]: Sinkronisasi Sopir Bertugas & Penyelarasan Skema Upah di Wizard Trayek
+- **Tujuan**: Mencegah penugasan sopir ganda ke beberapa armada dan menyelaraskan label upah pengemudi ke skema bagi hasil Season 2.
+- **Deliverables**:
+  1. **Proteksi Ketersediaan Sopir**:
+     - Sopir yang sudah ditugaskan ke armada tertentu (misal: Pak Slamet Riyadi di MK001) diberi label `Bertugas di MK001` dan tidak dapat dipilih lagi untuk bus kedua, atau difilter keluar dari daftar sopir yang siap dinas.
+  2. **Penyelarasan Teks Skema Upah**:
+     - Mengubah keterangan upah di kartu pilihan pengemudi Langkah 4 Wizard dari format lama `Upah: Rp.../hari` menjadi `Bagi Hasil: 30% per Rit Dinas`.
+  3. **Pengujian & Git Commit Fase 2 (Season 3)**.
+
+---
+
+### 🟠 Fase 3 [Medium]: Standardisasi & Konsistensi Format Penamaan Armada (Sasis + Karoseri Bodi)
+- **Tujuan**: Menjamin hasil perakitan modular bus pemain (Sasis + Bodi Karoseri) tampil konsisten dan lengkap di seluruh antarmuka aplikasi.
+- **Deliverables**:
+  1. **Format Nama Terstandar**:
+     - Menggunakan format lengkap yang seragam: `[Merk Sasis] [Model Sasis] - [Karoseri] [Model Bodi]` (Contoh: `Mercedes-Benz OC 500 RF 2542 Tronton - Tentrem Avante D2 Double Decker`).
+  2. **Perbaikan Bottom Sheet Peta Simulasi (`FleetOverviewBottomSheet`)**:
+     - Memperbaiki kartu detail bus agar memunculkan nama bodi karoseri (yang sebelumnya hanya memunculkan sasis dan kelas layanan).
+  3. **Perbaikan Wizard Langkah 4**:
+     - Memastikan nama model sasis dan nama karoseri pembuat bodi tidak terpotong.
+  4. **Pengujian & Git Commit Fase 3 (Season 3)**.
+
+---
+
+### 🟣 Fase 4 [Hard]: Diferensiasi Tarif Tiket & Kapasitas Kursi Realistis Berdasarkan Kelas Layanan
+- **Tujuan**: Menghadirkan nilai ekonomi kelas armada yang realistis, di mana kelas mewah bertarif lebih mahal dengan kapasitas kursi individual yang lebih eksklusif.
+- **Deliverables**:
+  1. **Penyesuaian Kapasitas Kursi Realistis**:
+     - Menyesuaikan konfigurasi kursi `Suites / Sleeper Class` dari 44 kursi menjadi **21–24 kursi** (kabin individual mewah), sehingga lebih sedikit dari Eksekutif (30 kursi) dan VIP (36 kursi).
+  2. **Pengali Tarif Tiket Berdasarkan Kelas (*Class Fare Multiplier*)**:
+     - Menambahkan faktor pengali tarif rute per kelas layanan (Contoh: Ekonomi = 1.0x, Bisnis = 1.15x, VIP = 1.3x, Eksekutif = 1.5x, Sleeper/Suites = 2.0x), sehingga tarif tiket bus Sleeper dan Eksekutif tidak lagi sama rata pada rute yang sama.
+  3. **Penyempurnaan Label Pelacakan Peta**:
+     - Merapikan label arah vs rute induk di kartu pelacakan peta agar jelas saat armada melakukan perjalanan kepulangan (Contoh: `Trayek: Surabaya - Malang PP • Arah: Menuju Surabaya`).
+  4. **Pengujian & Git Commit Fase 4 (Season 3)**.
+
+---
+
+### 🔴 Fase 5 [Medium]: QA Menyeluruh, Pembersihan Kode (Clean Code + Zero Comments) & Rilis Tag v2.1.0
+- **Tujuan**: Memastikan stabilitas menyeluruh dari perbaikan ekosistem, performa bebas crash, pembersihan kode, dan publikasi versi rilis baru.
+- **Deliverables**:
+  1. **Pembersihan Dead Code & Verifikasi Strict Zero Comments**.
+  2. **Full Regression Testing (Seluruh Unit Test Passed)**.
+  3. **Bump Versi ke v2.1.0 (VersionCode 8) & Build Signed Release APK**.
+  4. **Update README.md & Git Tag Rilis v2.1.0**.

@@ -12,4 +12,5 @@ interface DriverRepository {
     suspend fun unassignDriver(driverId: String)
     suspend fun fireDriver(driverId: String)
     suspend fun seedCandidateDriversIfEmpty()
+    suspend fun resetAllDrivers() {}
 }

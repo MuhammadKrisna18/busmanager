@@ -14,6 +14,7 @@ interface RouteScheduleRepository {
     suspend fun assignBusToSchedule(scheduleId: String, busId: String): Boolean
     suspend fun unassignBusFromSchedule(scheduleId: String)
     suspend fun deleteSchedule(scheduleId: String)
+    suspend fun deleteAllSchedules() {}
     suspend fun checkConflict(
         routeId: String,
         direction: RouteDirection,

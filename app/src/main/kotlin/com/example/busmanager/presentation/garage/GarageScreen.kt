@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -28,9 +29,13 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.ui.theme.BackgroundWhite
 import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.IceBlue
@@ -62,6 +68,83 @@ fun GarageScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var busToSell by remember { mutableStateOf<GarageBusItem?>(null) }
+    var operatingWarningBus by remember { mutableStateOf<GarageBusItem?>(null) }
+
+    if (operatingWarningBus != null) {
+        val bus = operatingWarningBus!!.bus
+        AlertDialog(
+            onDismissRequest = { operatingWarningBus = null },
+            title = {
+                Text(
+                    text = "Armada Sedang Dinas",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = TextDark
+                )
+            },
+            text = {
+                Text(
+                    text = "Armada ${bus.busCode} (${bus.fullName}) saat ini sedang berdinas melayani rute perjalanan di jalan raya.\n\nHarap batalkan dinas terlebih dahulu atau tunggu hingga bus tiba di terminal tujuan sebelum menjual armada.",
+                    fontSize = 13.sp,
+                    color = TextMuted
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { operatingWarningBus = null }) {
+                    Text("Mengerti", fontWeight = FontWeight.Bold, color = PrimaryBlue)
+                }
+            }
+        )
+    }
+
+    if (busToSell != null) {
+        val item = busToSell!!
+        val bus = item.bus
+        val sellPrice = Money.rupiah((bus.totalPrice.amount * 0.70).toLong().coerceAtLeast(10_000_000L))
+        val hasAssignment = bus.hasRoute || bus.hasDriver
+
+        AlertDialog(
+            onDismissRequest = { busToSell = null },
+            title = {
+                Text(
+                    text = if (hasAssignment) "Konfirmasi Pelepasan & Penjualan" else "Konfirmasi Jual Armada",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = TextDark
+                )
+            },
+            text = {
+                val detailMessage = if (hasAssignment) {
+                    "Armada ${bus.busCode} (${bus.fullName}) saat ini memiliki penugasan${if (item.routeName != null) " trayek ${item.routeName}" else ""}${if (item.driverName != null) " bersama sopir ${item.driverName}" else ""}.\n\nMenjual armada ini akan otomatis melepas sopir kembali ke garasi dan membatalkan jadwal rute tersebut.\n\nApakah Anda yakin ingin menjual bus ini seharga ${sellPrice.formatRupiah()}?"
+                } else {
+                    "Apakah Anda yakin ingin menjual armada ${bus.busCode} (${bus.fullName}) seharga ${sellPrice.formatRupiah()}?"
+                }
+                Text(
+                    text = detailMessage,
+                    fontSize = 13.sp,
+                    color = TextMuted
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val busId = bus.id
+                        busToSell = null
+                        viewModel.sellBus(busId)
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626))
+                ) {
+                    Text("Jual Armada", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { busToSell = null }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -193,7 +276,14 @@ fun GarageScreen(
                         items(uiState.filteredBuses) { item ->
                             GarageBusCard(
                                 item = item,
-                                onAssignRouteClick = onNavigateToRoutes
+                                onAssignRouteClick = onNavigateToRoutes,
+                                onSellClick = {
+                                    if (item.isOperating) {
+                                        operatingWarningBus = item
+                                    } else {
+                                        busToSell = item
+                                    }
+                                }
                             )
                         }
                     }
@@ -256,6 +346,7 @@ private fun GarageTopBar(
 private fun GarageBusCard(
     item: GarageBusItem,
     onAssignRouteClick: () -> Unit,
+    onSellClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val bus = item.bus
@@ -423,18 +514,38 @@ private fun GarageBusCard(
                 }
             }
 
-            if (item.routeName == null) {
-                Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (item.routeName == null) {
+                    OutlinedButton(
+                        onClick = onAssignRouteClick,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = "+ Trayek Baru",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = PrimaryBlue
+                        )
+                    }
+                }
+                val sellPrice = Money.rupiah((bus.totalPrice.amount * 0.70).toLong().coerceAtLeast(10_000_000L))
                 OutlinedButton(
-                    onClick = onAssignRouteClick,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    onClick = onSellClick,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = if (item.routeName == null) Modifier.weight(1f) else Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFDC2626)),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFDC2626))
                 ) {
                     Text(
-                        text = "+ Tugaskan ke Trayek Baru",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = PrimaryBlue
+                        text = "💰 Jual (${sellPrice.formatRupiah()})",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }

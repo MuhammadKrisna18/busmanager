@@ -33,4 +33,7 @@ interface RoutePricingDao {
 
     @Query("DELETE FROM route_pricings WHERE routeId = :routeId")
     suspend fun deletePricingsByRoute(routeId: String): Int
+
+    @Query("DELETE FROM route_pricings")
+    suspend fun deleteAllPricings(): Int
 }

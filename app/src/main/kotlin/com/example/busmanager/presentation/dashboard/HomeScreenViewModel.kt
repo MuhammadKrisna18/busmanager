@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.busmanager.core.update.AppUpdateManager
 import com.example.busmanager.core.update.UpdateInfo
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
+import com.example.busmanager.domain.company.usecase.ResetGameUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
 import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
@@ -22,7 +23,8 @@ class HomeScreenViewModel(
     private val getOwnedFleetUseCase: GetOwnedFleetUseCase,
     private val startNewGameUseCase: StartNewGameUseCase,
     private val getHiredDriversUseCase: GetHiredDriversUseCase? = null,
-    private val appUpdateManager: AppUpdateManager = AppUpdateManager()
+    private val appUpdateManager: AppUpdateManager = AppUpdateManager(),
+    private val resetGameUseCase: ResetGameUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeScreenUiState())
@@ -83,6 +85,14 @@ class HomeScreenViewModel(
 
     fun togglePlaySimulation() {
         _uiState.update { it.copy(isPlaying = !it.isPlaying) }
+    }
+
+    fun resetGame() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            resetGameUseCase?.invoke()
+            _uiState.update { it.copy(isLoading = false) }
+        }
     }
 }
 

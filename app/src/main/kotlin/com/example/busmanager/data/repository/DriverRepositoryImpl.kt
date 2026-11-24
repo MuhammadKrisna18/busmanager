@@ -85,4 +85,8 @@ class DriverRepositoryImpl(
             driverDao.insertDrivers(initialCandidates)
         }
     }
+
+    override suspend fun resetAllDrivers() {
+        driverDao.resetAllDrivers()
+    }
 }

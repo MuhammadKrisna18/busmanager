@@ -43,4 +43,8 @@ class TerminalPassengerRepositoryImpl(
             compareBy<Triple<Int, Int, Int>> { it.third }.thenBy { it.second }.thenBy { it.first }
         )
     }
+
+    override suspend fun clearAllRecords() {
+        dao.deleteAllRecords()
+    }
 }

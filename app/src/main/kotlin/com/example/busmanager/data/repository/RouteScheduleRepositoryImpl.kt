@@ -90,4 +90,8 @@ class RouteScheduleRepositoryImpl(
             true
         }
     }
+
+    override suspend fun deleteAllSchedules() {
+        scheduleDao.deleteAllSchedules()
+    }
 }

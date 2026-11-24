@@ -48,7 +48,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
                         startNewGameUseCase = appContainer.startNewGameUseCase,
                         getHiredDriversUseCase = appContainer.getHiredDriversUseCase,
-                        appUpdateManager = appContainer.appUpdateManager
+                        appUpdateManager = appContainer.appUpdateManager,
+                        resetGameUseCase = appContainer.resetGameUseCase
                     )
                 }
                 HomeScreen(
@@ -181,7 +182,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         routeRepository = appContainer.routeRepository,
                         routePricingRepository = appContainer.routePricingRepository,
                         companyRepository = appContainer.companyRepository,
-                        getActiveTripsUseCase = appContainer.getActiveTripsUseCase
+                        getActiveTripsUseCase = appContainer.getActiveTripsUseCase,
+                        sellBusUseCase = appContainer.sellBusUseCase
                     )
                 }
                 GarageScreen(

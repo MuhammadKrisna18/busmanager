@@ -29,4 +29,7 @@ interface TerminalPassengerRecordDao {
 
     @Query("SELECT * FROM terminal_passenger_records")
     suspend fun getAllRecordsSnapshot(): List<TerminalPassengerRecordEntity>
+
+    @Query("DELETE FROM terminal_passenger_records")
+    suspend fun deleteAllRecords(): Int
 }

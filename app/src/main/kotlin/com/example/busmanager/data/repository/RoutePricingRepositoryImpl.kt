@@ -94,4 +94,8 @@ class RoutePricingRepositoryImpl(
         pricingDao.insertPricings(generatedPricings.map { it.toEntity() })
         return generatedPricings
     }
+
+    override suspend fun deleteAllPricings() {
+        pricingDao.deleteAllPricings()
+    }
 }

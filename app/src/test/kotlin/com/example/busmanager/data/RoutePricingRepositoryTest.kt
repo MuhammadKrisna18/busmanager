@@ -182,5 +182,12 @@ class RoutePricingRepositoryTest {
             pricingFlow.value = pricingMap.values.toList()
             return count
         }
+
+        override suspend fun deleteAllPricings(): Int {
+            val count = pricingMap.size
+            pricingMap.clear()
+            pricingFlow.value = emptyList()
+            return count
+        }
     }
 }

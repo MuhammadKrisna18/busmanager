@@ -4,7 +4,10 @@ import com.example.busmanager.domain.company.model.Company
 import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
+import com.example.busmanager.domain.company.usecase.ResetGameUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
+import com.example.busmanager.domain.driver.model.Driver
+import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
@@ -41,11 +44,19 @@ class HomeScreenViewModelTest {
         val getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo)
         val getOwnedFleetUseCase = GetOwnedFleetUseCase(fakeFleetRepo)
         val startNewGameUseCase = StartNewGameUseCase(fakeCompanyRepo)
+        val resetGameUseCase = ResetGameUseCase(
+            companyRepository = fakeCompanyRepo,
+            fleetRepository = fakeFleetRepo,
+            driverRepository = FakeDriverRepository(),
+            routeScheduleRepository = FakeRouteScheduleRepository(),
+            routePricingRepository = FakeRoutePricingRepository()
+        )
 
         viewModel = HomeScreenViewModel(
-            getCompanyUseCase,
-            getOwnedFleetUseCase,
-            startNewGameUseCase
+            getCompanyUseCase = getCompanyUseCase,
+            getOwnedFleetUseCase = getOwnedFleetUseCase,
+            startNewGameUseCase = startNewGameUseCase,
+            resetGameUseCase = resetGameUseCase
         )
     }
 
@@ -62,6 +73,19 @@ class HomeScreenViewModelTest {
         assertFalse(state.isLoading)
         assertEquals("PO TransNusantara", state.company?.name)
         assertEquals(Money.rupiah(50_000_000_000L), state.company?.balance)
+    }
+
+    @Test
+    fun resetGame_resetsCompanyBalanceAndState() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        fakeCompanyRepo.updateBalance(Money.rupiah(10_000L))
+        assertEquals(Money.rupiah(10_000L), fakeCompanyRepo.getBalance())
+
+        viewModel.resetGame()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(StartNewGameUseCase.DEFAULT_STARTING_BALANCE, fakeCompanyRepo.getBalance())
     }
 
     @Test
@@ -101,6 +125,12 @@ class HomeScreenViewModelTest {
             val current = state.value ?: return
             state.value = current.copy(balance = current.balance + amount)
         }
+
+        fun getBalance(): Money = state.value?.balance ?: Money.ZERO
+
+        override suspend fun resetCompany(name: String, initialBalance: Money) {
+            state.value = Company("comp-1", name, initialBalance, 100)
+        }
     }
 
     private class FakeFleetRepository : FleetRepository {
@@ -117,5 +147,47 @@ class HomeScreenViewModelTest {
         override suspend fun updateBus(bus: Bus) {}
 
         override suspend fun removeBus(busId: String) {}
+
+        override suspend fun removeAllBuses() {
+            state.value = emptyList()
+        }
+    }
+
+    private class FakeDriverRepository : DriverRepository {
+        override fun getAllDrivers(): Flow<List<Driver>> = MutableStateFlow(emptyList())
+        override fun getHiredDrivers(): Flow<List<Driver>> = MutableStateFlow(emptyList())
+        override suspend fun getDriverById(id: String): Driver? = null
+        override suspend fun hireDriver(driverId: String): Boolean = true
+        override suspend fun assignDriverToBus(driverId: String, busId: String): Boolean = true
+        override suspend fun unassignDriver(driverId: String) {}
+        override suspend fun fireDriver(driverId: String) {}
+        override suspend fun seedCandidateDriversIfEmpty() {}
+        override suspend fun resetAllDrivers() {}
+    }
+
+    private class FakeRouteScheduleRepository : com.example.busmanager.domain.route.repository.RouteScheduleRepository {
+        override fun getSchedulesForRoute(routeId: String) = MutableStateFlow(emptyList<com.example.busmanager.domain.route.model.RouteSchedule>())
+        override fun getAllSchedules() = MutableStateFlow(emptyList<com.example.busmanager.domain.route.model.RouteSchedule>())
+        override suspend fun getSchedulesListForRoute(routeId: String) = emptyList<com.example.busmanager.domain.route.model.RouteSchedule>()
+        override suspend fun getScheduleById(id: String) = null
+        override suspend fun addSchedule(schedule: com.example.busmanager.domain.route.model.RouteSchedule) = Result.success(Unit)
+        override suspend fun updateSchedule(schedule: com.example.busmanager.domain.route.model.RouteSchedule) = Result.success(Unit)
+        override suspend fun assignBusToSchedule(scheduleId: String, busId: String) = true
+        override suspend fun unassignBusFromSchedule(scheduleId: String) {}
+        override suspend fun deleteSchedule(scheduleId: String) {}
+        override suspend fun deleteAllSchedules() {}
+        override suspend fun checkConflict(routeId: String, direction: com.example.busmanager.domain.simulation.model.RouteDirection, hour: Int, minute: Int, excludeScheduleId: String?) = false
+    }
+
+    private class FakeRoutePricingRepository : com.example.busmanager.domain.route.repository.RoutePricingRepository {
+        override fun getPricingsForRoute(routeId: String) = MutableStateFlow(emptyList<com.example.busmanager.domain.route.model.RoutePricing>())
+        override suspend fun getPricingsListForRoute(routeId: String) = emptyList<com.example.busmanager.domain.route.model.RoutePricing>()
+        override fun getAllPricingsFlow() = MutableStateFlow(emptyList<com.example.busmanager.domain.route.model.RoutePricing>())
+        override suspend fun getAllPricings() = emptyList<com.example.busmanager.domain.route.model.RoutePricing>()
+        override suspend fun savePricing(pricing: com.example.busmanager.domain.route.model.RoutePricing) {}
+        override suspend fun savePricings(pricings: List<com.example.busmanager.domain.route.model.RoutePricing>) {}
+        override suspend fun getPricingBetween(routeId: String, originTerminalId: String, destinationTerminalId: String) = null
+        override suspend fun generateAndSaveDefaultPricings(route: com.example.busmanager.domain.route.model.BusRoute) = emptyList<com.example.busmanager.domain.route.model.RoutePricing>()
+        override suspend fun deleteAllPricings() {}
     }
 }

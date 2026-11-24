@@ -19,6 +19,7 @@ import com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl
 import com.example.busmanager.data.repository.TerminalPassengerRepositoryImpl
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
+import com.example.busmanager.domain.company.usecase.ResetGameUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
 import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.driver.usecase.AssignDriverToBusUseCase
@@ -35,6 +36,7 @@ import com.example.busmanager.domain.fleet.repository.ShowroomCatalogRepository
 import com.example.busmanager.domain.fleet.usecase.BuyBusUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.GetShowroomBusesUseCase
+import com.example.busmanager.domain.fleet.usecase.SellBusUseCase
 import com.example.busmanager.domain.fleet.usecase.ValidateBusOperationUseCase
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
@@ -103,10 +105,29 @@ class AppContainer(context: Context) {
     )
 
     val startNewGameUseCase = StartNewGameUseCase(companyRepository)
+    val resetGameUseCase = ResetGameUseCase(
+        companyRepository = companyRepository,
+        fleetRepository = fleetRepository,
+        driverRepository = driverRepository,
+        routeScheduleRepository = routeScheduleRepository,
+        routePricingRepository = routePricingRepository,
+        financialTransactionRepository = financialTransactionRepository,
+        terminalPassengerRepository = terminalPassengerRepository,
+        simulationTripRepository = simulationTripRepository,
+        simulationTimeRepository = simulationTimeRepository
+    )
     val getCompanyUseCase = GetCompanyUseCase(companyRepository)
     val getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepository)
     val getShowroomBusesUseCase = GetShowroomBusesUseCase(showroomCatalogRepository)
     val buyBusUseCase = BuyBusUseCase(companyRepository, fleetRepository)
+    val sellBusUseCase = SellBusUseCase(
+        fleetRepository = fleetRepository,
+        companyRepository = companyRepository,
+        driverRepository = driverRepository,
+        routeScheduleRepository = routeScheduleRepository,
+        financialTransactionRepository = financialTransactionRepository,
+        simulationTripRepository = simulationTripRepository
+    )
 
     val getAvailableDriversUseCase = GetAvailableDriversUseCase(driverRepository)
     val getHiredDriversUseCase = GetHiredDriversUseCase(driverRepository)

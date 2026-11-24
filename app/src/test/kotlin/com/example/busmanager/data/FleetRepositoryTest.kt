@@ -98,5 +98,12 @@ class FleetRepositoryTest {
             state.value = busMap.values.toList()
             return if (removed) 1 else 0
         }
+
+        override suspend fun deleteAllBuses(): Int {
+            val count = busMap.size
+            busMap.clear()
+            state.value = emptyList()
+            return count
+        }
     }
 }

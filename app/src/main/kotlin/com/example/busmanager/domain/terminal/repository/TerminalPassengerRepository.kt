@@ -9,4 +9,5 @@ interface TerminalPassengerRepository {
     fun getRecordsByTerminalFlow(terminalId: String): Flow<List<TerminalPassengerRecord>>
     suspend fun recordPassengerExchange(record: TerminalPassengerRecord)
     suspend fun getAvailableDates(): List<Triple<Int, Int, Int>>
+    suspend fun clearAllRecords() {}
 }

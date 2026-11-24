@@ -213,6 +213,13 @@ class RouteScheduleRepositoryTest {
             scheduleFlow.value = scheduleMap.values.toList()
             return if (removed) 1 else 0
         }
+
+        override suspend fun deleteAllSchedules(): Int {
+            val count = scheduleMap.size
+            scheduleMap.clear()
+            scheduleFlow.value = emptyList()
+            return count
+        }
     }
 
     private class FakeOwnedBusDao : OwnedBusDao {
@@ -237,6 +244,13 @@ class RouteScheduleRepositoryTest {
             val removed = busMap.remove(busId) != null
             busFlow.value = busMap.values.toList()
             return if (removed) 1 else 0
+        }
+
+        override suspend fun deleteAllBuses(): Int {
+            val count = busMap.size
+            busMap.clear()
+            busFlow.value = emptyList()
+            return count
         }
     }
 }

@@ -52,4 +52,8 @@ class FleetRepositoryImpl(
     override suspend fun removeBus(busId: String) {
         busDao.deleteBusById(busId)
     }
+
+    override suspend fun removeAllBuses() {
+        busDao.deleteAllBuses()
+    }
 }

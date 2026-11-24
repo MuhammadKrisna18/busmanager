@@ -10,4 +10,5 @@ interface CompanyRepository {
     suspend fun updateBalance(newBalance: Money)
     suspend fun deductBalance(amount: Money): Boolean
     suspend fun addBalance(amount: Money)
+    suspend fun resetCompany(name: String, initialBalance: Money) {}
 }

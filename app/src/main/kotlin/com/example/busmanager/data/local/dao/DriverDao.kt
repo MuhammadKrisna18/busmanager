@@ -34,4 +34,7 @@ interface DriverDao {
 
     @Query("DELETE FROM drivers WHERE id = :id")
     suspend fun deleteDriverById(id: String): Int
+
+    @Query("UPDATE drivers SET isHired = 0, assignedBusId = null")
+    suspend fun resetAllDrivers(): Int
 }

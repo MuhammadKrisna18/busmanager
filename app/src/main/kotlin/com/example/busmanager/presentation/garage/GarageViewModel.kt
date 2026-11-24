@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.repository.FleetRepository
+import com.example.busmanager.domain.fleet.usecase.SellBusResult
+import com.example.busmanager.domain.fleet.usecase.SellBusUseCase
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
@@ -23,7 +25,8 @@ class GarageViewModel(
     private val routeRepository: RouteRepository,
     private val routePricingRepository: RoutePricingRepository,
     private val companyRepository: CompanyRepository,
-    private val getActiveTripsUseCase: GetActiveTripsUseCase? = null
+    private val getActiveTripsUseCase: GetActiveTripsUseCase? = null,
+    private val sellBusUseCase: SellBusUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GarageUiState(isLoading = true))
@@ -96,6 +99,13 @@ class GarageViewModel(
             GarageFilter.ALL -> buses
             GarageFilter.OPERATING -> buses.filter { it.isOperating }
             GarageFilter.STANDBY -> buses.filter { !it.isOperating }
+        }
+    }
+
+    fun sellBus(busId: String, onResult: (SellBusResult) -> Unit = {}) {
+        viewModelScope.launch {
+            val result = sellBusUseCase?.invoke(busId) ?: SellBusResult.BusNotFound
+            onResult(result)
         }
     }
 }

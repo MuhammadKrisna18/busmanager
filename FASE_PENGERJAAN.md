@@ -93,10 +93,10 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 4 [Medium]: Penjualan Armada di Garasi & Fitur Reset Akun (Fix Diskusi 7 & 8)
-- Tombol & Dialog "Jual Bus" di Garasi Armada dengan proteksi armada sedang di jalan dan auto-release driver/jadwal jika standby.
-- Tombol & Dialog konfirmasi "Reset Akun" di HomeScreen dengan `ResetGameUseCase` untuk mengembalikan kondisi baru.
-- Pengujian unit test & Git Commit Fase 4.
+### ✅ Fase 4 [Medium]: Penjualan Armada di Garasi & Fitur Reset Akun (Fix Diskusi 7 & 8) - SELESAI
+- Tombol & Dialog "Jual Bus" di Garasi Armada dengan refund 70% harga pembelian awal, proteksi armada sedang di jalan, dan auto-release driver/jadwal jika standby. (Selesai)
+- Tombol & Dialog konfirmasi "Reset Akun" di HomeScreen dengan `ResetGameUseCase` untuk mengembalikan kondisi baru (Rp 50.000.000.000, 100 reputasi, reset sopir/jadwal/pricing/transaksi/data penumpang). (Selesai)
+- Pengujian unit test & Git Commit Fase 4. (Selesai)
 
 ---
 

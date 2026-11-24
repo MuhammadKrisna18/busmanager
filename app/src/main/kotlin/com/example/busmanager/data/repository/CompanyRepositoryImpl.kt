@@ -48,4 +48,14 @@ class CompanyRepositoryImpl(
         val updated = Money.rupiah(current.balance) + amount
         companyDao.updateBalance(updated.amount, CompanyEntity.DEFAULT_ID)
     }
+
+    override suspend fun resetCompany(name: String, initialBalance: Money) {
+        val entity = CompanyEntity(
+            id = CompanyEntity.DEFAULT_ID,
+            name = name,
+            balance = initialBalance.amount,
+            reputation = 100
+        )
+        companyDao.insertCompany(entity)
+    }
 }

@@ -220,6 +220,15 @@ class DriverRepositoryTest {
             driversFlow.value = driverMap.values.toList()
             return if (removed) 1 else 0
         }
+
+        override suspend fun resetAllDrivers(): Int {
+            val count = driverMap.size
+            driverMap.values.forEach { driver ->
+                driverMap[driver.id] = driver.copy(isHired = false, assignedBusId = null)
+            }
+            driversFlow.value = driverMap.values.toList()
+            return count
+        }
     }
 
     private class FakeOwnedBusDao : OwnedBusDao {
@@ -244,6 +253,13 @@ class DriverRepositoryTest {
             val removed = busMap.remove(busId) != null
             busFlow.value = busMap.values.toList()
             return if (removed) 1 else 0
+        }
+
+        override suspend fun deleteAllBuses(): Int {
+            val count = busMap.size
+            busMap.clear()
+            busFlow.value = emptyList()
+            return count
         }
     }
 }

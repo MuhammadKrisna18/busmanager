@@ -25,4 +25,7 @@ interface OwnedBusDao {
 
     @Query("DELETE FROM owned_buses WHERE id = :busId")
     suspend fun deleteBusById(busId: String): Int
+
+    @Query("DELETE FROM owned_buses")
+    suspend fun deleteAllBuses(): Int
 }

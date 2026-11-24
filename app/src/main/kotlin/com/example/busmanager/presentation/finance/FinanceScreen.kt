@@ -423,12 +423,14 @@ private fun TransactionItemCard(tx: FinancialTransaction) {
     val isIncome = tx.type == TransactionType.INCOME
     val badgeBg = when (tx.category) {
         TransactionCategory.TICKET_SALE -> SuccessGreenLight
+        TransactionCategory.BUS_SALE -> SuccessGreenLight
         TransactionCategory.DRIVER_WAGE -> Color(0xFFFEE2E2)
         TransactionCategory.BUS_PURCHASE -> WarningAmberLight
         TransactionCategory.OTHER -> IceBlue
     }
     val badgeColor = when (tx.category) {
         TransactionCategory.TICKET_SALE -> SuccessGreen
+        TransactionCategory.BUS_SALE -> SuccessGreen
         TransactionCategory.DRIVER_WAGE -> Color(0xFFDC2626)
         TransactionCategory.BUS_PURCHASE -> WarningAmber
         TransactionCategory.OTHER -> PrimaryBlue

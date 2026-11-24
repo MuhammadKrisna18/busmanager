@@ -12,6 +12,8 @@ import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.repository.FleetRepository
+import com.example.busmanager.domain.fleet.usecase.SellBusResult
+import com.example.busmanager.domain.fleet.usecase.SellBusUseCase
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
@@ -95,12 +97,20 @@ class GarageViewModelTest {
         )
         fakeDriverRepo.setDrivers(listOf(driver1))
 
+        val sellBusUseCase = SellBusUseCase(
+            fleetRepository = fakeFleetRepo,
+            companyRepository = fakeCompanyRepo,
+            driverRepository = fakeDriverRepo,
+            routeScheduleRepository = FakeRouteScheduleRepository()
+        )
+
         viewModel = GarageViewModel(
             fleetRepository = fakeFleetRepo,
             driverRepository = fakeDriverRepo,
             routeRepository = routeRepository,
             routePricingRepository = fakePricingRepo,
-            companyRepository = fakeCompanyRepo
+            companyRepository = fakeCompanyRepo,
+            sellBusUseCase = sellBusUseCase
         )
     }
 
@@ -209,6 +219,36 @@ class GarageViewModelTest {
         assertFalse(updatedState.allBuses.find { it.bus.id == "bus-2" }!!.isOperating)
     }
 
+    @Test
+    fun sellBus_succeedsForStandbyBus() = runTest {
+        advanceUntilIdle()
+
+        var sellResult: SellBusResult? = null
+        viewModel.sellBus("bus-2") { result ->
+            sellResult = result
+        }
+        advanceUntilIdle()
+
+        assertTrue(sellResult is SellBusResult.Success)
+        val state = viewModel.uiState.value
+        assertEquals(1, state.totalBusCount)
+        assertEquals("bus-1", state.allBuses.first().bus.id)
+    }
+
+    @Test
+    fun sellBus_failsForOperatingBus() = runTest {
+        advanceUntilIdle()
+
+        var sellResult: SellBusResult? = null
+        viewModel.sellBus("bus-1") { result ->
+            sellResult = result
+        }
+        advanceUntilIdle()
+
+        assertTrue(sellResult is SellBusResult.BusOperatingError)
+        assertEquals(2, viewModel.uiState.value.totalBusCount)
+    }
+
     private class FakeFleetRepository : FleetRepository {
         private val list = mutableListOf<Bus>()
         private val flow = MutableStateFlow<List<Bus>>(emptyList())
@@ -232,7 +272,14 @@ class GarageViewModelTest {
                 flow.value = list.toList()
             }
         }
-        override suspend fun removeBus(busId: String) {}
+        override suspend fun removeBus(busId: String) {
+            list.removeAll { it.id == busId }
+            flow.value = list.toList()
+        }
+        override suspend fun removeAllBuses() {
+            list.clear()
+            flow.value = emptyList()
+        }
     }
 
     private class FakeDriverRepository : DriverRepository {
@@ -319,5 +366,19 @@ class GarageViewModelTest {
         override fun completeTrip(tripId: String) {}
 
         override fun clearTrips() {}
+    }
+
+    private class FakeRouteScheduleRepository : com.example.busmanager.domain.route.repository.RouteScheduleRepository {
+        override fun getSchedulesForRoute(routeId: String) = MutableStateFlow(emptyList<com.example.busmanager.domain.route.model.RouteSchedule>())
+        override fun getAllSchedules() = MutableStateFlow(emptyList<com.example.busmanager.domain.route.model.RouteSchedule>())
+        override suspend fun getSchedulesListForRoute(routeId: String) = emptyList<com.example.busmanager.domain.route.model.RouteSchedule>()
+        override suspend fun getScheduleById(id: String) = null
+        override suspend fun addSchedule(schedule: com.example.busmanager.domain.route.model.RouteSchedule) = Result.success(Unit)
+        override suspend fun updateSchedule(schedule: com.example.busmanager.domain.route.model.RouteSchedule) = Result.success(Unit)
+        override suspend fun assignBusToSchedule(scheduleId: String, busId: String) = true
+        override suspend fun unassignBusFromSchedule(scheduleId: String) {}
+        override suspend fun deleteSchedule(scheduleId: String) {}
+        override suspend fun deleteAllSchedules() {}
+        override suspend fun checkConflict(routeId: String, direction: RouteDirection, hour: Int, minute: Int, excludeScheduleId: String?) = false
     }
 }

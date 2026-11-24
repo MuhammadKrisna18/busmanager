@@ -92,11 +92,11 @@ Dokumen ini memuat susunan pengerjaan terperinci untuk Season 9 yang dipecah men
 
 ---
 
-### 🔹 Fase 2 [Alur & Inventory]: Pembuatan Trayek Standby Tanpa Wajib Bus & Sopir (Decoupled Inventory)
-- [ ] Memperbarui `RouteWizard`: membuat penugasan bus dan sopir menjadi opsional dengan opsi tombol *"Simpan Trayek Saja (Standby)"* setelah matriks tarif selesai ditentukan.
-- [ ] Memastikan trayek yang tersimpan tanpa bus berstatus Standby/Non-aktif secara aman di database Room dan muncul di daftar Info Trayek.
-- [ ] Memverifikasi alur operasional: trayek standby dapat langsung diaktifkan melalui aksi penugasan cepat dari Garasi.
-- [ ] Pengujian unit test use case pembuatan trayek mandiri, verifikasi alur UI, lalu Git Commit Fase 2.
+### 🔹 Fase 2 [Alur & Inventory]: Pembuatan Trayek Standby Tanpa Wajib Bus & Sopir (Decoupled Inventory) [SELESAI]
+- [x] Memperbarui `RouteWizard`: membuat penugasan bus dan sopir menjadi opsional dengan opsi tombol *"Simpan Trayek Saja (Standby)"* setelah matriks tarif selesai ditentukan.
+- [x] Memastikan trayek yang tersimpan tanpa bus berstatus Standby/Non-aktif secara aman di database Room dan muncul di daftar Info Trayek.
+- [x] Memverifikasi alur operasional: trayek standby dapat langsung diaktifkan melalui aksi penugasan cepat dari Garasi.
+- [x] Pengujian unit test use case pembuatan trayek mandiri, verifikasi alur UI, lalu Git Commit Fase 2.
 
 ---
 

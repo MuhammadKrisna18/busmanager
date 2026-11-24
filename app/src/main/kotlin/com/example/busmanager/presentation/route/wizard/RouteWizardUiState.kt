@@ -49,6 +49,7 @@ data class RouteWizardUiState(
     val isSaving: Boolean = false,
     val errorMessage: String? = null,
     val launchSuccess: Boolean = false,
+    val isStandbySaved: Boolean = false,
     val launchedRouteId: String? = null
 ) {
     val returnDirection: RouteDirection
@@ -125,4 +126,7 @@ data class RouteWizardUiState(
 
     val canLaunchFromStep4: Boolean
         get() = selectedBus != null && isSelectedBusAvailable && selectedDriver != null && isSelectedDriverAvailable && !hasConflict && !isSaving
+
+    val canSaveStandby: Boolean
+        get() = canProceedFromStep1 && canProceedFromStep2 && canProceedFromStep3 && !isSaving
 }

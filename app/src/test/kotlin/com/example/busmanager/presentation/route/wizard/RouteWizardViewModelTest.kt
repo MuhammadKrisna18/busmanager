@@ -517,7 +517,7 @@ class RouteWizardViewModelTest {
     }
 
     @Test
-    fun busWithLocation_locksOriginTerminalAndRejectsDifferentOrigin() = runTest {
+    fun selectOrigin_allowsAnyTerminalRegardlessOfBusLocation() = runTest {
         advanceUntilIdle()
         val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
         val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
@@ -533,11 +533,55 @@ class RouteWizardViewModelTest {
         advanceUntilIdle()
 
         viewModel.selectBus(busAtArjosari)
-        assertEquals(arjosari.id, viewModel.uiState.value.selectedOrigin?.id)
+        viewModel.selectOrigin(purabaya)
+        assertEquals(purabaya.id, viewModel.uiState.value.selectedOrigin?.id)
+        assertNull(viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun saveRouteStandby_savesRouteAndPricingWithoutAssigningBusOrDriver() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
 
         viewModel.selectOrigin(purabaya)
-        assertEquals(arjosari.id, viewModel.uiState.value.selectedOrigin?.id)
-        assertNotNull(viewModel.uiState.value.errorMessage)
+        viewModel.selectDestination(arjosari)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.canProceedFromStep1)
+        assertTrue(viewModel.uiState.value.canProceedFromStep2)
+        assertTrue(viewModel.uiState.value.canProceedFromStep3)
+        assertTrue(viewModel.uiState.value.canSaveStandby)
+
+        var savedRouteId: String? = null
+        viewModel.saveRouteStandby { id ->
+            savedRouteId = id
+        }
+        advanceUntilIdle()
+
+        assertNotNull(savedRouteId)
+        assertTrue(viewModel.uiState.value.launchSuccess)
+        assertTrue(viewModel.uiState.value.isStandbySaved)
+
+        val persistedRoute = routeRepository.getRouteById(savedRouteId!!)
+        assertNotNull(persistedRoute)
+        assertEquals("term_purabaya", persistedRoute!!.originTerminal.id)
+        assertEquals("term_arjosari", persistedRoute.destinationTerminal.id)
+
+        val persistedPricings = fakePricingRepo.getAllPricings()
+        assertTrue(persistedPricings.isNotEmpty())
+
+        val persistedSchedules = fakeScheduleRepo.getAllList()
+        assertTrue(persistedSchedules.isEmpty())
+
+        val freeBus = fakeFleetRepo.getBusById("bus-test-1")
+        assertNotNull(freeBus)
+        assertNull(freeBus!!.routeId)
+        assertNull(freeBus.driverId)
+
+        val freeDriver = fakeDriverRepo.getDriverById("driver-test-1")
+        assertNotNull(freeDriver)
+        assertNull(freeDriver!!.assignedBusId)
     }
 
     private class FakeRoutePricingRepository : RoutePricingRepository {

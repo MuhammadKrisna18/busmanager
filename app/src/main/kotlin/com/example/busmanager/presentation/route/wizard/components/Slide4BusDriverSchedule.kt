@@ -102,7 +102,7 @@ fun Slide4BusDriverSchedule(
                     colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
                 ) {
                     Text(
-                        text = "Tidak ada bus yang siap beroperasi di garasi. Silakan beli bus baru di Showroom atau lepaskan dinas bus yang ada.",
+                        text = "Tidak ada bus yang siap beroperasi di garasi. Anda tetap dapat menyimpan trayek ini sebagai trayek Standby melalui tombol \"Simpan Standby\" di bawah, lalu menugaskan bus nanti melalui Garasi.",
                         modifier = Modifier.padding(14.dp),
                         fontSize = 12.sp,
                         color = Color(0xFFB45309)
@@ -220,7 +220,7 @@ fun Slide4BusDriverSchedule(
                     colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
                 ) {
                     Text(
-                        text = "Tidak ada pengemudi yang siap dinas. Silakan rekrut sopir baru di menu Manajemen Kru.",
+                        text = "Tidak ada pengemudi yang siap dinas. Anda dapat merekrut sopir di menu Manajemen Kru, atau menyimpan trayek ini sebagai Standby terlebih dahulu.",
                         modifier = Modifier.padding(14.dp),
                         fontSize = 12.sp,
                         color = Color(0xFFB45309)

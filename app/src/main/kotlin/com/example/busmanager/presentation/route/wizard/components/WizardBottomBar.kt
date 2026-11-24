@@ -36,10 +36,12 @@ import com.example.busmanager.ui.theme.TextMuted
 fun WizardBottomBar(
     currentStep: RouteWizardStep,
     canProceed: Boolean,
+    canSaveStandby: Boolean = false,
     isSaving: Boolean,
     onPreviousClick: () -> Unit,
     onNextClick: () -> Unit,
     onLaunchClick: () -> Unit,
+    onSaveStandbyClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -73,62 +75,124 @@ fun WizardBottomBar(
                 Spacer(modifier = Modifier.width(46.dp))
             }
 
-            if (currentStep == RouteWizardStep.BUS_DRIVER_SCHEDULE) {
-                Button(
-                    onClick = onLaunchClick,
-                    enabled = canProceed && !isSaving,
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = SuccessGreen,
-                        disabledContainerColor = Color(0xFFA7F3D0)
-                    ),
-                    modifier = Modifier.height(46.dp)
-                ) {
-                    if (isSaving) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+            when (currentStep) {
+                RouteWizardStep.BUS_DRIVER_SCHEDULE -> {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedButton(
+                            onClick = onSaveStandbyClick,
+                            enabled = canSaveStandby && !isSaving,
+                            shape = RoundedCornerShape(24.dp),
+                            modifier = Modifier.height(46.dp)
+                        ) {
+                            Text(
+                                text = "💾 Simpan Standby",
+                                color = TextDark,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        Button(
+                            onClick = onLaunchClick,
+                            enabled = canProceed && !isSaving,
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = SuccessGreen,
+                                disabledContainerColor = Color(0xFFA7F3D0)
+                            ),
+                            modifier = Modifier.height(46.dp)
+                        ) {
+                            if (isSaving) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Menyimpan...",
+                                    color = Color.White,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            } else {
+                                Text(
+                                    text = "🚀 Jalankan & Simpan",
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+                RouteWizardStep.PRICING_MATRIX -> {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedButton(
+                            onClick = onSaveStandbyClick,
+                            enabled = canSaveStandby && !isSaving,
+                            shape = RoundedCornerShape(24.dp),
+                            modifier = Modifier.height(46.dp)
+                        ) {
+                            Text(
+                                text = "💾 Simpan Standby",
+                                color = TextDark,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        Button(
+                            onClick = onNextClick,
+                            enabled = canProceed && !isSaving,
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                            modifier = Modifier.height(46.dp)
+                        ) {
+                            Text(
+                                text = "Lanjut ke Armada →",
+                                color = Color.White,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                RouteWizardStep.ORIGIN_DESTINATION -> {
+                    Button(
+                        onClick = onNextClick,
+                        enabled = canProceed,
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        modifier = Modifier.height(46.dp)
+                    ) {
                         Text(
-                            text = "Menyimpan...",
+                            text = "Lanjut ke Jalur →",
                             color = Color.White,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
-                    } else {
+                    }
+                }
+                RouteWizardStep.PATH_AND_STOPS -> {
+                    Button(
+                        onClick = onNextClick,
+                        enabled = canProceed,
+                        shape = RoundedCornerShape(24.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        modifier = Modifier.height(46.dp)
+                    ) {
                         Text(
-                            text = "🚀 Jalankan & Simpan",
+                            text = "Lanjut ke Tarif →",
                             color = Color.White,
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
                     }
-                }
-            } else {
-                val nextTitle = when (currentStep) {
-                    RouteWizardStep.ORIGIN_DESTINATION -> "Lanjut ke Jalur →"
-                    RouteWizardStep.PATH_AND_STOPS -> "Lanjut ke Tarif →"
-                    RouteWizardStep.PRICING_MATRIX -> "Lanjut ke Armada →"
-                    RouteWizardStep.BUS_DRIVER_SCHEDULE -> "Lanjut →"
-                }
-
-                Button(
-                    onClick = onNextClick,
-                    enabled = canProceed,
-                    shape = RoundedCornerShape(24.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryBlue
-                    ),
-                    modifier = Modifier.height(46.dp)
-                ) {
-                    Text(
-                        text = nextTitle,
-                        color = Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
                 }
             }
         }

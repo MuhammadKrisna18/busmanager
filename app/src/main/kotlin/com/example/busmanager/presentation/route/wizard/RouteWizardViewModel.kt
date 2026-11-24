@@ -77,16 +77,9 @@ class RouteWizardViewModel(
                     val selectedDriver = state.selectedDriver?.takeIf { sel -> eligibleDrivers.any { it.id == sel.id } }
                         ?: eligibleDrivers.firstOrNull()
 
-                    val busTerminalOrigin = if (state.selectedOrigin == null && selectedBus?.currentTerminalId != null) {
-                        terminals.find { it.id == selectedBus.currentTerminalId }
-                    } else {
-                        state.selectedOrigin
-                    }
-
                     state.copy(
                         availableBuses = eligibleBuses,
                         selectedBus = selectedBus,
-                        selectedOrigin = busTerminalOrigin,
                         availableDrivers = eligibleDrivers,
                         selectedDriver = selectedDriver,
                         driverAssignedBusCodes = assignmentMap
@@ -97,12 +90,6 @@ class RouteWizardViewModel(
     }
 
     fun selectOrigin(terminal: Terminal) {
-        val currentBus = _uiState.value.selectedBus
-        if (currentBus?.currentTerminalId != null && terminal.id != currentBus.currentTerminalId) {
-            val busTerminalName = _uiState.value.allTerminals.find { it.id == currentBus.currentTerminalId }?.name ?: currentBus.currentTerminalId
-            _uiState.update { it.copy(errorMessage = "Armada ${currentBus.busCode} saat ini berada di $busTerminalName. Terminal asal harus dari lokasi armada.") }
-            return
-        }
         _uiState.update {
             val updated = it.copy(selectedOrigin = terminal, errorMessage = null)
             if (updated.selectedDestination != null && updated.selectedDestination.id != terminal.id) {
@@ -555,6 +542,36 @@ class RouteWizardViewModel(
         }
     }
 
+    fun saveRouteStandby(onSuccess: (String) -> Unit) {
+        val state = _uiState.value
+        val route = state.builtRoute ?: return
+        if (state.pricings.isEmpty() || state.isSaving) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true, errorMessage = null) }
+            try {
+                saveCustomRouteUseCase(route)
+                routePricingRepository.savePricings(state.pricings)
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        launchSuccess = true,
+                        isStandbySaved = true,
+                        launchedRouteId = route.id
+                    )
+                }
+                onSuccess(route.id)
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isSaving = false,
+                        errorMessage = "Gagal menyimpan trayek standby: ${e.message}"
+                    )
+                }
+            }
+        }
+    }
+
     fun dismissSuccessDialog() {
         resetWizard()
     }
@@ -569,6 +586,7 @@ class RouteWizardViewModel(
                 selectedBus = current.availableBuses.firstOrNull(),
                 selectedDriver = current.availableDrivers.firstOrNull(),
                 launchSuccess = false,
+                isStandbySaved = false,
                 launchedRouteId = null
             )
         }

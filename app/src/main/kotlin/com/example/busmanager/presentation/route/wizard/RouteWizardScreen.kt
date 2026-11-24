@@ -80,11 +80,17 @@ fun RouteWizardScreen(
             WizardBottomBar(
                 currentStep = uiState.currentStep,
                 canProceed = canProceed,
+                canSaveStandby = uiState.canSaveStandby,
                 isSaving = uiState.isSaving,
                 onPreviousClick = { viewModel.previousStep() },
                 onNextClick = { viewModel.nextStep() },
                 onLaunchClick = {
                     viewModel.launchAndSaveRoute { routeId ->
+                        onRouteLaunched(routeId)
+                    }
+                },
+                onSaveStandbyClick = {
+                    viewModel.saveRouteStandby { routeId ->
                         onRouteLaunched(routeId)
                     }
                 }
@@ -153,7 +159,7 @@ fun RouteWizardScreen(
             onDismissRequest = { viewModel.dismissSuccessDialog() },
             title = {
                 Text(
-                    text = "🎉 Trayek Berhasil Diluncurkan!",
+                    text = if (uiState.isStandbySaved) "💾 Trayek Berhasil Disimpan (Standby)" else "🎉 Trayek Berhasil Diluncurkan!",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextDark
@@ -161,7 +167,11 @@ fun RouteWizardScreen(
             },
             text = {
                 Text(
-                    text = "Armada ${uiState.selectedBus?.busCode ?: ""} kini resmi ditugaskan melayani rute ${uiState.builtRoute?.name ?: ""} dan siap berdinas mencari pemasukan.\n\nAnda dapat memantau pergerakan armada secara langsung melalui tombol Play Simulasi di Layar Utama.",
+                    text = if (uiState.isStandbySaved) {
+                        "Trayek ${uiState.builtRoute?.name ?: ""} berhasil disimpan ke daftar trayek dalam status Standby.\n\nAnda dapat menugaskan armada bus dan sopir kapan saja melalui menu Garasi untuk mulai mengoperasikannya."
+                    } else {
+                        "Armada ${uiState.selectedBus?.busCode ?: ""} kini resmi ditugaskan melayani rute ${uiState.builtRoute?.name ?: ""} dan siap berdinas mencari pemasukan.\n\nAnda dapat memantau pergerakan armada secara langsung melalui tombol Play Simulasi di Layar Utama."
+                    },
                     fontSize = 13.sp,
                     color = TextDark
                 )

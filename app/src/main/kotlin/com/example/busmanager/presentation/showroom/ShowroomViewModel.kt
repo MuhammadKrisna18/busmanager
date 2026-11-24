@@ -3,13 +3,21 @@ package com.example.busmanager.presentation.showroom
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
+import com.example.busmanager.domain.finance.model.FinancialTransaction
+import com.example.busmanager.domain.finance.model.TransactionCategory
+import com.example.busmanager.domain.finance.model.TransactionType
+import com.example.busmanager.domain.finance.repository.FinancialTransactionRepository
 import com.example.busmanager.domain.fleet.model.Bus
+import com.example.busmanager.domain.fleet.model.BusClass
 import com.example.busmanager.domain.fleet.model.BuyBusResult
+import com.example.busmanager.domain.fleet.model.Chassis
 import com.example.busmanager.domain.fleet.model.ChassisBrand
+import com.example.busmanager.domain.fleet.model.KaroseriBody
 import com.example.busmanager.domain.fleet.model.KaroseriBrand
+import com.example.busmanager.domain.fleet.repository.ChassisCatalogRepository
+import com.example.busmanager.domain.fleet.repository.KaroseriCatalogRepository
 import com.example.busmanager.domain.fleet.usecase.BuyBusUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
-import com.example.busmanager.domain.fleet.usecase.GetShowroomBusesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,15 +28,15 @@ import java.util.UUID
 
 class ShowroomViewModel(
     private val getCompanyUseCase: GetCompanyUseCase,
-    private val getShowroomBusesUseCase: GetShowroomBusesUseCase,
     private val buyBusUseCase: BuyBusUseCase,
-    private val getOwnedFleetUseCase: GetOwnedFleetUseCase
+    private val getOwnedFleetUseCase: GetOwnedFleetUseCase,
+    private val chassisCatalogRepository: ChassisCatalogRepository,
+    private val karoseriCatalogRepository: KaroseriCatalogRepository,
+    private val financialTransactionRepository: FinancialTransactionRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ShowroomUiState())
     val uiState: StateFlow<ShowroomUiState> = _uiState.asStateFlow()
-
-    private var ownedBusCount = 0
 
     init {
         initializeData()
@@ -38,19 +46,20 @@ class ShowroomViewModel(
         viewModelScope.launch {
             combine(
                 getCompanyUseCase(),
-                getShowroomBusesUseCase(),
-                getOwnedFleetUseCase()
-            ) { company, readyStocks, ownedBuses ->
-                ownedBusCount = ownedBuses.size
+                getOwnedFleetUseCase(),
+                chassisCatalogRepository.getAllChassis(),
+                karoseriCatalogRepository.getAllBodies()
+            ) { company, ownedBuses, chassisList, bodyList ->
+                val nextNumber = ownedBuses.size + 1
+                val defaultCode = String.format("TN-%02d", nextNumber)
+
                 _uiState.update { current ->
                     current.copy(
                         company = company,
-                        readyStockBuses = readyStocks,
-                        filteredBuses = applyFilters(
-                            readyStocks,
-                            current.selectedKaroseriFilter,
-                            current.selectedChassisFilter
-                        ),
+                        ownedBusCount = ownedBuses.size,
+                        allChassis = chassisList,
+                        allBodies = bodyList,
+                        customBusCode = if (current.customBusCode.isBlank()) defaultCode else current.customBusCode,
                         isLoading = false
                     )
                 }
@@ -58,82 +67,124 @@ class ShowroomViewModel(
         }
     }
 
-    fun setKaroseriFilter(brand: KaroseriBrand?) {
+    fun selectChassis(chassis: Chassis) {
         _uiState.update { current ->
+            val isBodyStillCompatible = current.selectedBody?.let { body ->
+                if (body.requiresTronton && chassis.axleType != com.example.busmanager.domain.fleet.model.AxleType.TRONTON_6X2) false
+                else if (body.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.UHD && chassis.axleType != com.example.busmanager.domain.fleet.model.AxleType.TRONTON_6X2) false
+                else if (chassis.engineLocation == com.example.busmanager.domain.fleet.model.EngineLocation.FRONT && body.bodyType != com.example.busmanager.domain.fleet.model.BusBodyType.HDD) false
+                else true
+            } ?: false
+
             current.copy(
-                selectedKaroseriFilter = brand,
-                filteredBuses = applyFilters(
-                    current.readyStockBuses,
-                    brand,
-                    current.selectedChassisFilter
-                )
+                selectedChassis = chassis,
+                selectedBody = if (isBodyStillCompatible) current.selectedBody else null
             )
         }
     }
 
-    fun setChassisFilter(brand: ChassisBrand?) {
-        _uiState.update { current ->
-            current.copy(
-                selectedChassisFilter = brand,
-                filteredBuses = applyFilters(
-                    current.readyStockBuses,
-                    current.selectedKaroseriFilter,
-                    brand
-                )
-            )
-        }
+    fun setChassisBrandFilter(brand: ChassisBrand?) {
+        _uiState.update { it.copy(selectedChassisFilter = brand) }
     }
 
-    fun openPurchaseDialog(bus: Bus) {
-        val nextNumber = ownedBusCount + 1
-        val defaultCode = String.format("TN-%02d", nextNumber)
-        _uiState.update {
-            it.copy(
-                selectedBusForPurchase = bus,
-                customBusCode = defaultCode,
-                errorMessage = null
-            )
-        }
+    fun selectBody(body: KaroseriBody) {
+        _uiState.update { it.copy(selectedBody = body) }
+    }
+
+    fun setKaroseriBrandFilter(brand: KaroseriBrand?) {
+        _uiState.update { it.copy(selectedKaroseriFilter = brand) }
+    }
+
+    fun selectBusClass(busClass: BusClass) {
+        _uiState.update { it.copy(selectedBusClass = busClass) }
     }
 
     fun updateBusCode(code: String) {
         _uiState.update { it.copy(customBusCode = code.trim().uppercase()) }
     }
 
-    fun dismissPurchaseDialog() {
-        _uiState.update {
-            it.copy(
-                selectedBusForPurchase = null,
-                customBusCode = "",
-                errorMessage = null
-            )
+    fun goToStep(step: ShowroomStep) {
+        when (step) {
+            ShowroomStep.CHASSIS -> _uiState.update { it.copy(currentStep = step) }
+            ShowroomStep.BODY -> if (_uiState.value.selectedChassis != null) {
+                _uiState.update { it.copy(currentStep = step) }
+            }
+            ShowroomStep.CLASS -> if (_uiState.value.selectedChassis != null && _uiState.value.selectedBody != null) {
+                _uiState.update { it.copy(currentStep = step) }
+            }
+            ShowroomStep.REVIEW -> if (_uiState.value.selectedChassis != null && _uiState.value.selectedBody != null) {
+                _uiState.update { it.copy(currentStep = step) }
+            }
         }
     }
 
-    fun dismissSuccessNotice() {
-        _uiState.update { it.copy(purchaseSuccessBus = null) }
+    fun nextStep() {
+        val current = _uiState.value
+        when (current.currentStep) {
+            ShowroomStep.CHASSIS -> if (current.selectedChassis != null) {
+                _uiState.update { it.copy(currentStep = ShowroomStep.BODY) }
+            }
+            ShowroomStep.BODY -> if (current.selectedBody != null) {
+                _uiState.update { it.copy(currentStep = ShowroomStep.CLASS) }
+            }
+            ShowroomStep.CLASS -> {
+                _uiState.update { it.copy(currentStep = ShowroomStep.REVIEW) }
+            }
+            ShowroomStep.REVIEW -> {}
+        }
+    }
+
+    fun previousStep() {
+        val current = _uiState.value
+        when (current.currentStep) {
+            ShowroomStep.CHASSIS -> {}
+            ShowroomStep.BODY -> _uiState.update { it.copy(currentStep = ShowroomStep.CHASSIS) }
+            ShowroomStep.CLASS -> _uiState.update { it.copy(currentStep = ShowroomStep.BODY) }
+            ShowroomStep.REVIEW -> _uiState.update { it.copy(currentStep = ShowroomStep.CLASS) }
+        }
     }
 
     fun confirmPurchase() {
-        val selected = _uiState.value.selectedBusForPurchase ?: return
-        val code = _uiState.value.customBusCode.ifBlank {
-            String.format("TN-%02d", ownedBusCount + 1)
+        val state = _uiState.value
+        val chassis = state.selectedChassis ?: return
+        val body = state.tailoredBody ?: return
+        val code = state.customBusCode.ifBlank {
+            String.format("TN-%02d", state.ownedBusCount + 1)
         }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isPurchasing = true, errorMessage = null) }
 
-            val busToBuy = selected.copy(
+            val busToBuy = Bus(
                 id = UUID.randomUUID().toString(),
-                busCode = code
+                busCode = code,
+                chassis = chassis,
+                body = body
             )
 
             when (val result = buyBusUseCase(busToBuy)) {
                 is BuyBusResult.Success -> {
+                    val dateText = "Hari 1"
+                    val timeText = "08:00"
+                    val transaction = FinancialTransaction(
+                        id = "tx-bus-${busToBuy.id}-${System.currentTimeMillis()}",
+                        dateText = dateText,
+                        timeText = timeText,
+                        day = 1,
+                        month = 1,
+                        year = 2026,
+                        type = TransactionType.EXPENSE,
+                        category = TransactionCategory.BUS_PURCHASE,
+                        amount = busToBuy.totalPrice,
+                        busId = busToBuy.id,
+                        busCode = busToBuy.busCode,
+                        description = "Pembelian armada baru: ${busToBuy.busCode} (${busToBuy.fullName})"
+                    )
+                    financialTransactionRepository?.recordTransaction(transaction)
+
                     _uiState.update {
                         it.copy(
                             isPurchasing = false,
-                            selectedBusForPurchase = null,
                             purchaseSuccessBus = result.bus,
                             errorMessage = null
                         )
@@ -159,15 +210,23 @@ class ShowroomViewModel(
         }
     }
 
-    private fun applyFilters(
-        buses: List<Bus>,
-        karoseriBrand: KaroseriBrand?,
-        chassisBrand: ChassisBrand?
-    ): List<Bus> {
-        return buses.filter { bus ->
-            val matchKaroseri = karoseriBrand == null || bus.body.brand == karoseriBrand
-            val matchChassis = chassisBrand == null || bus.chassis.brand == chassisBrand
-            matchKaroseri && matchChassis
+    fun resetBuilder() {
+        val nextNumber = _uiState.value.ownedBusCount + 1
+        val defaultCode = String.format("TN-%02d", nextNumber)
+        _uiState.update {
+            it.copy(
+                currentStep = ShowroomStep.CHASSIS,
+                selectedChassis = null,
+                selectedBody = null,
+                selectedBusClass = BusClass.EKSEKUTIF,
+                customBusCode = defaultCode,
+                purchaseSuccessBus = null,
+                errorMessage = null
+            )
         }
+    }
+
+    fun dismissSuccessNotice() {
+        resetBuilder()
     }
 }

@@ -108,15 +108,21 @@ fun MainNavigation(appContainer: AppContainer) {
                 val viewModel: ShowroomViewModel = viewModel {
                     ShowroomViewModel(
                         getCompanyUseCase = appContainer.getCompanyUseCase,
-                        getShowroomBusesUseCase = appContainer.getShowroomBusesUseCase,
                         buyBusUseCase = appContainer.buyBusUseCase,
-                        getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase
+                        getOwnedFleetUseCase = appContainer.getOwnedFleetUseCase,
+                        chassisCatalogRepository = appContainer.chassisCatalogRepository,
+                        karoseriCatalogRepository = appContainer.karoseriCatalogRepository,
+                        financialTransactionRepository = appContainer.financialTransactionRepository
                     )
                 }
                 ShowroomScreen(
                     viewModel = viewModel,
                     onNavigateBack = {
                         backStack.removeLastOrNull()
+                    },
+                    onNavigateToGarage = {
+                        backStack.removeLastOrNull()
+                        backStack.add(GarageRoute)
                     }
                 )
             }

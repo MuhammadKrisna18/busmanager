@@ -100,7 +100,7 @@ Dokumen perencanaan fitur lanjutan Season 2 mencakup personalisasi armada bertah
 
 ---
 
-### 🟢 Fase 1 [Easy-Medium]: Pemilihan Bus Modular (Custom Bus Builder Flow)
+### 🟢 Fase 1 [Easy-Medium]: Pemilihan Bus Modular (Custom Bus Builder Flow) [SELESAI ✅]
 - **Tujuan**: Mengubah alur pembelian armada di Showroom menjadi bertahap layaknya memesan bus di dunia nyata.
 - **Deliverables**:
   1. **Flow Wizard Perakitan 4 Langkah**:

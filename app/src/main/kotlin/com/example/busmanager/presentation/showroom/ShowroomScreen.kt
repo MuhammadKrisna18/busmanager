@@ -2,6 +2,7 @@ package com.example.busmanager.presentation.showroom
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -43,11 +43,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import com.example.busmanager.domain.fleet.model.AxleType
+import com.example.busmanager.domain.company.model.Company
+import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.fleet.model.Bus
+import com.example.busmanager.domain.fleet.model.BusClass
+import com.example.busmanager.domain.fleet.model.Chassis
 import com.example.busmanager.domain.fleet.model.ChassisBrand
+import com.example.busmanager.domain.fleet.model.KaroseriBody
 import com.example.busmanager.domain.fleet.model.KaroseriBrand
-import com.example.busmanager.domain.fleet.model.SuspensionType
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -58,15 +61,17 @@ import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
 import com.example.busmanager.ui.theme.PrimaryBlueDark
 import com.example.busmanager.ui.theme.SuccessGreen
+import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
-import com.example.busmanager.ui.theme.TextLight
 import com.example.busmanager.ui.theme.TextMuted
+import com.example.busmanager.ui.theme.WarningAmberLight
 
 @Composable
 fun ShowroomScreen(
     viewModel: ShowroomViewModel,
     onNavigateBack: () -> Unit,
+    onNavigateToGarage: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -74,6 +79,25 @@ fun ShowroomScreen(
     Scaffold(
         topBar = {
             ShowroomTopBar(onNavigateBack = onNavigateBack)
+        },
+        bottomBar = {
+            if (!uiState.isLoading) {
+                ShowroomBottomActionBar(
+                    currentStep = uiState.currentStep,
+                    canProceed = when (uiState.currentStep) {
+                        ShowroomStep.CHASSIS -> uiState.selectedChassis != null
+                        ShowroomStep.BODY -> uiState.selectedBody != null
+                        ShowroomStep.CLASS -> true
+                        ShowroomStep.REVIEW -> uiState.canAfford && !uiState.isPurchasing
+                    },
+                    canAfford = uiState.canAfford,
+                    isPurchasing = uiState.isPurchasing,
+                    totalInvestment = uiState.totalInvestment,
+                    onPrevious = { viewModel.previousStep() },
+                    onNext = { viewModel.nextStep() },
+                    onConfirmPurchase = { viewModel.confirmPurchase() }
+                )
+            }
         },
         containerColor = BackgroundWhite,
         modifier = modifier
@@ -93,72 +117,142 @@ fun ShowroomScreen(
                     .fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = AppDimens.paddingMedium),
-                contentPadding = PaddingValues(vertical = AppDimens.paddingSmall),
-                verticalArrangement = Arrangement.spacedBy(AppDimens.paddingMedium)
+                contentPadding = PaddingValues(top = AppDimens.paddingSmall, bottom = 80.dp),
+                verticalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall)
             ) {
                 item {
-                    CompanyBalanceBanner(
-                        companyName = uiState.company?.name ?: "PO TransNusantara",
-                        balanceFormatted = uiState.company?.balance?.formatRupiah() ?: "Rp 0"
-                    )
+                    CompanyBalanceBanner(company = uiState.company)
                 }
 
                 item {
-                    KaroseriFilterRow(
-                        selected = uiState.selectedKaroseriFilter,
-                        onSelect = { viewModel.setKaroseriFilter(it) }
+                    ShowroomStepIndicator(
+                        currentStep = uiState.currentStep,
+                        selectedChassis = uiState.selectedChassis,
+                        selectedBody = uiState.selectedBody,
+                        onStepClick = { viewModel.goToStep(it) }
                     )
                 }
 
-                item {
-                    ChassisFilterRow(
-                        selected = uiState.selectedChassisFilter,
-                        onSelect = { viewModel.setChassisFilter(it) }
-                    )
+                if (uiState.errorMessage != null) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(AppDimens.radiusSmall))
+                                .background(Color(0xFFFEE2E2))
+                                .padding(AppDimens.paddingSmall)
+                        ) {
+                            Text(
+                                text = "⚠️ ${uiState.errorMessage}",
+                                color = Color(0xFFDC2626),
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
 
-                item {
-                    Text(
-                        text = "Unit Siap Beli (${uiState.filteredBuses.size})",
-                        color = TextDark,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                when (uiState.currentStep) {
+                    ShowroomStep.CHASSIS -> {
+                        item {
+                            ChassisBrandFilterRow(
+                                selectedBrand = uiState.selectedChassisFilter,
+                                onSelectBrand = { viewModel.setChassisBrandFilter(it) }
+                            )
+                        }
 
-                items(uiState.filteredBuses) { bus ->
-                    val canAfford = uiState.company?.balance?.canAfford(bus.totalPrice) ?: false
-                    ShowroomBusCard(
-                        bus = bus,
-                        canAfford = canAfford,
-                        onBuyClick = { viewModel.openPurchaseDialog(bus) }
-                    )
-                }
+                        items(uiState.filteredChassis, key = { it.id }) { chassis ->
+                            ChassisSelectionCard(
+                                chassis = chassis,
+                                isSelected = uiState.selectedChassis?.id == chassis.id,
+                                onSelect = { viewModel.selectChassis(chassis) }
+                            )
+                        }
+                    }
 
-                item {
-                    Spacer(modifier = Modifier.height(AppDimens.paddingLarge))
+                    ShowroomStep.BODY -> {
+                        item {
+                            SelectedChassisSummaryBanner(chassis = uiState.selectedChassis)
+                        }
+
+                        item {
+                            KaroseriBrandFilterRow(
+                                selectedBrand = uiState.selectedKaroseriFilter,
+                                onSelectBrand = { viewModel.setKaroseriBrandFilter(it) }
+                            )
+                        }
+
+                        if (uiState.compatibleBodies.isEmpty()) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 32.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Tidak ada bodi yang kompatibel dengan filter terpilih.",
+                                        color = TextMuted,
+                                        fontSize = 13.sp
+                                    )
+                                }
+                            }
+                        } else {
+                            items(uiState.compatibleBodies, key = { it.id }) { body ->
+                                KaroseriBodySelectionCard(
+                                    body = body,
+                                    isSelected = uiState.selectedBody?.id == body.id,
+                                    onSelect = { viewModel.selectBody(body) }
+                                )
+                            }
+                        }
+                    }
+
+                    ShowroomStep.CLASS -> {
+                        item {
+                            ConfigurationSummaryHeader(
+                                chassis = uiState.selectedChassis,
+                                body = uiState.selectedBody
+                            )
+                        }
+
+                        items(BusClass.entries, key = { it.name }) { busClass ->
+                            BusClassSelectionCard(
+                                busClass = busClass,
+                                body = uiState.selectedBody,
+                                isSelected = uiState.selectedBusClass == busClass,
+                                onSelect = { viewModel.selectBusClass(busClass) }
+                            )
+                        }
+                    }
+
+                    ShowroomStep.REVIEW -> {
+                        item {
+                            ReviewConfirmationContent(
+                                chassis = uiState.selectedChassis,
+                                body = uiState.tailoredBody,
+                                customBusCode = uiState.customBusCode,
+                                totalInvestment = uiState.totalInvestment,
+                                company = uiState.company,
+                                canAfford = uiState.canAfford,
+                                onUpdateBusCode = { viewModel.updateBusCode(it) }
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
 
-        if (uiState.selectedBusForPurchase != null) {
-            PurchaseConfirmDialog(
-                bus = uiState.selectedBusForPurchase!!,
-                busCode = uiState.customBusCode,
-                onBusCodeChange = { viewModel.updateBusCode(it) },
-                isPurchasing = uiState.isPurchasing,
-                errorMessage = uiState.errorMessage,
-                onConfirm = { viewModel.confirmPurchase() },
-                onDismiss = { viewModel.dismissPurchaseDialog() }
-            )
-        }
-
-        if (uiState.purchaseSuccessBus != null) {
-            PurchaseSuccessDialog(
-                bus = uiState.purchaseSuccessBus!!,
-                onDismiss = { viewModel.dismissSuccessNotice() }
-            )
-        }
+    if (uiState.purchaseSuccessBus != null) {
+        PurchaseSuccessModal(
+            bus = uiState.purchaseSuccessBus!!,
+            onDismiss = { viewModel.dismissSuccessNotice() },
+            onNavigateToGarage = {
+                viewModel.dismissSuccessNotice()
+                onNavigateToGarage()
+            }
+        )
     }
 }
 
@@ -166,29 +260,43 @@ fun ShowroomScreen(
 private fun ShowroomTopBar(onNavigateBack: () -> Unit) {
     Surface(
         color = SurfaceWhite,
-        shadowElevation = 2.dp
+        shadowElevation = AppDimens.cardElevation
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = AppDimens.paddingSmall, vertical = AppDimens.paddingSmall),
+                .padding(horizontal = AppDimens.paddingMedium, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onNavigateBack) {
-                Text(text = "←", fontSize = 24.sp, color = PrimaryBlue, fontWeight = FontWeight.Bold)
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(IceBlue)
+                    .clickable(onClick = onNavigateBack),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "◀",
+                    color = PrimaryBlueDark,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
-            Column(modifier = Modifier.padding(start = 4.dp)) {
+            Spacer(modifier = Modifier.width(AppDimens.paddingMedium))
+
+            Column {
                 Text(
-                    text = "Showroom Bus Jadi",
+                    text = "Perakitan & Pembelian Armada",
                     color = TextDark,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Katalog Unit Siap Beroperasi",
+                    text = "Showroom & Karoseri PO TransNusantara",
                     color = TextMuted,
-                    fontSize = 12.sp
+                    fontSize = 11.sp
                 )
             }
         }
@@ -196,15 +304,419 @@ private fun ShowroomTopBar(onNavigateBack: () -> Unit) {
 }
 
 @Composable
-private fun CompanyBalanceBanner(
-    companyName: String,
-    balanceFormatted: String
-) {
+private fun CompanyBalanceBanner(company: Company?) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AppDimens.radiusMedium),
-        colors = CardDefaults.cardColors(containerColor = PrimaryBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = PrimaryBlueDark)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = AppDimens.paddingMedium, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = company?.name ?: "PO TransNusantara",
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 11.sp
+                )
+                Text(
+                    text = "Saldo Kas Tersedia",
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Text(
+                text = company?.balance?.formatRupiah() ?: "Rp 0",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShowroomStepIndicator(
+    currentStep: ShowroomStep,
+    selectedChassis: Chassis?,
+    selectedBody: KaroseriBody?,
+    onStepClick: (ShowroomStep) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(AppDimens.radiusSmall))
+            .background(IceBlue)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        ShowroomStep.entries.forEach { step ->
+            val isCurrent = step == currentStep
+            val isCompleted = when (step) {
+                ShowroomStep.CHASSIS -> selectedChassis != null
+                ShowroomStep.BODY -> selectedBody != null
+                ShowroomStep.CLASS -> selectedChassis != null && selectedBody != null
+                ShowroomStep.REVIEW -> false
+            }
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (isCurrent) PrimaryBlue else Color.Transparent)
+                    .clickable { onStepClick(step) }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (isCompleted && !isCurrent) "${step.stepNumber}. ✓" else step.title,
+                    color = if (isCurrent) Color.White else PrimaryBlueDark,
+                    fontSize = 11.sp,
+                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChassisBrandFilterRow(
+    selectedBrand: ChassisBrand?,
+    onSelectBrand: (ChassisBrand?) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        contentPadding = PaddingValues(vertical = 4.dp)
+    ) {
+        item {
+            FilterChip(
+                selected = selectedBrand == null,
+                onClick = { onSelectBrand(null) },
+                label = { Text("Semua Sasis", fontSize = 11.sp) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = PrimaryBlue,
+                    selectedLabelColor = Color.White
+                )
+            )
+        }
+        items(ChassisBrand.entries) { brand ->
+            FilterChip(
+                selected = selectedBrand == brand,
+                onClick = { onSelectBrand(if (selectedBrand == brand) null else brand) },
+                label = { Text(brand.displayName, fontSize = 11.sp) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = PrimaryBlue,
+                    selectedLabelColor = Color.White
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChassisSelectionCard(
+    chassis: Chassis,
+    isSelected: Boolean,
+    onSelect: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onSelect),
+        shape = RoundedCornerShape(AppDimens.radiusMedium),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) AccentBlue else SurfaceWhite
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation),
+        border = androidx.compose.foundation.BorderStroke(
+            if (isSelected) 2.dp else 1.dp,
+            if (isSelected) PrimaryBlue else CardBorder
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppDimens.paddingMedium)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusSmall))
+                            .background(PrimaryBlueDark)
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = chassis.brand.displayName,
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = chassis.modelName,
+                        color = TextDark,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text = chassis.price.formatRupiah(),
+                    color = PrimaryBlue,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFFF8FAFC))
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                SpecBadge(label = "Tenaga", value = "${chassis.horsepower} HP")
+                SpecBadge(label = "Torsi", value = "${chassis.torqueNm} Nm")
+                SpecBadge(label = "Gandar", value = chassis.axleType.displayName)
+                SpecBadge(label = "Suspensi", value = chassis.suspension.displayName)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SelectedChassisSummaryBanner(chassis: Chassis?) {
+    if (chassis == null) return
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppDimens.radiusSmall),
+        colors = CardDefaults.cardColors(containerColor = IceBlue)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(text = "Sasis Dipilih:", fontSize = 10.sp, color = TextMuted)
+                Text(
+                    text = "${chassis.brand.displayName} ${chassis.modelName}",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryBlueDark
+                )
+            }
+            Text(
+                text = chassis.price.formatRupiah(),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryBlue
+            )
+        }
+    }
+}
+
+@Composable
+private fun KaroseriBrandFilterRow(
+    selectedBrand: KaroseriBrand?,
+    onSelectBrand: (KaroseriBrand?) -> Unit
+) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        contentPadding = PaddingValues(vertical = 4.dp)
+    ) {
+        item {
+            FilterChip(
+                selected = selectedBrand == null,
+                onClick = { onSelectBrand(null) },
+                label = { Text("Semua Karoseri", fontSize = 11.sp) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = PrimaryBlue,
+                    selectedLabelColor = Color.White
+                )
+            )
+        }
+        items(KaroseriBrand.entries) { brand ->
+            FilterChip(
+                selected = selectedBrand == brand,
+                onClick = { onSelectBrand(if (selectedBrand == brand) null else brand) },
+                label = { Text(brand.displayName, fontSize = 11.sp) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = PrimaryBlue,
+                    selectedLabelColor = Color.White
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun KaroseriBodySelectionCard(
+    body: KaroseriBody,
+    isSelected: Boolean,
+    onSelect: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onSelect),
+        shape = RoundedCornerShape(AppDimens.radiusMedium),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) AccentBlue else SurfaceWhite
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation),
+        border = androidx.compose.foundation.BorderStroke(
+            if (isSelected) 2.dp else 1.dp,
+            if (isSelected) PrimaryBlue else CardBorder
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppDimens.paddingMedium)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusSmall))
+                            .background(Color(0xFF0369A1))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    ) {
+                        Text(
+                            text = body.brand.displayName,
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = body.modelName,
+                        color = TextDark,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Text(
+                    text = body.price.formatRupiah(),
+                    color = PrimaryBlue,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFFF8FAFC))
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                SpecBadge(label = "Tipe", value = body.bodyType.name)
+                SpecBadge(label = "Bagasi", value = "${body.luggageCapacityKg} kg")
+                SpecBadge(label = "Kenyamanan", value = "${body.comfortRating}/100")
+                SpecBadge(label = "Tronton", value = if (body.requiresTronton) "Wajib 6x2" else "4x2 / 6x2")
+            }
+        }
+    }
+}
+
+@Composable
+private fun ConfigurationSummaryHeader(
+    chassis: Chassis?,
+    body: KaroseriBody?
+) {
+    if (chassis == null || body == null) return
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppDimens.radiusSmall),
+        colors = CardDefaults.cardColors(containerColor = IceBlue)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+        ) {
+            Text(
+                text = "${chassis.brand.displayName} ${chassis.modelName} + ${body.brand.displayName} ${body.modelName}",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = PrimaryBlueDark
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "Pilih kelas interior layanan penumpang untuk menentukan konfigurasi kursi & tarif tiket.",
+                fontSize = 11.sp,
+                color = TextMuted
+            )
+        }
+    }
+}
+
+@Composable
+private fun BusClassSelectionCard(
+    busClass: BusClass,
+    body: KaroseriBody?,
+    isSelected: Boolean,
+    onSelect: () -> Unit
+) {
+    val capacity = when (busClass) {
+        BusClass.EKONOMI -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 65 else 50
+        BusClass.BISNIS -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 54 else 40
+        BusClass.VIP -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 46 else 34
+        BusClass.EKSEKUTIF -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 40 else 30
+        BusClass.SUPER_EKSEKUTIF -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 30 else 22
+        BusClass.SUITES_CLASS -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 32 else 21
+    }
+
+    val classPriceAddition = when (busClass) {
+        BusClass.EKONOMI -> Money.rupiah(0L)
+        BusClass.BISNIS -> Money.rupiah(20_000_000L)
+        BusClass.VIP -> Money.rupiah(40_000_000L)
+        BusClass.EKSEKUTIF -> Money.rupiah(60_000_000L)
+        BusClass.SUPER_EKSEKUTIF -> Money.rupiah(90_000_000L)
+        BusClass.SUITES_CLASS -> Money.rupiah(140_000_000L)
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onSelect),
+        shape = RoundedCornerShape(AppDimens.radiusMedium),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) AccentBlue else SurfaceWhite
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation),
+        border = androidx.compose.foundation.BorderStroke(
+            if (isSelected) 2.dp else 1.dp,
+            if (isSelected) PrimaryBlue else CardBorder
+        )
     ) {
         Row(
             modifier = Modifier
@@ -213,33 +725,49 @@ private fun CompanyBalanceBanner(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = busClass.displayName,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextDark
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(SuccessGreenLight)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "${busClass.ticketMultiplier}x Tarif Tiket",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = SuccessGreen
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Saldo Kas PO",
-                    color = Color.White.copy(alpha = 0.8f),
+                    text = "Kapasitas: $capacity Kursi Penumpang",
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = balanceFormatted,
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    color = PrimaryBlueDark,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(AppDimens.radiusPill))
-                    .background(Color.White.copy(alpha = 0.2f))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
-            ) {
+            Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = "Dana Siap Beli",
-                    color = Color.White,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
+                    text = if (classPriceAddition.amount > 0L) "+${classPriceAddition.formatRupiah()}" else "Standar",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (classPriceAddition.amount > 0L) Color(0xFFB45309) else SuccessGreen
+                )
+                Text(
+                    text = "Biaya Interior",
+                    fontSize = 10.sp,
+                    color = TextMuted
                 )
             }
         }
@@ -247,134 +775,103 @@ private fun CompanyBalanceBanner(
 }
 
 @Composable
-private fun KaroseriFilterRow(
-    selected: KaroseriBrand?,
-    onSelect: (KaroseriBrand?) -> Unit
-) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        item {
-            FilterChip(
-                selected = selected == null,
-                onClick = { onSelect(null) },
-                label = { Text("Semua Karoseri", fontSize = 12.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = PrimaryBlue,
-                    selectedLabelColor = Color.White
-                )
-            )
-        }
-
-        items(KaroseriBrand.entries) { brand ->
-            FilterChip(
-                selected = selected == brand,
-                onClick = { onSelect(brand) },
-                label = { Text(brand.displayName, fontSize = 12.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = PrimaryBlue,
-                    selectedLabelColor = Color.White
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun ChassisFilterRow(
-    selected: ChassisBrand?,
-    onSelect: (ChassisBrand?) -> Unit
-) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        item {
-            FilterChip(
-                selected = selected == null,
-                onClick = { onSelect(null) },
-                label = { Text("Semua Sasis", fontSize = 12.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = PrimaryBlue,
-                    selectedLabelColor = Color.White
-                )
-            )
-        }
-
-        items(ChassisBrand.entries) { brand ->
-            FilterChip(
-                selected = selected == brand,
-                onClick = { onSelect(brand) },
-                label = { Text(brand.displayName, fontSize = 12.sp) },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = PrimaryBlue,
-                    selectedLabelColor = Color.White
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun ShowroomBusCard(
-    bus: Bus,
+private fun ReviewConfirmationContent(
+    chassis: Chassis?,
+    body: KaroseriBody?,
+    customBusCode: String,
+    totalInvestment: Money,
+    company: Company?,
     canAfford: Boolean,
-    onBuyClick: () -> Unit
+    onUpdateBusCode: (String) -> Unit
 ) {
+    if (chassis == null || body == null) return
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AppDimens.radiusMedium),
         colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
     ) {
-        Column(modifier = Modifier.padding(AppDimens.paddingMedium)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "${bus.chassis.brand.displayName} ${bus.chassis.modelName}",
-                        color = PrimaryBlueDark,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "${bus.body.brand.displayName} ${bus.body.modelName}",
-                        color = TextDark,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppDimens.paddingMedium)
+        ) {
+            Text(
+                text = "🚌 Cetak Biru Perakitan Armada Baru",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(10.dp))
 
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(AppDimens.radiusPill))
-                        .background(AccentBlue)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+            ReviewItemRow(
+                label = "Sasis Pilihan",
+                detail = "${chassis.brand.displayName} ${chassis.modelName}",
+                price = chassis.price.formatRupiah()
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            ReviewItemRow(
+                label = "Bodi Karoseri",
+                detail = "${body.brand.displayName} ${body.modelName}",
+                price = body.price.formatRupiah()
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+
+            ReviewItemRow(
+                label = "Kelas & Kursi",
+                detail = "${body.busClass.displayName} (${body.passengerCapacity} Kursi)",
+                price = "${body.busClass.ticketMultiplier}x Tarif"
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(IceBlue)
+                    .padding(10.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = bus.body.busClass.displayName,
-                        color = PrimaryBlueDark,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "Total Investasi Pembelian:",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
+                    )
+                    Text(
+                        text = totalInvestment.formatRupiah(),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = PrimaryBlue
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                FeatureBadge(text = bus.chassis.suspension.displayName)
-                FeatureBadge(text = bus.chassis.axleType.displayName)
-                FeatureBadge(text = bus.chassis.transmission.displayName)
-            }
+            Text(
+                text = "Nomor Plat / Kode Panggilan Armada:",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+
+            OutlinedTextField(
+                value = customBusCode,
+                onValueChange = onUpdateBusCode,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text("Contoh: TN-01, TN-02") }
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -382,183 +879,115 @@ private fun ShowroomBusCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                SpecItem(label = "Tenaga", value = "${bus.chassis.horsepower} HP")
-                SpecItem(label = "Torsi", value = "${bus.chassis.torqueNm} Nm")
-                SpecItem(label = "Kapasitas", value = "${bus.body.passengerCapacity} Kursi")
-                SpecItem(label = "Efisiensi", value = "${bus.chassis.fuelConsumptionKmPerLiter} km/L")
+                Text(text = "Saldo Kas Tersedia:", fontSize = 11.sp, color = TextMuted)
+                Text(
+                    text = company?.balance?.formatRupiah() ?: "Rp 0",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextDark
+                )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(CardBorder))
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(text = "Harga Total Unit", color = TextLight, fontSize = 11.sp)
-                    Text(
-                        text = bus.totalPrice.formatRupiah(),
-                        color = PrimaryBlue,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                }
+                Text(text = "Sisa Saldo Setelah Beli:", fontSize = 11.sp, color = TextMuted)
+                val remaining = (company?.balance?.amount ?: 0L) - totalInvestment.amount
+                Text(
+                    text = if (remaining >= 0L) Money.rupiah(remaining).formatRupiah() else "-${Money.rupiah(-remaining).formatRupiah()}",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (canAfford) SuccessGreen else Color(0xFFDC2626)
+                )
+            }
+        }
+    }
+}
 
+@Composable
+private fun ReviewItemRow(label: String, detail: String, price: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = label, fontSize = 10.sp, color = TextMuted)
+            Text(text = detail, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextDark)
+        }
+        Text(text = price, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = PrimaryBlueDark)
+    }
+}
+
+@Composable
+private fun SpecBadge(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = label, fontSize = 9.sp, color = TextMuted)
+        Text(text = value, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = TextDark)
+    }
+}
+
+@Composable
+private fun ShowroomBottomActionBar(
+    currentStep: ShowroomStep,
+    canProceed: Boolean,
+    canAfford: Boolean,
+    isPurchasing: Boolean,
+    totalInvestment: Money,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onConfirmPurchase: () -> Unit
+) {
+    Surface(
+        color = SurfaceWhite,
+        shadowElevation = 8.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = AppDimens.paddingMedium, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (currentStep != ShowroomStep.CHASSIS) {
+                OutlinedButton(
+                    onClick = onPrevious,
+                    shape = RoundedCornerShape(AppDimens.radiusMedium),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("◀ Kembali", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                }
+            }
+
+            if (currentStep == ShowroomStep.REVIEW) {
                 Button(
-                    onClick = onBuyClick,
-                    enabled = canAfford,
+                    onClick = onConfirmPurchase,
+                    enabled = canProceed && canAfford && !isPurchasing,
                     shape = RoundedCornerShape(AppDimens.radiusMedium),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryBlue,
-                        disabledContainerColor = DisabledBackground
+                        containerColor = if (canAfford) SuccessGreen else DisabledGray
                     ),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                    modifier = Modifier.weight(if (currentStep == ShowroomStep.CHASSIS) 1f else 2f)
                 ) {
                     Text(
-                        text = if (canAfford) "Beli Unit" else "Saldo Kurang",
-                        color = if (canAfford) Color.White else DisabledGray,
+                        text = if (isPurchasing) "Memproses..." else if (canAfford) "🛒 Beli Armada (${totalInvestment.formatRupiah()})" else "Saldo Tidak Cukup",
+                        color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun FeatureBadge(text: String) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(Color(0xFFF1F5F9))
-            .border(0.5.dp, CardBorder, RoundedCornerShape(4.dp))
-            .padding(horizontal = 6.dp, vertical = 2.dp)
-    ) {
-        Text(text = text, color = TextMuted, fontSize = 10.sp, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-private fun SpecItem(label: String, value: String) {
-    Column {
-        Text(text = label, color = TextLight, fontSize = 10.sp)
-        Text(text = value, color = TextDark, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-    }
-}
-
-@Composable
-private fun PurchaseConfirmDialog(
-    bus: Bus,
-    busCode: String,
-    onBusCodeChange: (String) -> Unit,
-    isPurchasing: Boolean,
-    errorMessage: String?,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(AppDimens.radiusLarge),
-            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(AppDimens.paddingLarge)
-            ) {
-                Text(
-                    text = "Konfirmasi Beli Bus",
-                    color = TextDark,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "${bus.chassis.brand.displayName} ${bus.chassis.modelName} - ${bus.body.brand.displayName} ${bus.body.modelName}",
-                    color = PrimaryBlueDark,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
-
-                Text(
-                    text = "Kode Bus (Nomor Armada)",
-                    color = TextMuted,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                OutlinedTextField(
-                    value = busCode,
-                    onValueChange = onBusCodeChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Contoh: TN-01") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(AppDimens.radiusSmall)
-                )
-
-                Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+            } else {
+                Button(
+                    onClick = onNext,
+                    enabled = canProceed,
+                    shape = RoundedCornerShape(AppDimens.radiusMedium),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                    modifier = Modifier.weight(if (currentStep == ShowroomStep.CHASSIS) 1f else 2f)
                 ) {
-                    Text(text = "Total Harga Beli", color = TextMuted, fontSize = 13.sp)
-                    Text(
-                        text = bus.totalPrice.formatRupiah(),
-                        color = PrimaryBlue,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                }
-
-                if (errorMessage != null) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = errorMessage,
-                        color = Color(0xFFDC2626),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(AppDimens.paddingLarge))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall)
-                ) {
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(AppDimens.radiusMedium),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
-                    ) {
-                        Text(text = "Batal", color = TextMuted)
-                    }
-
-                    Button(
-                        onClick = onConfirm,
-                        enabled = !isPurchasing && busCode.isNotBlank(),
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(AppDimens.radiusMedium),
-                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
-                    ) {
-                        Text(
-                            text = if (isPurchasing) "Memproses..." else "Beli",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text("Lanjut Langkah Berikutnya ➔", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             }
         }
@@ -566,16 +995,18 @@ private fun PurchaseConfirmDialog(
 }
 
 @Composable
-private fun PurchaseSuccessDialog(
+private fun PurchaseSuccessModal(
     bus: Bus,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onNavigateToGarage: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
-            modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(AppDimens.radiusLarge),
             colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppDimens.paddingSmall)
         ) {
             Column(
                 modifier = Modifier
@@ -583,47 +1014,61 @@ private fun PurchaseSuccessDialog(
                     .padding(AppDimens.paddingLarge),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(text = "🎉", fontSize = 36.sp)
-                Spacer(modifier = Modifier.height(8.dp))
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .background(SuccessGreenLight),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "🚌", fontSize = 28.sp)
+                }
+
+                Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
+
                 Text(
-                    text = "Bus Berhasil Dibeli!",
+                    text = "Armada Berhasil Dirakit!",
                     color = TextDark,
-                    fontSize = 18.sp,
+                    fontSize = 17.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
+
                 Text(
-                    text = "Kode Bus: ${bus.busCode}",
-                    color = PrimaryBlue,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    text = "${bus.busCode} • ${bus.fullName}",
+                    color = PrimaryBlueDark,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(2.dp))
+
                 Text(
-                    text = "${bus.chassis.brand.displayName} - ${bus.body.modelName}",
+                    text = "Kelas ${bus.body.busClass.displayName} (${bus.body.passengerCapacity} Kursi)",
                     color = TextMuted,
-                    fontSize = 13.sp
+                    fontSize = 11.sp
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Unit baru telah berhasil ditambahkan dan siap digunakan di Garasi Armada.",
-                    color = TextLight,
-                    fontSize = 12.sp,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(AppDimens.paddingLarge))
+                Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
 
                 Button(
-                    onClick = onDismiss,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(AppDimens.radiusMedium),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                    onClick = onNavigateToGarage,
+                    shape = RoundedCornerShape(AppDimens.radiusPill),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(text = "Tutup", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(text = "Buka Garasi Armada", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                OutlinedButton(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(AppDimens.radiusPill),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(text = "Rakit Armada Baru Lagi", fontWeight = FontWeight.Bold)
                 }
             }
         }

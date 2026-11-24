@@ -57,7 +57,7 @@ class TerminalReportViewModelTest {
         advanceUntilIdle()
         val state = viewModel.uiState.value
 
-        assertEquals(6, state.availableTerminals.size)
+        assertEquals(10, state.availableTerminals.size)
         assertNotNull(state.selectedTerminal)
         assertEquals("term_purabaya", state.selectedTerminal?.id)
         assertEquals(24, state.selectedDay)

@@ -76,11 +76,24 @@ class RouteRepositoryTest {
     }
 
     @Test
-    fun getConnectedTerminalIds_fromPurabaya_shouldReturnBayuanggaAndArjosari() {
+    fun getConnectedTerminalIds_fromPurabaya_shouldReturnConnectedTerminals() {
         val connectedIds = repository.getConnectedTerminalIds("term_purabaya")
         assertTrue(connectedIds.contains("term_arjosari"))
         assertTrue(connectedIds.contains("term_bayuangga"))
-        assertEquals(2, connectedIds.size)
+        assertTrue(connectedIds.contains("term_kertajaya"))
+        assertEquals(3, connectedIds.size)
+    }
+
+    @Test
+    fun southernCorridor_connectsKediriTulungagungBlitarMalang() {
+        val kediriToTulungagung = repository.getSegmentsBetween("term_tamanan", "term_gayatri")
+        assertTrue(kediriToTulungagung.isNotEmpty())
+
+        val tulungagungToBlitar = repository.getSegmentsBetween("term_gayatri", "term_patria")
+        assertTrue(tulungagungToBlitar.isNotEmpty())
+
+        val blitarToMalang = repository.getSegmentsBetween("term_patria", "term_arjosari")
+        assertTrue(blitarToMalang.isNotEmpty())
     }
 
     @Test

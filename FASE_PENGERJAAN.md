@@ -31,10 +31,10 @@ Dokumen ini memuat perencanaan rinci perbaikan aplikasi **TransNusantara (Bus Ma
 
 ---
 
-### 🔹 Fase 3 [Data Konten]: Pendaftaran 4 Terminal Baru & Koridor Jalur Selatan
-- [ ] Menambahkan 4 Terminal Tipe A baru di `TerminalDataSource`: Terminal Kertajaya (Mojokerto), Terminal Tamanan (Kediri), Terminal Gayatri (Tulungagung), dan Terminal Patria (Blitar).
-- [ ] Menambahkan segmen koridor jalan tol & arteri baru di `RouteDataSource` (Surabaya – Mojokerto – Kediri – Tulungagung – Blitar – Malang).
-- [ ] Pengujian unit test integritas data terminal dan rute baru, lalu Git Commit Fase 3.
+### 🔹 Fase 3 [Data Konten]: Pendaftaran 4 Terminal Baru & Koridor Jalur Selatan [SELESAI]
+- [x] Menambahkan 4 Terminal Tipe A baru di `TerminalDataSource`: Terminal Kertajaya (Mojokerto), Terminal Tamanan (Kediri), Terminal Gayatri (Tulungagung), dan Terminal Patria (Blitar).
+- [x] Menambahkan segmen koridor jalan tol & arteri baru di `RouteDataSource` (Surabaya – Mojokerto – Kediri – Tulungagung – Blitar – Malang).
+- [x] Pengujian unit test integritas data terminal dan rute baru, lalu Git Commit Fase 3.
 
 ---
 

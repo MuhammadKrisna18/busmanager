@@ -21,12 +21,13 @@ class GetConnectedTerminalsUseCaseTest {
     }
 
     @Test
-    fun invoke_fromPurabaya_returnsBayuanggaAndArjosari() {
+    fun invoke_fromPurabaya_returnsConnectedTerminals() {
         val connected = useCase("term_purabaya")
-        assertEquals(2, connected.size)
+        assertEquals(3, connected.size)
         val cities = connected.map { it.city }
         assertTrue(cities.contains("Malang"))
         assertTrue(cities.contains("Probolinggo"))
+        assertTrue(cities.contains("Mojokerto"))
     }
 
     @Test

@@ -129,7 +129,7 @@ class RoutePlannerViewModelTest {
         advanceUntilIdle()
         val state = viewModel.uiState.value
 
-        assertEquals(6, state.terminals.size)
+        assertEquals(10, state.terminals.size)
         assertEquals("term_purabaya", state.selectedOrigin?.id)
         assertEquals("term_sritanjung", state.selectedDestination?.id)
         assertTrue(state.availableRoutes.isNotEmpty())

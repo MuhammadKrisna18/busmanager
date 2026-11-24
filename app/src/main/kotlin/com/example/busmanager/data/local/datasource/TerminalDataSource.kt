@@ -97,13 +97,77 @@ class TerminalDataSource {
         passengerDemandMultiplier = 1.4f
     )
 
+    private val kertajaya = Terminal(
+        id = "term_kertajaya",
+        name = "Terminal Kertajaya",
+        city = "Mojokerto",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.11f,
+            y = 0.25f,
+            latitude = -7.4725,
+            longitude = 112.4411
+        ),
+        retributionFee = Money.rupiah(3500),
+        passengerDemandMultiplier = 1.25f
+    )
+
+    private val tamanan = Terminal(
+        id = "term_tamanan",
+        name = "Terminal Tamanan",
+        city = "Kediri",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.05f,
+            y = 0.44f,
+            latitude = -7.8286,
+            longitude = 111.9961
+        ),
+        retributionFee = Money.rupiah(3500),
+        passengerDemandMultiplier = 1.3f
+    )
+
+    private val gayatri = Terminal(
+        id = "term_gayatri",
+        name = "Terminal Gayatri",
+        city = "Tulungagung",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.04f,
+            y = 0.62f,
+            latitude = -8.0645,
+            longitude = 111.9056
+        ),
+        retributionFee = Money.rupiah(3000),
+        passengerDemandMultiplier = 1.2f
+    )
+
+    private val patria = Terminal(
+        id = "term_patria",
+        name = "Terminal Patria",
+        city = "Blitar",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.09f,
+            y = 0.64f,
+            latitude = -8.0983,
+            longitude = 112.1608
+        ),
+        retributionFee = Money.rupiah(3500),
+        passengerDemandMultiplier = 1.25f
+    )
+
     fun getTerminals(): List<Terminal> = listOf(
         purabaya,
         arjosari,
         bayuangga,
         tawangAlun,
         situbondo,
-        sritanjung
+        sritanjung,
+        kertajaya,
+        tamanan,
+        gayatri,
+        patria
     )
 
     fun getTerminalById(id: String): Terminal? {

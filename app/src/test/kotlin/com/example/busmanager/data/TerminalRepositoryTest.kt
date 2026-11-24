@@ -19,9 +19,9 @@ class TerminalRepositoryTest {
     }
 
     @Test
-    fun getAllTerminals_shouldReturnAllSixTerminals() {
+    fun getAllTerminals_shouldReturnAllTenTerminals() {
         val terminals = repository.getAllTerminals()
-        assertEquals(6, terminals.size)
+        assertEquals(10, terminals.size)
 
         val cities = terminals.map { it.city }.toSet()
         assertTrue(cities.contains("Surabaya"))
@@ -30,6 +30,10 @@ class TerminalRepositoryTest {
         assertTrue(cities.contains("Jember"))
         assertTrue(cities.contains("Situbondo"))
         assertTrue(cities.contains("Banyuwangi"))
+        assertTrue(cities.contains("Mojokerto"))
+        assertTrue(cities.contains("Kediri"))
+        assertTrue(cities.contains("Tulungagung"))
+        assertTrue(cities.contains("Blitar"))
     }
 
     @Test

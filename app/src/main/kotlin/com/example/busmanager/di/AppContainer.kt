@@ -9,6 +9,7 @@ import com.example.busmanager.data.repository.FleetRepositoryImpl
 import com.example.busmanager.data.repository.KaroseriCatalogRepositoryImpl
 import com.example.busmanager.data.repository.RouteCatalogRepositoryImpl
 import com.example.busmanager.data.repository.ShowroomCatalogRepositoryImpl
+import com.example.busmanager.data.repository.SimulationTimeRepositoryImpl
 import com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
@@ -26,6 +27,9 @@ import com.example.busmanager.domain.route.usecase.CalculateRouteCostUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableRoutesUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteTransitStopsUseCase
+import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
+import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
+import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
 
 class AppContainer(context: Context) {
 
@@ -36,6 +40,7 @@ class AppContainer(context: Context) {
     val showroomCatalogRepository: ShowroomCatalogRepository = ShowroomCatalogRepositoryImpl()
     val terminalRepository: TerminalRepository = TerminalCatalogRepositoryImpl()
     val routeRepository: RouteRepository = RouteCatalogRepositoryImpl()
+    val simulationTimeRepository: SimulationTimeRepository = SimulationTimeRepositoryImpl()
 
     val companyRepository: CompanyRepository = CompanyRepositoryImpl(database.companyDao())
     val fleetRepository: FleetRepository = FleetRepositoryImpl(
@@ -54,6 +59,9 @@ class AppContainer(context: Context) {
     val getAvailableRoutesUseCase = GetAvailableRoutesUseCase(routeRepository)
     val getRouteTransitStopsUseCase = GetRouteTransitStopsUseCase(routeRepository)
     val calculateRouteCostUseCase = CalculateRouteCostUseCase()
+
+    val getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepository)
+    val toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepository)
 
     val appUpdateManager = AppUpdateManager()
 }

@@ -68,8 +68,8 @@ class GarageViewModel(
                     )
                 }
 
-                val operatingCount = busItems.count { it.isOperating }
-                val standbyCount = busItems.count { !it.isOperating }
+                val operatingCount = busItems.count { it.isOnDuty }
+                val standbyCount = busItems.count { !it.isOnDuty }
                 val currentFilter = _uiState.value.selectedFilter
 
                 _uiState.update { state ->
@@ -100,8 +100,8 @@ class GarageViewModel(
     private fun filterBuses(buses: List<GarageBusItem>, filter: GarageFilter): List<GarageBusItem> {
         return when (filter) {
             GarageFilter.ALL -> buses
-            GarageFilter.OPERATING -> buses.filter { it.isOperating }
-            GarageFilter.STANDBY -> buses.filter { !it.isOperating }
+            GarageFilter.OPERATING -> buses.filter { it.isOnDuty }
+            GarageFilter.STANDBY -> buses.filter { !it.isOnDuty }
         }
     }
 

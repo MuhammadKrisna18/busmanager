@@ -425,7 +425,7 @@ private fun ActiveBusDetailCard(
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "🛑 Jadwal berikutnya dibatalkan. Bus akan standby di ${trip.currentDestinationName}.",
+                        text = "🛑 Jadwal berikutnya dibatalkan. Bus akan menunggu jadwal keberangkatan di ${trip.currentDestinationName}.",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFFB45309)
@@ -530,7 +530,7 @@ private fun FleetBusItemCard(
                     Text(
                         text = when {
                             activeTrip != null -> "● Berdinas (${(activeTrip.progressFraction * 100).toInt()}%)"
-                            canOperate -> "Siap Beroperasi"
+                            canOperate -> "Menunggu Jadwal Keberangkatan"
                             else -> "Belum Siap Operasi"
                         },
                         color = when {

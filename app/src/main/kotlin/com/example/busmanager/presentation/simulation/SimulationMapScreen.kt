@@ -311,7 +311,7 @@ private fun SimulationStatusBanner(
     val message = if (ownedBusCount == 0) {
         "Armada belum tersedia. Operasi bus belum dapat berjalan."
     } else if (activeBusCount == 0) {
-        "Semua armada ($ownedBusCount unit) saat ini standby di garasi."
+        "Semua armada ($ownedBusCount unit) saat ini menunggu jadwal keberangkatan di terminal / garasi."
     } else {
         "$activeBusCount dari $ownedBusCount armada sedang bergerak melayani trayek."
     }
@@ -376,9 +376,9 @@ private fun TerminalInspectionCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = if (routeName != null) {
-                        "Trayek Terkait: $routeName (Status: Standby)"
+                        "Trayek Terkait: $routeName (Status: Menunggu Jadwal Keberangkatan)"
                     } else {
-                        "Status: Standby 0 Armada | Tidak ada bus beroperasi"
+                        "Status: Menunggu Jadwal Keberangkatan | Tidak ada bus beroperasi"
                     },
                     color = PrimaryBlueDark,
                     fontSize = 11.sp,

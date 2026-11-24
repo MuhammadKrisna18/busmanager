@@ -220,6 +220,57 @@ class GarageViewModelTest {
     }
 
     @Test
+    fun busWaitingForDeparture_classifiedAsOperatingAndDisplaysWaitingStatus() = runTest {
+        val sampleBusWaiting = Bus(
+            id = "bus-waiting",
+            busCode = "TN-99",
+            chassis = ChassisDataSource().getChassisList().first(),
+            body = KaroseriBodyDataSource().getKaroseriBodyList().first(),
+            routeId = "route_sby_mlg_toll",
+            driverId = "driver-99",
+            isOperating = false
+        )
+        val driver99 = Driver(
+            id = "driver-99",
+            name = "Budi Santoso",
+            wagePerDay = Money.rupiah(200_000L),
+            assignedBusId = "bus-waiting",
+            isHired = true
+        )
+        val defaultPricings = listOf(
+            RoutePricing(
+                id = "p-1",
+                routeId = "route_sby_mlg_toll",
+                originTerminalId = "term-a",
+                destinationTerminalId = "term-b",
+                originCity = "Surabaya",
+                destinationCity = "Malang",
+                price = Money.rupiah(50_000L)
+            )
+        )
+        fakePricingRepo.savePricings(defaultPricings)
+        fakeDriverRepo.setDrivers(listOf(driver99))
+        fakeFleetRepo.setBuses(listOf(sampleBusWaiting))
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(1, state.operatingBusCount)
+        assertEquals(0, state.standbyBusCount)
+
+        val waitingItem = state.allBuses.first()
+        assertTrue(waitingItem.isOnDuty)
+        assertTrue(waitingItem.canOperate)
+        assertFalse(waitingItem.isOperating)
+        assertEquals("Menunggu Jadwal Keberangkatan", waitingItem.statusLabel)
+
+        viewModel.setFilter(GarageFilter.OPERATING)
+        assertEquals(1, viewModel.uiState.value.filteredBuses.size)
+
+        viewModel.setFilter(GarageFilter.STANDBY)
+        assertEquals(0, viewModel.uiState.value.filteredBuses.size)
+    }
+
+    @Test
     fun sellBus_succeedsForStandbyBus() = runTest {
         advanceUntilIdle()
 
@@ -303,17 +354,24 @@ class GarageViewModelTest {
     }
 
     private class FakeRoutePricingRepository : RoutePricingRepository {
-        override fun getPricingsForRoute(routeId: String): Flow<List<RoutePricing>> = flowOf(emptyList())
-        override suspend fun getPricingsListForRoute(routeId: String): List<RoutePricing> = emptyList()
-        override fun getAllPricingsFlow(): Flow<List<RoutePricing>> = flowOf(emptyList())
-        override suspend fun getAllPricings(): List<RoutePricing> = emptyList()
-        override suspend fun savePricing(pricing: RoutePricing) {}
-        override suspend fun savePricings(pricings: List<RoutePricing>) {}
+        val pricingsList = mutableListOf<RoutePricing>()
+
+        override fun getPricingsForRoute(routeId: String): Flow<List<RoutePricing>> = flowOf(pricingsList.filter { it.routeId == routeId })
+        override suspend fun getPricingsListForRoute(routeId: String): List<RoutePricing> = pricingsList.filter { it.routeId == routeId }
+        override fun getAllPricingsFlow(): Flow<List<RoutePricing>> = flowOf(pricingsList)
+        override suspend fun getAllPricings(): List<RoutePricing> = pricingsList
+        override suspend fun savePricing(pricing: RoutePricing) {
+            pricingsList.removeAll { it.id == pricing.id }
+            pricingsList.add(pricing)
+        }
+        override suspend fun savePricings(pricings: List<RoutePricing>) {
+            pricings.forEach { savePricing(it) }
+        }
         override suspend fun getPricingBetween(
             routeId: String,
             originTerminalId: String,
             destinationTerminalId: String
-        ): RoutePricing? = null
+        ): RoutePricing? = pricingsList.find { it.routeId == routeId && it.originTerminalId == originTerminalId && it.destinationTerminalId == destinationTerminalId }
         override suspend fun generateAndSaveDefaultPricings(route: BusRoute): List<RoutePricing> = emptyList()
     }
 

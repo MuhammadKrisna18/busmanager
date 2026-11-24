@@ -184,7 +184,7 @@ fun BusLiveTrackingCard(
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "🛑 Jadwal berikutnya dibatalkan. Bus akan langsung standby di ${trip.currentDestinationName}.",
+                        text = "🛑 Jadwal berikutnya dibatalkan. Bus akan menunggu jadwal keberangkatan di ${trip.currentDestinationName}.",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFFB45309)
@@ -202,7 +202,7 @@ fun BusLiveTrackingCard(
                     contentPadding = PaddingValues(vertical = 6.dp)
                 ) {
                     Text(
-                        text = "🛑 Batalkan Jadwal Berikutnya (Standby di ${trip.currentDestinationName})",
+                        text = "🛑 Batalkan Jadwal Berikutnya (Menunggu Jadwal di ${trip.currentDestinationName})",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )

@@ -20,11 +20,15 @@ data class GarageBusItem(
     val canOperate: Boolean
         get() = bus.routeId != null && bus.driverId != null && hasPricings
 
+    val isOnDuty: Boolean
+        get() = isOperating || canOperate || bus.hasRoute
+
     val statusLabel: String
         get() = when {
-            isOperating -> "● Berdinas"
-            canOperate -> "Siap Beroperasi"
-            else -> "Belum Siap Operasi"
+            isOperating -> "● Sedang Berdinas"
+            canOperate -> "Menunggu Jadwal Keberangkatan"
+            bus.hasRoute -> "Menunggu Sopir"
+            else -> "Tersedia di Garasi"
         }
 }
 

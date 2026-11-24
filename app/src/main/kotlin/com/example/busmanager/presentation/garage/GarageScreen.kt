@@ -265,8 +265,8 @@ fun GarageScreen(
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
                                         text = when (uiState.selectedFilter) {
-                                            GarageFilter.OPERATING -> "Semua armada saat ini sedang standby di garasi."
-                                            GarageFilter.STANDBY -> "Semua armada saat ini sedang aktif melayani trayek di jalan raya."
+                                            GarageFilter.OPERATING -> "Semua armada saat ini berada di garasi dan belum memiliki penugasan dinas."
+                                            GarageFilter.STANDBY -> "Semua armada saat ini telah memiliki penugasan dinas atau sedang beroperasi di jalan raya."
                                             GarageFilter.ALL -> "Silakan beli bus di Showroom untuk memulai armada PO Anda."
                                         },
                                         fontSize = 12.sp,
@@ -399,7 +399,8 @@ private fun GarageBusCard(
                             when {
                                 item.isOperating -> SuccessGreenLight
                                 item.canOperate -> IceBlue
-                                else -> WarningAmberLight
+                                item.bus.hasRoute -> WarningAmberLight
+                                else -> Color(0xFFF1F5F9)
                             }
                         )
                         .padding(horizontal = 10.dp, vertical = 4.dp)
@@ -411,7 +412,8 @@ private fun GarageBusCard(
                         color = when {
                             item.isOperating -> SuccessGreen
                             item.canOperate -> PrimaryBlueDark
-                            else -> Color(0xFFB45309)
+                            item.bus.hasRoute -> Color(0xFFB45309)
+                            else -> TextMuted
                         }
                     )
                 }

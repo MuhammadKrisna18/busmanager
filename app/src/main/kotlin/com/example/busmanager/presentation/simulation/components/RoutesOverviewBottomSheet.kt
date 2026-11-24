@@ -346,7 +346,7 @@ private fun ActiveRouteItemCard(
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = if (isRunning) "● Berdinas" else "Standby",
+                                text = if (isRunning) "● Berdinas" else "Menunggu Jadwal Keberangkatan",
                                 color = if (isRunning) SuccessGreen else PrimaryBlueDark,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold

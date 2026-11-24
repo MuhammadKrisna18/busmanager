@@ -188,11 +188,14 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 3 [Tinggi]: Klasifikasi Status Armada di Garasi & Penggantian Istilah Standby (Fix Diskusi 3 & 4)
-- Armada yang sudah memiliki penugasan trayek & pengemudi (menunggu jam keberangkatan) otomatis dikelompokkan ke tab **"Berdinas"** di Garasi.
-- Tab **"Di Garasi"** hanya menampilkan armada yang belum memiliki penugasan trayek/pengemudi (menganggur).
-- Ganti seluruh teks, chip, dan status `"Standby"` di seluruh aplikasi menjadi `"Menunggu Jadwal Keberangkatan"`.
-- Pengujian unit test & Git Commit Fase 3.
+### ✅ Fase 3 [Tinggi]: Klasifikasi Status Armada di Garasi & Penggantian Istilah Standby (Fix Diskusi 3 & 4) - SELESAI
+- Logika klasifikasi garasi disempurnakan: menambahkan properti `isOnDuty` pada `GarageBusItem` yang mengidentifikasi armada yang aktif berjalan (`isOperating`) maupun yang sudah ditugaskan trayek & sopir (`canOperate` / `hasRoute`). (Selesai)
+- Tab **"Berdinas"** kini mencakup seluruh armada yang sedang berdinas di jalan raya maupun yang sedang menunggu jadwal keberangkatan trayek. (Selesai)
+- Tab **"Di Garasi"** secara eksklusif hanya menampilkan armada yang belum memiliki penugasan dinas / menganggur. (Selesai)
+- Label status garasi diperbarui secara informatif: `"● Sedang Berdinas"`, `"Menunggu Jadwal Keberangkatan"`, `"Menunggu Sopir"`, dan `"Tersedia di Garasi"`. (Selesai)
+- Penggantian menyeluruh istilah `"Standby"` di seluruh UI aplikasi (`RoutesOverviewBottomSheet`, `FleetOverviewBottomSheet`, `BusLiveTrackingCard`, `SimulationMapScreen`, `GarageScreen`) menjadi `"Menunggu Jadwal Keberangkatan"`. (Selesai)
+- Penambahan unit test baru di `GarageViewModelTest` yang memverifikasi armada penugasan jadwal otomatis masuk tab Berdinas dan berstatus Menunggu Jadwal Keberangkatan. (Selesai)
+- Pengujian unit test & Git Commit Fase 3. (Selesai)
 
 ---
 

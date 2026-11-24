@@ -1,224 +1,126 @@
-# Roadmap Pengerjaan Season 4: Pengetatan Business Rules, Sinkronisasi Data & Simulasi Operasional
+# Roadmap Pengerjaan Season 7: Headway 24 Jam, Real-Line Tracking, Pembelian Bus Instan & Ekosistem Operasional Lanjutan
 
-Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan penyelarasan operasional aplikasi **TransNusantara (Bus Manager)** berdasarkan hasil evaluasi 10 poin diskusi operasional lapangan:
+Dokumen ini memuat detail perencanaan perbaikan arsitektural, logika simulasi, dan antarmuka pengguna aplikasi **TransNusantara (Bus Manager)** berdasarkan hasil evaluasi 16 poin diskusi operasional lapangan:
 
 ---
 
-## 📌 Rangkuman 10 Poin Diskusi & Solusi Arsitektural
+## 📌 Rangkuman 16 Poin Diskusi & Solusi Arsitektural
 
-1. **Diskusi 1: Pengetatan Aturan Pemilihan Bus & Driver di Wizard Trayek (Langkah 4)**
-   - **Masalah:** Bus yang sudah memiliki trayek/driver (seperti `MK01`) dan driver yang sudah berdinas masih dapat dipilih di Langkah 4 Wizard. Tata letak kode armada wrap berantakan.
+1. **Diskusi 1: Jadwal Keberangkatan 24 Jam (Jeda Keberangkatan & Waktu Ampiran/Transit)**
+   - **Konsep:** Menggantikan jadwal jam statis (seperti 08:00 dan 14:00) menjadi sistem operasional berbasis jeda waktu perputaran (*Headway*) dan waktu singgah (*Dwell Time*) yang berjalan dinamis 24 jam.
    - **Solusi:**
-     - Bus ber-trayek/ber-driver dinonaktifkan (`enabled = false`) dengan badge `Sudah Bertugas di [Trayek / Sopir]`.
-     - Driver yang sudah bertugas dinonaktifkan (`enabled = false`) dengan badge `Bertugas di [BusCode]`.
-     - Perbaiki layout row nama bus dengan `Column` dan `Modifier.weight(1f)` agar kode armada dan nama sasis-bodi rapi tanpa wrap.
+     - **Jeda Keberangkatan (Headway / Turnaround Time):** Waktu istirahat armada di terminal tujuan sebelum berangkat kembali (PP).
+     - **Waktu Ampiran (Dwell Time):** Waktu singgah bus di terminal perantara untuk pertukaran naik-turun penumpang (0 hingga 15 menit). Jika 0 menit, bus hanya naik-turun seketika dan langsung jalan.
 
-2. **Diskusi 2: Penyederhanaan Tombol Trayek di Layar Play (`RoutesOverviewBottomSheet`)**
-   - **Masalah:** BottomSheet menampilkan semua trayek statis kosong tanpa armada sehingga membingungkan pemain.
-   - **Solusi:** Hapus trayek non-aktif dari BottomSheet Play. **Hanya tampilkan trayek yang SUDAH AKTIF** (*Definisi: ada bus, ada sopir, dan bus melayani rute tersebut*) lengkap dengan info armada, sopir, tarif, dan progres dinas.
+2. **Diskusi 2: Proyeksi Pendapatan & Laba Bersih Live saat Pasang Tarif (Wizard Langkah 3)**
+   - **Kebutuhan:** Pemain dapat melihat estimasi pemasukan dan keuntungan sebelum menyetujui tarif tiket.
+   - **Solusi:** Menambahkan kartu proyeksi keuangan interaktif di bawah form tarif: menghitung estimasi omzet tiket kotor (asumsi kursi penuh), potongan bagi hasil sopir (30%), serta proyeksi laba bersih perusahaan (70%).
 
-3. **Diskusi 3: Presistensi Detail Armada saat Beli di Showroom vs Masuk Garasi**
-   - **Masalah:** Di Showroom membeli Scania K360IB + Tentrem Avante H8 kelas VIP (34 Kursi) `MK03`, namun saat masuk Garasi Armada berubah menjadi Eksekutif (32 Kursi).
-   - **Akar Masalah:** `OwnedBusEntity` hanya menyimpan `chassisId` dan `bodyId`. Saat dibaca kembali, bodi diambil dari katalog statis yang ber-preset Eksekutif 32 Kursi.
-   - **Solusi:** Tambahkan kolom `busClass: String` dan `passengerCapacity: Int` pada `OwnedBusEntity`, serta perbarui `BusMapper` untuk memetakan kustomisasi pemain.
+3. **Diskusi 3: Buku Kas Keuangan - Hapus Filter Berdasarkan Rute**
+   - **Kebutuhan:** Tampilan filter transaksi keuangan terlalu padat dan jarang digunakan.
+   - **Solusi:** Menghapus dropdown/chip filter rute di `FinanceScreen`. Fokus filter disederhanakan pada tipe transaksi (Semua, Penjualan Tiket, Komisi Sopir) atau filter armada.
 
-4. **Diskusi 4: Penyelarasan Tanggal, Filter Terminal Aktif & Fitur Riwayat Laporan**
-   - **Masalah:** Tanggal laporan terminal bisa diubah manual bebas tidak selaras dengan jam simulasi Play, dan terminal menampilkan seluruh terminal se-Jatim.
-   - **Solusi:** Kunci tanggal laporan utama mengikuti tanggal simulasi aktif (`GameCalendar`), filter pilihan terminal hanya yang aktif dilalui trayek, dan tambahkan fitur "Riwayat / History Laporan".
+4. **Diskusi 4: Pengeditan Pengaturan Jadwal (Jeda & Ampiran) di Garasi & Play ➔ Trayek**
+   - **Kebutuhan:** Pemain ingin mengubah jeda keberangkatan dan waktu ampiran armada yang sudah berdinas tanpa harus membongkar rute.
+   - **Solusi:** Menambahkan dialog *"Ubah Jadwal Operasional"* pada kartu bus di Garasi Armada serta pada daftar trayek di layar Play.
 
-5. **Diskusi 5: Waktu Keberangkatan Bus (Armada Tidak Boleh Bergerak Sebelum Waktunya)**
-   - **Masalah:** Bus bergerak terus menerus di peta meskipun belum memasuki jam keberangkatan jadwal dinasnya, dan langsung putar balik tanpa jeda saat sampai tujuan.
-   - **Solusi:** Bus berstatus `STANDBY` di terminal asal hingga waktu jadwal keberangkatan tiba. Saat tiba di terminal akhir (`progress >= 1.0f`), bus **BERHENTI / STANDBY** di terminal tujuan hingga jadwal kepulangan (*return schedule*) tiba.
+5. **Diskusi 5: Pembelian Bus Batch (Multi-Unit) & Fitur Pembelian Instan Siap Pakai**
+   - **Kebutuhan:** Memudahkan ekspansi armada dalam jumlah besar tanpa perlu merakit manual satu per satu.
+   - **Solusi:**
+     - **Pembelian Batch:** Stepper counter `[-] [Jumlah: 1] [+]` di layar review perakitan bus kustom untuk membeli banyak unit sekaligus dengan spek sama dan penomoran otomatis.
+     - **Pembelian Instan:** Tab katalog bus siap pakai bawaan pabrik (sasis, bodi, dan kapasitas kursi sesuai unit asli dunia nyata) yang dapat dibeli langsung dalam jumlah satuan maupun borongan.
 
-6. **Diskusi 6: Tombol Informasi Trayek (Aktif vs Terbuka/Belum Aktif) di HomeScreen**
-   - **Kebutuhan:** Menu di HomeScreen untuk melihat daftar trayek yang aktif vs trayek yang sudah dibuka di peta namun belum ditugaskan armada/kru.
-   - **Solusi:** Tambahkan tombol menu / kartu "Informasi Trayek" di HomeScreen dengan dialog pemisah kategori Trayek Aktif vs Trayek Terbuka (Standby).
+6. **Diskusi 6: Bus Berjalan Presisi Tepat di Atas Garis Polyline Peta (Real-Line Tracking)**
+   - **Masalah:** Posisi bus saat ini menggunakan garis lurus antar kota sehingga sedikit melenceng dari lengkungan garis jalan tol/arteri di peta.
+   - **Solusi:** Menghitung posisi koordinat bus `(x, y)` menyusuri segmen-segmen polyline rute jalan raya yang sama persis dengan yang digambar di Canvas peta, menjamin bus berjalan 100% presisi di atas garis jalan.
 
-7. **Diskusi 7: Tombol Reset Akun & Dialog Konfirmasi Pop-up**
-   - **Kebutuhan:** Fitur bagi pemain untuk memulai permainan dari awal (New Game / Reset Game).
-   - **Solusi:** Tambahkan tombol "Reset Akun" pada HomeScreen dengan dialog pop-up konfirmasi destruktif merah. Eksekusi `ResetGameUseCase` yang mengosongkan seluruh armada, kru, transaksi keuangan, laporan terminal, dan mengembalikan saldo awal kas ke Rp 50 Miliar.
+7. **Diskusi 7: Penghapusan Tombol Play (Simulasi Otomatis Berjalan Terus)**
+   - **Kebutuhan:** Menghilangkan keharusan menekan tombol Play saat membuka game.
+   - **Solusi:** Simulasi dan waktu otomatis langsung berjalan aktif sejak awal. Kontrol utama disederhanakan menjadi tombol **Jeda (Pause)** dan pemilih kecepatan (1x, 3x, 5x).
 
-8. **Diskusi 8: Mekanisme Penjualan Armada di Garasi Armada**
-   - **Masalah / Pertanyaan User:** Bagaimana mekanisme jika bus yang hendak dijual masih memiliki trayek, memiliki driver, atau sedang berjalan?
-   - **Solusi & Aturan Bisnis:**
-     - **Jika bus sedang berjalan di jalan:** Penjualan **DITOLAK**. Tampilkan peringatan: *"Armada sedang berdinas di jalan. Harap batalkan dinas atau tunggu hingga armada tiba di terminal tujuan."*
-     - **Jika bus sedang standby tetapi memiliki trayek & sopir:** Penjualan **DIIJINKAN** dengan dialog konfirmasi pelepasan otomatis: *"Armada sedang ditugaskan pada rute [X] bersama sopir [Y]. Menjual armada ini akan otomatis melepas sopir kembali ke garasi dan membatalkan jadwal rute ini. Jual armada seharga Rp [Nilai Jual]?"*
-     - Saat disetujui: Driver dilepas kembali menjadi Siap Dinas, jadwal rute dicabut, armada dihapus dari garasi, dan kas bertambah sesuai harga jual (misal 70% harga beli).
+8. **Diskusi 8: HomeScreen - Hapus Reputasi & Sinkronisasi Waktu Real-Time**
+   - **Kebutuhan:** Menghilangkan info tidak relevan dan menyelaraskan waktu dashboard.
+   - **Solusi:** Menghapus badge reputasi dan teks statis *"hari ke 1, 08.00"*, lalu menghubungkan header HomeScreen ke jam simulasi dinamis (`GameCalendar`) agar selalu sinkron dengan waktu di layar Play.
 
-9. **Diskusi 9: Pembatalan Jadwal Berikutnya & Bus Stay di Terminal Terakhir (Finish Current Leg First)**
-   - **Kebutuhan & Alur Operasional:**
-     - Pemain bisa membatalkan jadwal berikutnya dari bus yang sedang berdinas di layar Play.
-     - **Mekanisme Perjalanan Saat Dibatalkan (Contoh Rute A - B - C):**
-       - Jika bus sedang berjalan dari terminal A menuju terminal B lalu user membatalkan jadwal berikutnya:
-       - Bus **TIDAK berputar balik ke A**, melainkan **tetap melanjutkan perjalanannya hingga sampai di Terminal B**.
-       - Setelah tiba di Terminal B, seluruh jadwal lanjutan berikutnya (ke C atau jadwal kepulangan) resmi dibatalkan, dan bus **STAY / STANDBY di Terminal B**.
-     - **Aturan Penugasan Baru (Physical Location Lock):**
-       - Bus kini secara fisik berada di Terminal B (`bus.currentTerminalId = "term-B"`).
-       - Pemain **wajib memilih ulang trayek baru** untuk bus ini dan titik awal keberangkatan (*Origin*) **wajib bermula dari Terminal B**.
+9. **Diskusi 9: Laporan Terminal - Catat Seluruh Terminal Transit/Ampiran**
+   - **Masalah:** Laporan terminal hanya mencatat data di terminal asal dan akhir, mengabaikan terminal transit.
+   - **Solusi:** Merekam transaksi naik dan turun penumpang di setiap terminal transit yang disinggahi ke dalam tabel `TerminalPassengerRecord`, menjamin seluruh terminal memiliki data statistik harian yang akurat.
 
-10. **Diskusi 10: Simulasi Berjalan Terus di Latar Belakang (Offline Progression)**
-    - **Kebutuhan:** Ketika simulasi dalam status PLAY, game tetap berjalan menghitung waktu dan pendapatan meskipun aplikasi ditutup.
-    - **Solusi Arsitektur (Delta Time Catch-Up):**
-      - Simpan timestamp epoch saat aplikasi keluar / dijeda (`lastSavedEpochMillis`), status `isPlaying`, dan kecepatan simulasi.
-      - Saat aplikasi dibuka kembali, hitung selisih waktu dunia nyata (`deltaSeconds`) dan konversikan ke menit simulasi game berdasarkan kecepatan (1x, 3x, 5x).
-      - Jalankan simulasi fast-forward: majukan waktu game, proses dinas yang selesai, tambahkan pendapatan tiket & komisi sopir, dan tampilkan dialog sambutan *"Ringkasan Operasional Selama Anda Tidak Aktif"*.
-      - Solusi ini 100% hemat baterai, tidak memerlukan background service berat, dan kebal dari penutupan paksa oleh sistem Android.
+10. **Diskusi 10: Pembersihan Elemen Peta Play (Legend Jalur & Badge Transit)**
+    - **Kebutuhan:** Tampilan peta Play lebih bersih, luas, dan data counter valid.
+    - **Solusi:** Menghapus legend bar warna jalur di atas tombol navigasi bawah, menghapus badge orange bertuliskan *"Transit"* di atas titik kota, dan memvalidasi counter tombol bawah agar hanya menghitung trayek aktif milik pemain.
 
----
+11. **Diskusi 11: Visualisasi Bus Menunggu Jadwal di Terminal Peta & Info Lokasi Fisik**
+    - **Kebutuhan:** Pemain ingin mengetahui di mana posisi armada saat sedang tidak berjalan.
+    - **Solusi:** Menampilkan ikon bus yang terparkir di terminal keberangkatan pada peta simulasi, serta menambahkan info lokasi fisik armada pada kartu trayek (misal: *"Menunggu Keberangkatan di Terminal Purabaya, Surabaya"*).
 
-## 📋 Pembagian Fase Pengerjaan (Season 4 Roadmap)
+12. **Diskusi 12: Halaman Khusus Informasi Trayek (Dedicated Screen)**
+    - **Kebutuhan:** Informasi trayek yang saat ini berupa kartu pop-up diubah menjadi satu layar penuh agar lebih detail dan leluasa dibaca.
+    - **Solusi:** Membuat layar baru `RouteInfoScreen` yang memuat daftar rute aktif, peta mini koridor, armada yang bertugas, jeda waktu operasional, dan matriks tarif.
 
-### ✅ Fase 1 [High]: Presistensi Kustomisasi Armada & Sinkronisasi Garasi (Fix Diskusi 3) - SELESAI
-- Update `OwnedBusEntity` di Room Database (tambah `busClass` & `passengerCapacity`). (Selesai)
-- Perbarui `BusMapper` untuk memetakan kustomisasi Showroom ke database dan mengembalikannya ke domain model. (Selesai)
-- Verifikasi perakitan armada kustom (VIP 34 kursi) tampil identik di Garasi Armada. (Selesai)
-- Pengujian unit test & Git Commit Fase 1. (Selesai)
+13. **Diskusi 13: Penambahan 94 Sopir Baru (Total 100 Sopir di Bursa Pelamar)**
+    - **Kebutuhan:** Memperluas ketersediaan tenaga kerja pengemudi untuk mendukung operasional armada besar.
+    - **Solusi:** Memasukkan dataset 94 kandidat sopir baru ke database Room sehingga bursa pelamar memiliki total 100 pengemudi dengan variasi nama, usia, lisensi, dan tarif bagi hasil.
 
----
+14. **Diskusi 14: Perapian Tata Letak Teks Pilihan Koridor di Langkah 2 Wizard Trayek**
+    - **Masalah:** Teks nama rute, jarak, dan jenis jalur pada kartu koridor saling bertumpuk dan tidak rapi.
+    - **Solusi:** Menata ulang tata letak kartu koridor dengan tipografi proporsional, badge tol/arteri yang elegan, dan jarak/estimasi waktu yang rapi tanpa teks terpotong.
 
-### ✅ Fase 2 [High]: Pengetatan Validasi Bus & Driver di Wizard Trayek + Perapian UI (Fix Diskusi 1) - SELESAI
-- Pengetatan aturan seleksi bus: Bus ber-trayek/ber-driver/berdinas dinonaktifkan (`enabled = false`) dengan badge merah. (Selesai)
-- Pengetatan aturan seleksi driver: Driver ber-bus dinonaktifkan (`enabled = false`) dengan badge penugasan. (Selesai)
-- Perbaikan layout nama bus di `Slide4BusDriverSchedule.kt` agar kode armada dan spesifikasi bus tidak wrap terpotong. (Selesai)
-- Pengujian unit test & Git Commit Fase 2. (Selesai)
+15. **Diskusi 15: Sembunyikan Driver yang Sudah Bertugas dari Bursa Rekrutmen**
+    - **Kebutuhan:** Mencegah bursa pelamar dipenuhi oleh sopir yang sudah dipekerjakan.
+    - **Solusi:** Memfilter bursa pelamar secara reaktif agar hanya menampilkan kandidat sopir yang masih berstatus bebas tugas / siap rekrut.
+
+16. **Diskusi 16: Perbaikan Glitch Loncat Posisi Bus saat Tracking Kamera Aktif**
+    - **Masalah:** Saat mengunci/melacak armada bus di peta, posisi bus sempat meloncat dan baru normal kembali setelah dilepas.
+    - **Solusi:** Memisahkan koordinat absolut bus dari transformasi offset kamera peta, sehingga pergerakan kamera fokus tidak memanipulasi posisi rendered bus di kanvas.
 
 ---
 
-### ✅ Fase 3 [High]: Penyempurnaan Simulasi, Penjadwalan Standby & Pembatalan Jadwal (Finish Leg di Terminal) (Fix Diskusi 5 & 9) - SELESAI
-- Bus standby di terminal asal hingga jam jadwal keberangkatan dinas tiba, mencocokkan terminal posisi bus saat ini. (Selesai)
-- Saat tiba di terminal tujuan, bus berhenti (`isCompleted = true, progressFraction = 1.0f`) dan mencatatkan alighted passengers, serta posisi `currentTerminalId` terupdate di database Room. (Selesai)
-- Fitur "Batalkan Jadwal Berikutnya": Jika dibatalkan saat bus di perjalanan A ➔ B ➔ C, bus menuntaskan perjalanan sampai di B lebih dulu (`cancelNextSchedule = true`), kemudian jadwal lanjutan dihapus dan bus STAY / STANDBY di Terminal B. (Selesai)
-- Physical Location Lock: Saat bus standby di suatu terminal, Route Wizard mengunci terminal asal keberangkatan trayek baru wajib bermula dari lokasi fisik armada tersebut. (Selesai)
-- Pengujian unit test & Git Commit Fase 3. (Selesai)
+## 📋 Pembagian Fase Pengerjaan (Season 7 Roadmap)
+
+### 🔹 Fase 1 [Kritis]: Core Simulation Engine (Headway 24 Jam, Real-Line Tracking & Auto-Running)
+- Mengubah model jadwal dan logika simulasi dari jam statis menjadi sistem **Headway 24 jam** & **Waktu Ampiran / Dwell Time** (Fix Diskusi 1).
+- Perhitungan posisi bus presisi menyusuri titik-titik **polyline rute jalan raya** (Fix Diskusi 6).
+- Memisahkan kamera tracking dari koordinat bus untuk menghilangkan glitch posisi meloncat saat di-track (Fix Diskusi 16).
+- Penghapusan tombol Play awal; simulasi otomatis aktif berjalan dengan tombol Jeda (Pause) dan seleksi kecepatan (Fix Diskusi 7).
+- Pengujian unit test & Git Commit Fase 1.
 
 ---
 
-### ✅ Fase 4 [Medium]: Penjualan Armada di Garasi & Fitur Reset Akun (Fix Diskusi 7 & 8) - SELESAI
-- Tombol & Dialog "Jual Bus" di Garasi Armada dengan refund 70% harga pembelian awal, proteksi armada sedang di jalan, dan auto-release driver/jadwal jika standby. (Selesai)
-- Tombol & Dialog konfirmasi "Reset Akun" di HomeScreen dengan `ResetGameUseCase` untuk mengembalikan kondisi baru (Rp 50.000.000.000, 100 reputasi, reset sopir/jadwal/pricing/transaksi/data penumpang). (Selesai)
-- Pengujian unit test & Git Commit Fase 4. (Selesai)
+### 🔹 Fase 2 [Tinggi]: Data Integrity Terminal & Visualisasi Peta Simulasi
+- Pencatatan aktivitas naik-turun penumpang di seluruh terminal singgah/ampiran ke database Room (Fix Diskusi 9).
+- Pembersihan antarmuka peta Play: hapus legend baris bawah, hapus badge transit oranye, dan perbaiki penghitungan counter tombol rute aktif (Fix Diskusi 10).
+- Menampilkan armada yang berstatus *"Menunggu Jadwal Keberangkatan"* tetap terlihat parkir di terminal posisinya pada peta, lengkap dengan teks lokasi fisik di kartu trayek (Fix Diskusi 11).
+- Pengujian unit test & Git Commit Fase 2.
 
 ---
 
-### ✅ Fase 5 [Medium]: Penyelarasan Laporan Terminal, BottomSheet Play & Informasi Trayek (Fix Diskusi 2, 4, 6) - SELESAI
-- Kunci tanggal Laporan Terminal mengikuti simulasi aktif (read-only), filter hanya terminal yang aktif dilayani armada, dan dialog "Riwayat Laporan Lalu" untuk melihat data tanggal sebelumnya. (Selesai)
-- BottomSheet Play disederhanakan hanya untuk menampilkan Trayek Aktif beserta detail bus, sopir, status dinas/standby, dan jam keberangkatan. (Selesai)
-- Tombol menu "Informasi Trayek" di HomeScreen dengan modal dialog memisahkan Trayek Aktif vs Trayek Terbuka (Belum Aktif). (Selesai)
-- Pengujian unit test & Git Commit Fase 5. (Selesai)
+### 🔹 Fase 3 [Tinggi]: Showroom Bus & Fleksibilitas Garasi Armada
+- Fitur pembelian bus secara batch (multi-unit stepper) di layar konfirmasi perakitan kustom (Fix Diskusi 5).
+- Penambahan katalog **Pembelian Instan** di Showroom (bus siap pakai dengan sasis, bodi, dan kapasitas asli pabrikan) (Fix Diskusi 5).
+- Modal dialog untuk mengubah jeda keberangkatan dan waktu ampiran langsung dari Garasi Armada dan layar Play ➔ Trayek (Fix Diskusi 4).
+- Pengujian unit test & Git Commit Fase 3.
 
 ---
 
-### ✅ Fase 6 [Medium]: Simulasi Latar Belakang (Offline Progression Engine) (Fix Diskusi 10) - SELESAI
-- Persistensi status simulasi (`SavedSimulationState` via SharedPreferences) saat aplikasi ditutup/dijeda: kecepatan, waktu wall-clock, jam game, dan status running. (Selesai)
-- Delta Time Catch-Up engine saat aplikasi dibuka kembali: majukan jam game, hitung rit operasional bus aktif selama aplikasi ditutup, catatkan transaksi bagi hasil sopir (30%) & laba bersih (70%), serta kreditkan saldo kas perusahaan. (Selesai)
-- Dialog pop-up ringkasan pendapatan offline (`OfflineProgressionDialog`) di HomeScreen saat user membuka game kembali dengan rincian durasi offline, pendapatan kotor, bagi hasil sopir, laba bersih, dan statistik per bus. (Selesai)
-- Pengujian unit test & Git Commit Fase 6. (Selesai)
+### 🔹 Fase 4 [Medium]: UI Refinement, Wizard Rute & Layar Informasi Trayek
+- Kartu kalkulasi estimasi proyeksi omzet, komisi sopir, dan laba bersih perusahaan secara live saat input tarif di Langkah 3 Wizard (Fix Diskusi 2).
+- Perapian desain dan tata letak kartu koridor di Langkah 2 Wizard Trayek agar nyaman dibaca (Fix Diskusi 14).
+- Pembuatan layar penuh tersendiri **Halaman Informasi Trayek** (`RouteInfoScreen`) menggantikan kartu modal sebelumnya (Fix Diskusi 12).
+- Pengujian unit test & Git Commit Fase 4.
 
 ---
 
-### ✅ Fase 7 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.2.0 & Publikasi Rilis - SELESAI
-- Audit seluruh file Kotlin: 100% bebas komentar (`//` atau `/* */`) dan pembersihan dead code template awal (`ui/main`). (Selesai)
-- Full Regression Testing seluruh unit test (100% passing). (Selesai)
-- Bump versi ke `v2.2.0` (versionCode 9), build signed release APK (`app-release.apk`), dan publikasi Git Tag Rilis `v2.2.0`. (Selesai)
+### 🔹 Fase 5 [Medium]: Manajemen Kru & Ekosistem Keuangan
+- Penambahan 94 kandidat sopir baru (total 100 pengemudi di bursa pelamar) (Fix Diskusi 13).
+- Penyaringan otomatis bursa pelamar sopir: sembunyikan sopir yang sudah bertugas agar bursa tetap bersih (Fix Diskusi 15).
+- Pembersihan filter rute di Buku Kas Keuangan `FinanceScreen` (Fix Diskusi 3).
+- Pembersihan HomeScreen: hapus info reputasi dan sinkronkan jam operasional langsung dengan jam simulasi Play (Fix Diskusi 8).
+- Pengujian unit test & Git Commit Fase 5.
 
 ---
 
-## 🚀 SEASON 5: Database Persistence & Data Integrity Overhaul
-
-### ✅ Fase 1 [Kritis]: Persistensi Trayek ke Database Room (`CustomRouteEntity` & DAO) - SELESAI
-- Buat `CustomRouteEntity` & `CustomRouteDao` di database Room `bus_manager.db` (Database versi 7). (Selesai)
-- Mapper `RouteMapper.kt` untuk konversi dua arah antara domain `BusRoute` dan `CustomRouteEntity`. (Selesai)
-- Refaktor `RouteCatalogRepositoryImpl` berbasis database Room (sinkronisasi memori cache & DAO reaktif). (Selesai)
-- Integrasi penghapusan rute custom di `ResetGameUseCase`. (Selesai)
-- Pengujian unit test & Git Commit Fase 1. (Selesai)
-
----
-
-### ✅ Fase 2 [Tinggi]: Perbaikan Penugasan Jadwal Pulang-Pergi (PP) & DAO Multi-Schedule - SELESAI
-- Logika penugasan armada `assignBusToSchedule` disempurnakan: mendukung satu armada melayani jadwal Berangkat (*Outbound*) dan Pulang (*Return*) pada rute yang sama tanpa saling meng-unassign. (Selesai)
-- Menambahkan query `getSchedulesByBusId` dan `getSchedulesByBusIdFlow` pada `RouteScheduleDao`. (Selesai)
-- Proteksi re-alokasi rute: jika armada dipindahkan ke rute berbeda, jadwal lama otomatis dilepas dengan bersih. (Selesai)
-- Pengujian unit test & Git Commit Fase 2. (Selesai)
-
----
-
-### ✅ Fase 3 [Tinggi]: Sinkronisasi & Auto-Recovery Status Operasi Armada (State Reconciliation) - SELESAI
-- Engine pemulihan armada `ReconcileBusOperatingStateUseCase`: secara otomatis mendeteksi dan memulihkan armada yang tersangkut `isOperating = true` di database Room jika aplikasi ditutup paksa / di-kill tanpa adanya active trip aktif di memori. (Selesai)
-- Integrasi rekonsiliasi otomatis pada inisialisasi `HomeScreenViewModel`, `GarageViewModel`, dan proteksi `SellBusUseCase`. (Selesai)
-- Penyempurnaan penyajian status di garasi: armada hanya berstatus "Berdinas" di UI jika benar-benar memiliki perjalanan aktif yang sedang berjalan di jalan raya. (Selesai)
-- Pengujian unit test & Git Commit Fase 3. (Selesai)
-
----
-
-### ✅ Fase 4 [Medium]: Auto-Seeding Database Terpusat & Integritas Relasi Data - SELESAI
-- Auto-seeding database terpusat sejak peluncuran aplikasi pertama kali (`StartNewGameUseCase`): menjamin perusahaan terinisialisasi modal Rp 50.000.000.000 & 100 reputasi, serta 6 sopir kandidat default langsung tersedia di database Room. (Selesai)
-- Peningkatan keamanan `seedCandidateDriversIfEmpty`: memeriksa dan memasukkan setiap kandidat pengemudi secara presisi tanpa menduplikasi data yang sudah ada. (Selesai)
-- Integritas relasi data dan pembersihan berantai (*Cascading Cleanup*): `SellBusUseCase` kini menghapus seluruh jadwal yang terikat pada armada yang dijual via `deleteSchedulesForBus` dan `deleteSchedule`, mencegah terciptanya *orphan schedule* di database. (Selesai)
-- Proteksi integritas trayek kustom: penghapusan rute kustom (`deleteRoute`) otomatis membersihkan jadwal (`deleteSchedulesByRouteSync`) dan daftar tarif (`deletePricingsByRouteSync`) terkait. (Selesai)
-- Pengujian unit test & Git Commit Fase 4. (Selesai)
-
----
-
-### ✅ Fase 5 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.3.0 & Publikasi Rilis - SELESAI
-- Audit seluruh file Kotlin: 100% bebas komentar (`//` atau `/* */`) dan bebas dead code. (Selesai)
-- Full Regression Testing seluruh 250+ unit test (100% passing). (Selesai)
-- Bump versi ke `v2.3.0` (versionCode 10), build signed release APK (`app-release.apk`), dan publikasi Git Tag Rilis `v2.3.0`. (Selesai)
-
----
-
-## 🚀 SEASON 6: UI/UX Refinement, Auto-Dispatch Engine & System Insets Overhaul
-
-### ✅ Fase 1 [Kritis]: Penanganan System Bars & Insets Android (Fix Diskusi 6) - SELESAI
-- Terapkan `statusBarsPadding()` & `navigationBarsPadding()` secara menyeluruh pada root layout navigasi dan seluruh layar (`HomeScreen`, `GarageScreen`, `ShowroomScreen`, `RoutePlannerScreen`, `RouteWizardScreen`, `FinanceScreen`, `DriverManagementScreen`, `TerminalReportScreen`, `SimulationMapScreen`, `SplashScreen`, serta bottom sheet). (Selesai)
-- Header aplikasi (`CompanyHeader` dan seluruh top bar) terlindungi dari tumpukan elemen status bar Android (jam, icon notifikasi, wifi, baterai). (Selesai)
-- Konten bawah (`LiveInfoBanner`, action bar showroom/wizard, dan tombol bottom sheet) aman di atas bilah navigasi 3-tombol sistem Android tanpa terpotong. (Selesai)
-- Pengujian tampilan & Git Commit Fase 1. (Selesai)
-
----
-
-### ✅ Fase 2 [Tinggi]: Standarisasi Format Informasi Jadwal Keberangkatan & Kepulangan (Fix Diskusi 1) - SELESAI
-- Tambahkan metode domain `formatScheduleInfo(originCity, destinationCity)` dan `formatScheduleInfo(route)` pada `RouteSchedule` model. (Selesai)
-- Standarisasi format teks di semua halaman menjadi: `Jam [HH:mm WIB] menuju [Kota Tujuan] dari [Kota Asal]`. (Selesai)
-- Terapkan di `RoutePlannerScreen` (header section jadwal, item card jadwal, dialog penugasan armada, dan dialog tambah jadwal). (Selesai)
-- Terapkan di `Slide4BusDriverSchedule` (wizard pembuatan rute: header & subteks jadwal pergi/pulang, filter chips arah rute, serta peringatan bentrok jadwal). (Selesai)
-- Terapkan di `RoutesOverviewBottomSheet` (daftar jadwal armada terformat rapi per baris dengan icon `🕒`), `BusLiveTrackingCard`, `FleetOverviewBottomSheet`, dan `GarageViewModel`. (Selesai)
-- Terapkan di `HomeScreen` pada kartu informasi operasional trayek aktif. (Selesai)
-- Penambahan unit test domain di `RouteScheduleTest` untuk verifikasi formatting jadwal outbound, inbound, dan bus route. (Selesai)
-- Pengujian unit test & Git Commit Fase 2. (Selesai)
-
----
-
-### ✅ Fase 3 [Tinggi]: Klasifikasi Status Armada di Garasi & Penggantian Istilah Standby (Fix Diskusi 3 & 4) - SELESAI
-- Logika klasifikasi garasi disempurnakan: menambahkan properti `isOnDuty` pada `GarageBusItem` yang mengidentifikasi armada yang aktif berjalan (`isOperating`) maupun yang sudah ditugaskan trayek & sopir (`canOperate` / `hasRoute`). (Selesai)
-- Tab **"Berdinas"** kini mencakup seluruh armada yang sedang berdinas di jalan raya maupun yang sedang menunggu jadwal keberangkatan trayek. (Selesai)
-- Tab **"Di Garasi"** secara eksklusif hanya menampilkan armada yang belum memiliki penugasan dinas / menganggur. (Selesai)
-- Label status garasi diperbarui secara informatif: `"● Sedang Berdinas"`, `"Menunggu Jadwal Keberangkatan"`, `"Menunggu Sopir"`, dan `"Tersedia di Garasi"`. (Selesai)
-- Penggantian menyeluruh istilah `"Standby"` di seluruh UI aplikasi (`RoutesOverviewBottomSheet`, `FleetOverviewBottomSheet`, `BusLiveTrackingCard`, `SimulationMapScreen`, `GarageScreen`) menjadi `"Menunggu Jadwal Keberangkatan"`. (Selesai)
-- Penambahan unit test baru di `GarageViewModelTest` yang memverifikasi armada penugasan jadwal otomatis masuk tab Berdinas dan berstatus Menunggu Jadwal Keberangkatan. (Selesai)
-- Pengujian unit test & Git Commit Fase 3. (Selesai)
-
----
-
-### ✅ Fase 4 [Medium]: Otomasi Keberangkatan Murni & Penghapusan Tombol Manual "Berdinas Sekarang" (Fix Diskusi 2) - SELESAI
-- Tombol manual `Berdinas Sekarang` di `FleetOverviewBottomSheet` dihapus sepenuhnya, mencegah pemberangkatan di luar jadwal operasional. (Selesai)
-- Digantikan dengan indikator kesiapan otomatisasi dinas: badge informatif `"🕒 Otomatis jalan sesuai jam keberangkatan"` dengan styling `IceBlue` dan teks tebal. (Selesai)
-- Keterangan tab armada kosong diperbarui menjadi `"Armada yang siap akan berangkat otomatis saat jam jadwal keberangkatan tiba."`. (Selesai)
-- Engine simulasi `SimulationMapViewModel` otomatis memberangkatkan armada tepat waktu saat jam jadwal tercapai (terintegrasi dengan kalkulasi offline progression saat aplikasi tidak dibuka). (Selesai)
-- Pengujian unit test & Git Commit Fase 4. (Selesai)
-
----
-
-### ✅ Fase 5 [Medium]: Global Fade-In Transition Framework (Fix Diskusi 5) - SELESAI
-- Membangun arsitektur transisi global `AppTransitions.kt` di package `presentation/common` dengan standar durasi fade-in 1 detik (1000ms). (Selesai)
-- Terapkan transisi global fade-in pada navigasi antar-halaman `NavDisplay` di `Navigation.kt` (`transitionSpec`, `popTransitionSpec`, dan `predictivePopTransitionSpec`). (Selesai)
-- Terapkan transisi global fade-in pada konten dinamis wizard rute (`RouteWizardScreen.kt`) dan animasi splash screen (`SplashScreen.kt`). (Selesai)
-- Penambahan unit test `AppTransitionsTest` untuk memverifikasi durasi 1000ms dan konfigurasi spesifikasi transisi fade. (Selesai)
-- Pengujian unit test & Git Commit Fase 5. (Selesai)
-
----
-
-### ✅ Fase 6 [Final]: QA Menyeluruh, Strict Zero Comments, Desain Baru Icon Aplikasi Modern, Bump Versi ke v2.4.0 & Publikasi Rilis - SELESAI
-- Desain ulang icon aplikasi modern: Jetbus SHD panoramik dengan bando divider, LED DRL, emblem perisai emas, highway perspective, dan palet warna navy/cyan adaptif (`ic_launcher_background.xml` & `ic_launcher_foreground.xml`). (Selesai)
-- Audit zero comments (`0` komentar di seluruh file Kotlin). (Selesai)
-- Full regression testing 100% passing (seluruh unit test lolos tanpa error). (Selesai)
-- Bump versi ke `v2.4.0` (versionCode 11), build signed release APK (`app-release.apk`), dan publikasi Git Tag Rilis `v2.4.0`. (Selesai)
+### 🔹 Fase 6 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.5.0 & Publikasi Rilis
+- Audit zero comments (`0` komentar di seluruh file Kotlin).
+- Full regression testing seluruh unit test (100% passing).
+- Bump versi ke `v2.5.0` (versionCode 12), build signed release APK (`app-release.apk`), dan publikasi Git Tag Rilis `v2.5.0`.

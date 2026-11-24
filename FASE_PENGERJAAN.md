@@ -112,7 +112,23 @@ Dokumen perencanaan fitur lanjutan Season 2 mencakup personalisasi armada bertah
 
 ---
 
-### 🟡 Fase 2 [Medium]: Kedinamisan Pasar Penumpang & Naik-Turun Acak
+### 🟡 Fase 2 [Easy-Medium]: Real-Time Smooth Clock (Menit-per-Menit) & Gaji Bagi Hasil 30% (Solusi Saldo Kas)
+- **Tujuan**: Menghilangkan lonjakan waktu 10 menit agar waktu berjalan halus selayaknya jam normal, serta mengubah skema gaji sopir menjadi komisi 30% dari pendapatan tiket agar saldo kas perusahaan selalu untung dan tidak boncos.
+- **Deliverables**:
+  1. **Jam Simulasi Halus (Smooth Real-Time Clock) (Diskusi 3)**:
+     - Mengubah ticker waktu dari lonjakan 10 menit menjadi 1 menit per detik pada speed 1x normal (`12.00 -> 12.01 -> 12.02 ...`).
+     - Ticker speed 3x (3 menit/detik) dan 5x (5 menit/detik) berjalan proporsional dan presisi.
+  2. **Skema Gaji Sopir Komisi Bagi Hasil 30% (Diskusi 4 & 5)**:
+     - Mengganti sistem gaji harian flat yang menguras kas pemain setiap pergantian hari.
+     - Gaji sopir otomatis dihitung sebesar **30% dari total pendapatan tiket bus yang dihasilkannya saat berdinas**.
+     - Perusahaan (PO Bus) mengantongi **70% laba kotor tiket**.
+     - Jika bus tidak berdinas / tidak ada pemasukan, tidak ada pengeluaran gaji, sehingga saldo kas tidak akan pernah terpotong misterius lagi.
+     - Pencatatan mutasi pengeluaran gaji 30% dilakukan otomatis ke Buku Kas (`FinancialTransaction`).
+  3. **Pengujian & Git Commit Fase 2 (Season 2)**.
+
+---
+
+### 🟠 Fase 3 [Medium]: Kedinamisan Pasar Penumpang & Naik-Turun Acak di Kota Transit
 - **Tujuan**: Menghilangkan okupansi statis (85%) agar jumlah penumpang bervariasi secara dinamis dan realistis di setiap titik terminal.
 - **Deliverables**:
   1. **Algoritma Permintaan Acak (*Random Demand Generator*)**:
@@ -121,12 +137,26 @@ Dokumen perencanaan fitur lanjutan Season 2 mencakup personalisasi armada bertah
      - Saat bus tiba di terminal transit/antara: sebagian penumpang turun (misal 15% - 40%), dan penumpang baru naik mengisi kursi yang kosong.
      - Proteksi kapasitas mutlak: penumpang naik tidak boleh melebihi sisa kursi kosong (`passengerCount <= capacity`).
   3. **Penurunan Total di Terminal Akhir**: Seluruh sisa penumpang turun dan tiket perjalanan selesai.
-  4. **Pengujian & Git Commit Fase 2 (Season 2)**.
+  4. **Pengujian & Git Commit Fase 3 (Season 2)**.
 
 ---
 
-### 🟠 Fase 3 [Hard]: Log & Layar Laporan Terminal per Hari + Detail per Armada
-- **Tujuan**: Memberikan visibilitas kinerja tiap terminal per tanggal untuk melihat arus penumpang naik dan turun.
+### 🟣 Fase 4 [Hard]: Peta Multi-Rute Berwarna Unik & Mode "Track Bus" Realistis ala Google Maps
+- **Tujuan**: Membuat visualisasi peta jaringan jalan Jawa Timur menjadi hidup dengan warna berbeda untuk setiap rute yang dibuka, serta menghadirkan pengalaman pelacakan armada bergaya Google Maps.
+- **Deliverables**:
+  1. **Garis Rute Aktif Berwarna-Warni (Diskusi 2)**:
+     - Setiap rute yang sudah dibuka oleh pemain digambar permanen di peta dengan warna garis unik dan berbeda-beda (misal: Surabaya-Probolinggo warna Oranye, Surabaya-Jember warna Hijau Emerald, Surabaya-Malang warna Ungu).
+     - Palet warna kontras tinggi yang jelas dan estetik di atas kanvas peta Jawa Timur.
+  2. **Fitur "Track Bus" ala Google Maps (Diskusi 1)**:
+     - Saat armada dilacak (*tracking mode*), jalur rute spesifik yang dilewati bus menyala tebal (*highlighted polyline navigation*).
+     - Armada ditampilkan dengan visual mobil/bus dengan arah hadap yang jelas.
+     - **Bubble Callout Info Lapangan** melayang di dekat bus: Menampilkan nama armada, kota tujuan, dan estimasi sisa waktu tempuh (ETA), persis seperti UI Google Maps.
+  3. **Pengujian & Git Commit Fase 4 (Season 2)**.
+
+---
+
+### 🔴 Fase 5 [Hard]: Log & Layar Laporan Terminal Harian + Detail Breakdown per Armada
+- **Tujuan**: Memberikan visibilitas kinerja tiap terminal per tanggal untuk melihat arus penumpang naik dan turun secara detail.
 - **Deliverables**:
   1. **Model & Tabel Database `TerminalPassengerRecord` (Room DB)**:
      - Mencatat event terminal: tanggal game, terminal ID/nama, bus ID/kode, rute ID, jumlah naik (`boardedCount`), dan jumlah turun (`alightedCount`).
@@ -135,19 +165,4 @@ Dokumen perencanaan fitur lanjutan Season 2 mencakup personalisasi armada bertah
      - Filter Tanggal/Hari game.
      - Kartu Ringkasan: Total Penumpang Naik & Total Penumpang Turun di terminal tersebut pada hari yang dipilih.
      - **Tombol & Modal Detail per Armada**: Menampilkan daftar bus yang singgah di terminal tersebut beserta rincian jumlah penumpang naik dan turun per armada.
-  3. **Pengujian & Git Commit Fase 3 (Season 2)**.
-
----
-
-### 🔴 Fase 4 [Hard]: Sistem Penggajian Sopir Berbasis Ritase PP (Round-Trip Revenue Deduction)
-- **Tujuan**: Mengubah skema upah harian menjadi upah ritase (per 1 Pulang-Pergi) yang langsung dipotong dari hasil tiket bus.
-- **Deliverables**:
-  1. **State Tracking Ritase Pulang-Pergi (Round-Trip State Machine)**:
-     - Melacak leg perjalanan armada: Leg 1 (A ➔ B) selesai, lalu saat Leg 2 (B ➔ A) selesai, siklus 1 PP tercapai.
-  2. **Pemotongan Otomatis dari Pendapatan Tiket**:
-     - Upah sopir langsung dipotong dari hasil penjualan tiket trip kepulangan tersebut (Net Earnings = Tiket - Upah Sopir PP).
-     - Mutasi kas keluar dicatat otomatis di Buku Kas (`FinancialTransaction`) dengan kategori `DRIVER_WAGE_PER_TRIP`.
-  3. **Proteksi & Fallback System**:
-     - Menghindari sopir tidak digaji jika armada hanya menjalankan rute satu arah (One-Way) atau menginap di terminal tujuan.
-     - Penanganan defisit jika penerimaan tiket lebih kecil dari upah ritase sopir.
-  4. **Pengujian & Git Commit Fase 4 (Season 2)**.
+  3. **Pengujian & Git Commit Fase 5 (Season 2)**.

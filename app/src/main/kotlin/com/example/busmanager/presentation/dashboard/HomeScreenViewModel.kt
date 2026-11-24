@@ -10,6 +10,7 @@ import com.example.busmanager.domain.company.usecase.ResetGameUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
 import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
+import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +25,8 @@ class HomeScreenViewModel(
     private val startNewGameUseCase: StartNewGameUseCase,
     private val getHiredDriversUseCase: GetHiredDriversUseCase? = null,
     private val appUpdateManager: AppUpdateManager = AppUpdateManager(),
-    private val resetGameUseCase: ResetGameUseCase? = null
+    private val resetGameUseCase: ResetGameUseCase? = null,
+    private val getRouteOperationalStatusUseCase: GetRouteOperationalStatusUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeScreenUiState())
@@ -38,16 +40,19 @@ class HomeScreenViewModel(
         viewModelScope.launch {
             startNewGameUseCase()
             val driversFlow = getHiredDriversUseCase?.invoke() ?: flowOf(emptyList())
+            val operationalFlow = getRouteOperationalStatusUseCase?.invoke() ?: flowOf(emptyList())
             combine(
                 getCompanyUseCase(),
                 getOwnedFleetUseCase(),
-                driversFlow
-            ) { company, buses, drivers ->
+                driversFlow,
+                operationalFlow
+            ) { company, buses, drivers, operationalRoutes ->
                 _uiState.update { current ->
                     current.copy(
                         company = company,
                         ownedBuses = buses,
                         hiredDriverCount = drivers.size,
+                        routeOperationalList = operationalRoutes,
                         isLoading = false
                     )
                 }
@@ -93,6 +98,14 @@ class HomeScreenViewModel(
             resetGameUseCase?.invoke()
             _uiState.update { it.copy(isLoading = false) }
         }
+    }
+
+    fun openRouteInfoModal() {
+        _uiState.update { it.copy(showRouteInfoModal = true) }
+    }
+
+    fun dismissRouteInfoModal() {
+        _uiState.update { it.copy(showRouteInfoModal = false) }
     }
 }
 

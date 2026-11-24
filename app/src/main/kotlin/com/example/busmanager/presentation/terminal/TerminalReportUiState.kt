@@ -16,6 +16,10 @@ data class TerminalReportUiState(
     val records: List<TerminalPassengerRecord> = emptyList(),
     val busBreakdowns: List<TerminalBusBreakdown> = emptyList(),
     val showBreakdownModal: Boolean = false,
+    val showHistoryModal: Boolean = false,
+    val isHistoricalView: Boolean = false,
+    val availableHistoryDates: List<Triple<Int, Int, Int>> = emptyList(),
+    val hasActiveTerminals: Boolean = true,
     val isLoading: Boolean = false
 ) {
     val selectedDateFormatted: String

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.route.repository.TerminalRepository
+import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
 import com.example.busmanager.domain.terminal.model.TerminalBusBreakdown
 import com.example.busmanager.domain.terminal.repository.TerminalPassengerRepository
@@ -16,7 +17,8 @@ import kotlinx.coroutines.launch
 class TerminalReportViewModel(
     private val terminalRepository: TerminalRepository,
     private val terminalPassengerRepository: TerminalPassengerRepository,
-    private val simulationTimeRepository: SimulationTimeRepository? = null
+    private val simulationTimeRepository: SimulationTimeRepository? = null,
+    private val getRouteOperationalStatusUseCase: GetRouteOperationalStatusUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TerminalReportUiState())
@@ -24,16 +26,18 @@ class TerminalReportViewModel(
 
     init {
         loadTerminalsAndCurrentTime()
+        observeTime()
+        observeOperationalRoutes()
         observeRecords()
     }
 
     private fun loadTerminalsAndCurrentTime() {
-        val terminals = terminalRepository.getAllTerminals()
+        val allTerminals = terminalRepository.getAllTerminals()
         val currentTime = simulationTimeRepository?.currentTime?.value
-        val initialTerminal = terminals.firstOrNull()
+        val initialTerminal = allTerminals.firstOrNull()
         _uiState.update { current ->
             current.copy(
-                availableTerminals = terminals,
+                availableTerminals = allTerminals,
                 selectedTerminal = initialTerminal,
                 selectedDay = currentTime?.day ?: current.selectedDay,
                 selectedMonth = currentTime?.month ?: current.selectedMonth,
@@ -41,6 +45,64 @@ class TerminalReportViewModel(
             )
         }
         loadRecordsForSelection()
+    }
+
+    private fun observeTime() {
+        if (simulationTimeRepository == null) return
+        viewModelScope.launch {
+            simulationTimeRepository.currentTime.collect { time ->
+                if (!_uiState.value.isHistoricalView) {
+                    if (_uiState.value.selectedDay != time.day ||
+                        _uiState.value.selectedMonth != time.month ||
+                        _uiState.value.selectedYear != time.year
+                    ) {
+                        _uiState.update {
+                            it.copy(
+                                selectedDay = time.day,
+                                selectedMonth = time.month,
+                                selectedYear = time.year
+                            )
+                        }
+                        loadRecordsForSelection()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeOperationalRoutes() {
+        if (getRouteOperationalStatusUseCase == null) return
+        viewModelScope.launch {
+            getRouteOperationalStatusUseCase().collect { routeStatuses ->
+                val activeRoutes = routeStatuses.filter { it.isActive }
+                val activeTerminalList = activeRoutes.flatMap { operational ->
+                    val r = operational.route
+                    listOf(r.originTerminal, r.destinationTerminal) + r.transitTerminals
+                }.distinctBy { it.id }
+
+                val allTerminals = terminalRepository.getAllTerminals()
+                val targetTerminals = if (activeTerminalList.isNotEmpty()) {
+                    activeTerminalList
+                } else {
+                    allTerminals
+                }
+
+                _uiState.update { current ->
+                    val currentSelectedStillValid = targetTerminals.any { it.id == current.selectedTerminal?.id }
+                    val newSelected = if (currentSelectedStillValid) {
+                        current.selectedTerminal
+                    } else {
+                        targetTerminals.firstOrNull()
+                    }
+                    current.copy(
+                        availableTerminals = targetTerminals,
+                        selectedTerminal = newSelected,
+                        hasActiveTerminals = activeTerminalList.isNotEmpty()
+                    )
+                }
+                loadRecordsForSelection()
+            }
+        }
     }
 
     fun selectTerminal(terminal: Terminal) {
@@ -59,16 +121,46 @@ class TerminalReportViewModel(
         loadRecordsForSelection()
     }
 
-    fun previousDay() {
-        val currentDay = _uiState.value.selectedDay
-        if (currentDay > 1) {
-            selectDate(currentDay - 1, _uiState.value.selectedMonth, _uiState.value.selectedYear)
+    fun openHistoryModal() {
+        viewModelScope.launch {
+            val dates = terminalPassengerRepository.getAvailableDates()
+            _uiState.update {
+                it.copy(
+                    availableHistoryDates = dates,
+                    showHistoryModal = true
+                )
+            }
         }
     }
 
-    fun nextDay() {
-        val currentDay = _uiState.value.selectedDay
-        selectDate(currentDay + 1, _uiState.value.selectedMonth, _uiState.value.selectedYear)
+    fun dismissHistoryModal() {
+        _uiState.update { it.copy(showHistoryModal = false) }
+    }
+
+    fun selectHistoryDate(day: Int, month: Int, year: Int) {
+        _uiState.update {
+            it.copy(
+                selectedDay = day,
+                selectedMonth = month,
+                selectedYear = year,
+                isHistoricalView = true,
+                showHistoryModal = false
+            )
+        }
+        loadRecordsForSelection()
+    }
+
+    fun resetToCurrentLiveDate() {
+        val currentTime = simulationTimeRepository?.currentTime?.value
+        _uiState.update {
+            it.copy(
+                selectedDay = currentTime?.day ?: it.selectedDay,
+                selectedMonth = currentTime?.month ?: it.selectedMonth,
+                selectedYear = currentTime?.year ?: it.selectedYear,
+                isHistoricalView = false
+            )
+        }
+        loadRecordsForSelection()
     }
 
     fun openBreakdownModal() {

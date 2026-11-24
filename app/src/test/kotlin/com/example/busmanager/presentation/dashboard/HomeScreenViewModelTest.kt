@@ -99,6 +99,19 @@ class HomeScreenViewModelTest {
         assertFalse(viewModel.uiState.value.isPlaying)
     }
 
+    @Test
+    fun routeInfoModal_opensAndDismissesCorrectly() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertFalse(viewModel.uiState.value.showRouteInfoModal)
+
+        viewModel.openRouteInfoModal()
+        assertTrue(viewModel.uiState.value.showRouteInfoModal)
+
+        viewModel.dismissRouteInfoModal()
+        assertFalse(viewModel.uiState.value.showRouteInfoModal)
+    }
+
     private class FakeCompanyRepository : CompanyRepository {
         private val state = MutableStateFlow<Company?>(null)
 

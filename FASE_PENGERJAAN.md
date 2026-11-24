@@ -100,11 +100,11 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 5 [Medium]: Penyelarasan Laporan Terminal, BottomSheet Play & Informasi Trayek (Fix Diskusi 2, 4, 6)
-- Kunci tanggal Laporan Terminal mengikuti simulasi aktif, filter terminal aktif, dan modal Riwayat Laporan Lalu.
-- BottomSheet Play disederhanakan hanya untuk menampilkan Trayek Aktif.
-- Tombol menu "Informasi Trayek" di HomeScreen memisahkan Trayek Aktif vs Trayek Terbuka (Belum Aktif).
-- Pengujian unit test & Git Commit Fase 5.
+### ✅ Fase 5 [Medium]: Penyelarasan Laporan Terminal, BottomSheet Play & Informasi Trayek (Fix Diskusi 2, 4, 6) - SELESAI
+- Kunci tanggal Laporan Terminal mengikuti simulasi aktif (read-only), filter hanya terminal yang aktif dilayani armada, dan dialog "Riwayat Laporan Lalu" untuk melihat data tanggal sebelumnya. (Selesai)
+- BottomSheet Play disederhanakan hanya untuk menampilkan Trayek Aktif beserta detail bus, sopir, status dinas/standby, dan jam keberangkatan. (Selesai)
+- Tombol menu "Informasi Trayek" di HomeScreen dengan modal dialog memisahkan Trayek Aktif vs Trayek Terbuka (Belum Aktif). (Selesai)
+- Pengujian unit test & Git Commit Fase 5. (Selesai)
 
 ---
 

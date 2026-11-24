@@ -95,7 +95,7 @@ Rencana perbaikan operasional, validasi business rules ketat, penambahan fitur r
 - ✅ **Fase 2**: Pengetatan Validasi Bus & Driver di Wizard Trayek + Perapian Layout Teks Kartu Bus.
 - ✅ **Fase 3**: Penyempurnaan Simulasi, Penjadwalan Standby & Pembatalan Jadwal (Finish Leg di Terminal B Lalu Stay & Origin Locked).
 - ✅ **Fase 4**: Fitur Jual Armada di Garasi (Proteksi Armada Sedang Dinas) & Fitur Reset Akun (Mulai Baru).
-- ⏳ **Fase 5**: Penyelarasan Tanggal Laporan Terminal, BottomSheet Play Hanya Trayek Aktif & Menu Informasi Trayek di HomeScreen.
+- ✅ **Fase 5**: Penyelarasan Tanggal Laporan Terminal, BottomSheet Play Hanya Trayek Aktif & Menu Informasi Trayek di HomeScreen.
 - ⏳ **Fase 6**: Engine Simulasi Latar Belakang (Offline Progression Delta Time Catch-Up Saat Aplikasi Ditutup).
 - ⏳ **Fase 7**: QA Menyeluruh, Verifikasi Strict Zero Comments, Bump Versi ke v2.2.0, dan Rilis APK.
 

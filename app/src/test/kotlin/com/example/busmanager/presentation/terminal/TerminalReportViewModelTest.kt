@@ -95,15 +95,45 @@ class TerminalReportViewModelTest {
     }
 
     @Test
-    fun previousDayAndNextDay_adjustDayCorrectly() = runTest(testDispatcher) {
+    fun historyModal_opensSelectsPastDateAndResetsToLive() = runTest(testDispatcher) {
         advanceUntilIdle()
 
-        viewModel.nextDay()
-        advanceUntilIdle()
-        assertEquals(25, viewModel.uiState.value.selectedDay)
+        fakePassengerRepo.setRecords(
+            listOf(
+                TerminalPassengerRecord(
+                    id = "rec-past",
+                    terminalId = "term_purabaya",
+                    terminalName = "Terminal Purabaya",
+                    busId = "bus-1",
+                    busCode = "TN-01",
+                    routeId = "route-1",
+                    routeName = "Route 1",
+                    day = 20,
+                    month = 11,
+                    year = 2026,
+                    dateFormatted = "20/11/2026",
+                    timeFormatted = "10:00 WIB",
+                    boardedCount = 10,
+                    alightedCount = 5
+                )
+            )
+        )
 
-        viewModel.previousDay()
+        viewModel.openHistoryModal()
         advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.showHistoryModal)
+        assertEquals(1, viewModel.uiState.value.availableHistoryDates.size)
+
+        viewModel.selectHistoryDate(20, 11, 2026)
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.showHistoryModal)
+        assertTrue(viewModel.uiState.value.isHistoricalView)
+        assertEquals(20, viewModel.uiState.value.selectedDay)
+        assertEquals(10, viewModel.uiState.value.totalBoarded)
+
+        viewModel.resetToCurrentLiveDate()
+        advanceUntilIdle()
+        assertFalse(viewModel.uiState.value.isHistoricalView)
         assertEquals(24, viewModel.uiState.value.selectedDay)
     }
 

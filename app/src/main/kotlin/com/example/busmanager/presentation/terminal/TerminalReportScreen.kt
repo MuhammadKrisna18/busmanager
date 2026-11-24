@@ -25,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.terminal.model.TerminalBusBreakdown
 import com.example.busmanager.domain.terminal.model.TerminalPassengerRecord
 import com.example.busmanager.ui.theme.AppDimens
@@ -86,8 +88,9 @@ fun TerminalReportScreen(
 
             DateFilterBar(
                 dateFormatted = state.selectedDateFormatted,
-                onPreviousDay = { viewModel.previousDay() },
-                onNextDay = { viewModel.nextDay() }
+                isHistoricalView = state.isHistoricalView,
+                onOpenHistory = { viewModel.openHistoryModal() },
+                onResetToLive = { viewModel.resetToCurrentLiveDate() }
             )
 
             Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
@@ -146,6 +149,14 @@ fun TerminalReportScreen(
             dateFormatted = state.selectedDateFormatted,
             breakdowns = state.busBreakdowns,
             onDismiss = { viewModel.dismissBreakdownModal() }
+        )
+    }
+
+    if (state.showHistoryModal) {
+        TerminalHistoryDialog(
+            availableDates = state.availableHistoryDates,
+            onSelectDate = { day, month, year -> viewModel.selectHistoryDate(day, month, year) },
+            onDismiss = { viewModel.dismissHistoryModal() }
         )
     }
 }
@@ -235,49 +246,178 @@ private fun TerminalSelectorBar(
 @Composable
 private fun DateFilterBar(
     dateFormatted: String,
-    onPreviousDay: () -> Unit,
-    onNextDay: () -> Unit
+    isHistoricalView: Boolean,
+    onOpenHistory: () -> Unit,
+    onResetToLive: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AppDimens.radiusMedium),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isHistoricalView) Color(0xFFFEF3C7) else SurfaceWhite
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = 14.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(IceBlue)
-                    .clickable(onClick = onPreviousDay),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "◀", fontSize = 12.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "📅 $dateFormatted",
+                    color = TextDark,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = if (isHistoricalView) "📜 Menampilkan Riwayat Lalu" else "🔒 Tanggal Simulasi Berjalan (Terkunci)",
+                    color = if (isHistoricalView) Color(0xFFB45309) else PrimaryBlueDark,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
-            Text(
-                text = "📅 $dateFormatted",
-                color = TextDark,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
-            )
+            if (isHistoricalView) {
+                Button(
+                    onClick = onResetToLive,
+                    shape = RoundedCornerShape(AppDimens.radiusPill),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(text = "Kembali Hari Ini", fontSize = 11.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            } else {
+                OutlinedButton(
+                    onClick = onOpenHistory,
+                    shape = RoundedCornerShape(AppDimens.radiusPill),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(text = "📜 Riwayat Lalu", fontSize = 11.sp, color = PrimaryBlue, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
 
-            Box(
+@Composable
+private fun TerminalHistoryDialog(
+    availableDates: List<Triple<Int, Int, Int>>,
+    onSelectDate: (Int, Int, Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(AppDimens.radiusMedium),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
+        ) {
+            Column(
                 modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(IceBlue)
-                    .clickable(onClick = onNextDay),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(AppDimens.paddingMedium)
             ) {
-                Text(text = "▶", fontSize = 12.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "📜 Riwayat Laporan",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextDark
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(IceBlue)
+                            .clickable(onClick = onDismiss),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "✕", fontSize = 12.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Pilih tanggal catatan arus penumpang sebelumnya:",
+                    fontSize = 12.sp,
+                    color = TextMuted
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                if (availableDates.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Belum ada catatan riwayat tanggal sebelumnya.",
+                            fontSize = 12.sp,
+                            color = TextMuted
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(240.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(availableDates) { (day, month, year) ->
+                            val cal = GameCalendar(year = year, month = month, day = day, hour = 0, minute = 0)
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onSelectDate(day, month, year) },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(containerColor = IceBlue)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "${cal.dayOfWeekName()}, ${cal.formatDate()}",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = PrimaryBlueDark
+                                    )
+                                    Text(
+                                        text = "Lihat Data ➔",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = PrimaryBlue
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(AppDimens.radiusMedium),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                ) {
+                    Text(text = "Tutup", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

@@ -52,6 +52,7 @@ import com.example.busmanager.domain.route.usecase.FindAvailablePathsUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableRoutesUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
 import com.example.busmanager.domain.route.usecase.GetConnectedTerminalsUseCase
+import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
 import com.example.busmanager.domain.route.usecase.GetRoutePricingsUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteSchedulesUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteTransitStopsUseCase
@@ -153,6 +154,14 @@ class AppContainer(context: Context) {
     val deleteRouteScheduleUseCase = DeleteRouteScheduleUseCase(routeScheduleRepository)
 
     val validateBusOperationUseCase = ValidateBusOperationUseCase(driverRepository, routePricingRepository)
+    val getRouteOperationalStatusUseCase = GetRouteOperationalStatusUseCase(
+        routeRepository = routeRepository,
+        routeScheduleRepository = routeScheduleRepository,
+        routePricingRepository = routePricingRepository,
+        fleetRepository = fleetRepository,
+        driverRepository = driverRepository,
+        simulationTripRepository = simulationTripRepository
+    )
     val getFinancialTransactionsUseCase = GetFinancialTransactionsUseCase(financialTransactionRepository)
     val recordFinancialTransactionUseCase = RecordFinancialTransactionUseCase(financialTransactionRepository, companyRepository)
 

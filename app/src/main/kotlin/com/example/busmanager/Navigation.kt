@@ -49,7 +49,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         startNewGameUseCase = appContainer.startNewGameUseCase,
                         getHiredDriversUseCase = appContainer.getHiredDriversUseCase,
                         appUpdateManager = appContainer.appUpdateManager,
-                        resetGameUseCase = appContainer.resetGameUseCase
+                        resetGameUseCase = appContainer.resetGameUseCase,
+                        getRouteOperationalStatusUseCase = appContainer.getRouteOperationalStatusUseCase
                     )
                 }
                 HomeScreen(
@@ -220,7 +221,8 @@ fun MainNavigation(appContainer: AppContainer) {
                     TerminalReportViewModel(
                         terminalRepository = appContainer.terminalRepository,
                         terminalPassengerRepository = appContainer.terminalPassengerRepository,
-                        simulationTimeRepository = appContainer.simulationTimeRepository
+                        simulationTimeRepository = appContainer.simulationTimeRepository,
+                        getRouteOperationalStatusUseCase = appContainer.getRouteOperationalStatusUseCase
                     )
                 }
                 TerminalReportScreen(

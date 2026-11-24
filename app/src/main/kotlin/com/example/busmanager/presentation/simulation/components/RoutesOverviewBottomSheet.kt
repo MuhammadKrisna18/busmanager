@@ -5,20 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
@@ -52,7 +51,6 @@ import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextMuted
-import com.example.busmanager.ui.theme.WarningAmberLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,11 +61,20 @@ fun RoutesOverviewBottomSheet(
     buses: List<Bus> = emptyList(),
     activeTrips: List<ActiveBusTrip> = emptyList(),
     schedules: List<RouteSchedule> = emptyList(),
+    drivers: List<Driver> = emptyList(),
     onSelectRoute: (BusRoute) -> Unit,
     onDismiss: () -> Unit,
-    onNavigateToRoutePlanner: () -> Unit
+    onNavigateToRoutePlanner: () -> Unit = {}
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    val activeRoutes = routes.filter { route ->
+        val scheduledBusIds = schedules.filter { it.routeId == route.id }.mapNotNull { it.assignedBusId }.toSet()
+        val routeBuses = buses.filter { it.routeId == route.id || scheduledBusIds.contains(it.id) }
+        val hasDriver = routeBuses.any { bus -> bus.driverId != null || drivers.any { it.assignedBusId == bus.id } }
+        val hasTripsOrSchedules = activeTrips.any { it.route.id == route.id } || schedules.any { it.routeId == route.id }
+        routeBuses.isNotEmpty() && hasDriver && hasTripsOrSchedules
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -87,47 +94,41 @@ fun RoutesOverviewBottomSheet(
             ) {
                 Column {
                     Text(
-                        text = "🗺️ Trayek, Tarif & Armada",
+                        text = "🗺️ Trayek Aktif",
                         color = TextDark,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Total: ${routes.size} Trayek Antarkota Jawa Timur",
+                        text = "${activeRoutes.size} Trayek Sedang Dilayani Armada",
                         color = TextMuted,
                         fontSize = 12.sp
                     )
                 }
 
-                Button(
-                    onClick = {
-                        onDismiss()
-                        onNavigateToRoutePlanner()
-                    },
-                    shape = RoundedCornerShape(AppDimens.radiusPill),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                Box(
+                    modifier = Modifier
+                        .size(30.dp)
+                        .clip(CircleShape)
+                        .background(IceBlue)
+                        .clickable(onClick = onDismiss),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "+ Tambah Trayek",
-                        color = Color.White,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = "✕", fontSize = 13.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
                 }
             }
 
             Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
 
-            if (routes.isEmpty()) {
+            if (activeRoutes.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 32.dp),
+                        .padding(vertical = 36.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "🗺️", fontSize = 40.sp)
+                        Text(text = "🚌", fontSize = 42.sp)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
                             text = "Belum Ada Trayek Aktif",
@@ -137,9 +138,11 @@ fun RoutesOverviewBottomSheet(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Rencanakan rute pertama menggunakan tombol di atas",
+                            text = "Trayek aktif akan muncul setelah armada bus dan pengemudi ditugaskan melayani rute.",
                             color = TextMuted,
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 24.dp),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
                 }
@@ -149,19 +152,18 @@ fun RoutesOverviewBottomSheet(
                     verticalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall),
                     contentPadding = PaddingValues(bottom = 24.dp)
                 ) {
-                    items(routes, key = { it.id }) { route ->
+                    items(activeRoutes, key = { it.id }) { route ->
                         val isSelected = selectedRoute?.id == route.id
-                        val pricings = routePricings[route.id] ?: emptyList()
                         val scheduledBusIds = schedules.filter { it.routeId == route.id }.mapNotNull { it.assignedBusId }.toSet()
-                        val assignedBusIds = buses.filter { it.routeId == route.id }.map { it.id }.toSet()
-                        val routeBuses = buses.filter { scheduledBusIds.contains(it.id) || assignedBusIds.contains(it.id) }
-                        val activeBusCodes = activeTrips.filter { it.route.id == route.id }.map { it.busCode }.toSet()
+                        val routeBuses = buses.filter { scheduledBusIds.contains(it.id) || it.routeId == route.id }
+                        val routeSchedules = schedules.filter { it.routeId == route.id }
 
-                        RouteItemCard(
+                        ActiveRouteItemCard(
                             route = route,
-                            pricings = pricings,
                             buses = routeBuses,
-                            activeBusCodes = activeBusCodes,
+                            drivers = drivers,
+                            schedules = routeSchedules,
+                            activeTrips = activeTrips,
                             isSelected = isSelected,
                             onSelect = {
                                 onSelectRoute(route)
@@ -175,22 +177,16 @@ fun RoutesOverviewBottomSheet(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun RouteItemCard(
+private fun ActiveRouteItemCard(
     route: BusRoute,
-    pricings: List<RoutePricing>,
     buses: List<Bus>,
-    activeBusCodes: Set<String>,
+    drivers: List<Driver>,
+    schedules: List<RouteSchedule>,
+    activeTrips: List<ActiveBusTrip>,
     isSelected: Boolean,
     onSelect: () -> Unit
 ) {
-    val mainPricing = pricings.find {
-        it.originTerminalId == route.originTerminal.id && it.destinationTerminalId == route.destinationTerminal.id
-    }
-    val fareFormatted = mainPricing?.price?.formatRupiah()
-        ?: if (pricings.isNotEmpty()) pricings.first().price.formatRupiah() else "Rp 75.000"
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -245,7 +241,7 @@ private fun RouteItemCard(
                 fontSize = 12.sp
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -259,40 +255,13 @@ private fun RouteItemCard(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                Text(
-                    text = if (route.transitTerminals.isNotEmpty()) {
-                        "Transit: ${route.transitTerminals.joinToString { it.city }}"
-                    } else {
-                        "Langsung (Non-stop)"
-                    },
-                    color = TextMuted,
-                    fontSize = 11.sp
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(Color(0xFFF8FAFC))
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "💰 Tarif Tiket:",
-                    color = TextDark,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = fareFormatted,
-                    color = SuccessGreen,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
+                if (route.transitTerminals.isNotEmpty()) {
+                    Text(
+                        text = "Via: ${route.transitTerminals.joinToString { it.city }}",
+                        color = TextMuted,
+                        fontSize = 11.sp
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -300,45 +269,73 @@ private fun RouteItemCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(6.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(Color(0xFFF8FAFC))
-                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text(
-                    text = "🚌 Armada Pengisi Trayek (${buses.size} Unit):",
+                    text = "🚌 Armada & Pengemudi (${buses.size} Bus):",
                     color = TextDark,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
 
-                if (buses.isEmpty()) {
-                    Text(
-                        text = "Belum ada armada yang ditugaskan di trayek ini",
-                        color = Color(0xFFB45309),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                } else {
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                buses.forEach { bus ->
+                    val isRunning = activeTrips.any { it.busCode == bus.busCode }
+                    val busDriver = drivers.find { it.id == bus.driverId || it.assignedBusId == bus.id }
+                    val busSchedules = schedules.filter { it.assignedBusId == bus.id }
+                    val scheduleSummary = if (busSchedules.isNotEmpty()) {
+                        busSchedules.joinToString(" • ") { sched ->
+                            String.format("%02d:%02d WIB (%s)", sched.departureHour, sched.departureMinute, sched.direction.displayName)
+                        }
+                    } else {
+                        "Jadwal Standby"
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(SurfaceWhite)
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        buses.forEach { bus ->
-                            val isRunning = activeBusCodes.contains(bus.busCode)
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(if (isRunning) SuccessGreenLight else IceBlue)
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = if (isRunning) "● ${bus.busCode} (Jalan)" else "${bus.busCode} (Standby)",
-                                    color = if (isRunning) SuccessGreen else PrimaryBlueDark,
-                                    fontSize = 10.sp,
+                                    text = bus.busCode,
+                                    color = TextDark,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "• ${bus.body.modelName}",
+                                    color = TextMuted,
+                                    fontSize = 11.sp
+                                )
                             }
+                            Text(
+                                text = "👨‍✈️ ${busDriver?.name ?: "Sopir Ditugaskan"} • $scheduleSummary",
+                                color = TextMuted,
+                                fontSize = 10.sp
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(AppDimens.radiusPill))
+                                .background(if (isRunning) SuccessGreenLight else IceBlue)
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = if (isRunning) "● Berdinas" else "Standby",
+                                color = if (isRunning) SuccessGreen else PrimaryBlueDark,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }

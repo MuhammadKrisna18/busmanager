@@ -179,7 +179,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         driverRepository = appContainer.driverRepository,
                         routeRepository = appContainer.routeRepository,
                         routePricingRepository = appContainer.routePricingRepository,
-                        companyRepository = appContainer.companyRepository
+                        companyRepository = appContainer.companyRepository,
+                        getActiveTripsUseCase = appContainer.getActiveTripsUseCase
                     )
                 }
                 GarageScreen(

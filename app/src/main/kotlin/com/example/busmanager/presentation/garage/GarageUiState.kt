@@ -13,7 +13,9 @@ data class GarageBusItem(
     val driverName: String?,
     val routeName: String?,
     val hasPricings: Boolean,
-    val isOperating: Boolean
+    val isOperating: Boolean,
+    val activeTripDirection: String? = null,
+    val activeTripProgressPercent: Int? = null
 ) {
     val canOperate: Boolean
         get() = bus.routeId != null && bus.driverId != null && hasPricings

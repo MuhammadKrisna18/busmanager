@@ -7,6 +7,9 @@ import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
+import com.example.busmanager.domain.simulation.model.ActiveBusTrip
+import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +22,8 @@ class GarageViewModel(
     private val driverRepository: DriverRepository,
     private val routeRepository: RouteRepository,
     private val routePricingRepository: RoutePricingRepository,
-    private val companyRepository: CompanyRepository
+    private val companyRepository: CompanyRepository,
+    private val getActiveTripsUseCase: GetActiveTripsUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GarageUiState(isLoading = true))
@@ -31,15 +35,19 @@ class GarageViewModel(
 
     private fun observeGarageData() {
         viewModelScope.launch {
+            val activeTripsFlow: Flow<List<ActiveBusTrip>> = getActiveTripsUseCase?.invoke() ?: MutableStateFlow(emptyList())
             combine(
                 fleetRepository.getOwnedBuses(),
                 driverRepository.getAllDrivers(),
-                companyRepository.getCompany()
-            ) { buses, drivers, company ->
+                companyRepository.getCompany(),
+                activeTripsFlow
+            ) { buses, drivers, company, activeTrips ->
                 val busItems = buses.map { bus ->
+                    val activeTrip = activeTrips.find { it.busId == bus.id }
+                    val isOperating = activeTrip != null || bus.isOperating
                     val driver = bus.driverId?.let { dId -> drivers.find { it.id == dId } }
-                    val route = bus.routeId?.let { rId -> routeRepository.getRouteById(rId) }
-                    val pricings = bus.routeId?.let { rId ->
+                    val route = activeTrip?.route ?: bus.routeId?.let { rId -> routeRepository.getRouteById(rId) }
+                    val pricings = (activeTrip?.route?.id ?: bus.routeId)?.let { rId ->
                         routePricingRepository.getPricingsListForRoute(rId)
                     } ?: emptyList()
 
@@ -48,7 +56,9 @@ class GarageViewModel(
                         driverName = driver?.name,
                         routeName = route?.name,
                         hasPricings = pricings.isNotEmpty(),
-                        isOperating = bus.isOperating
+                        isOperating = isOperating,
+                        activeTripDirection = activeTrip?.let { "${it.currentOriginName} ➔ ${it.currentDestinationName}" },
+                        activeTripProgressPercent = activeTrip?.let { (it.progressFraction * 100).toInt() }
                     )
                 }
 

@@ -15,10 +15,16 @@ import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
+import com.example.busmanager.domain.simulation.model.ActiveBusTrip
+import com.example.busmanager.domain.simulation.model.GameCalendar
+import com.example.busmanager.domain.simulation.model.RouteDirection
+import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
+import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -147,6 +153,62 @@ class GarageViewModelTest {
         assertEquals(2, viewModel.uiState.value.filteredBuses.size)
     }
 
+    @Test
+    fun activeTripsFlow_updatesOperatingStatusAndRouteDetailsDynamically() = runTest {
+        val fakeTripRepo = FakeSimulationTripRepository()
+        val getActiveTripsUseCase = GetActiveTripsUseCase(fakeTripRepo)
+
+        val vm = GarageViewModel(
+            fleetRepository = fakeFleetRepo,
+            driverRepository = fakeDriverRepo,
+            routeRepository = routeRepository,
+            routePricingRepository = fakePricingRepo,
+            companyRepository = fakeCompanyRepo,
+            getActiveTripsUseCase = getActiveTripsUseCase
+        )
+        advanceUntilIdle()
+
+        val sampleRoute = routeRepository.getRouteById("route_sby_mlg_toll")!!
+        val sampleTrip = ActiveBusTrip(
+            id = "trip-test-1",
+            busId = "bus-2",
+            busCode = "TN-02",
+            route = sampleRoute,
+            direction = RouteDirection.DESTINATION_TO_ORIGIN,
+            departureTime = GameCalendar.initial(),
+            estimatedArrivalMinutes = 60,
+            elapsedMinutes = 30,
+            progressFraction = 0.5f,
+            currentCoordinate = sampleRoute.originTerminal.coordinate,
+            passengerCount = 25,
+            ticketEarnings = Money.rupiah(1_500_000L),
+            isCompleted = false,
+            maxCapacity = 30
+        )
+
+        fakeTripRepo.setActiveTrips(listOf(sampleTrip))
+        advanceUntilIdle()
+
+        val state = vm.uiState.value
+        assertEquals(2, state.operatingBusCount)
+        assertEquals(0, state.standbyBusCount)
+
+        val bus2Item = state.allBuses.find { it.bus.id == "bus-2" }
+        assertNotNull(bus2Item)
+        assertTrue(bus2Item!!.isOperating)
+        assertEquals(sampleRoute.name, bus2Item.routeName)
+        assertEquals("Malang ➔ Surabaya", bus2Item.activeTripDirection)
+        assertEquals(50, bus2Item.activeTripProgressPercent)
+
+        fakeTripRepo.setActiveTrips(emptyList())
+        advanceUntilIdle()
+
+        val updatedState = vm.uiState.value
+        assertEquals(1, updatedState.operatingBusCount)
+        assertEquals(1, updatedState.standbyBusCount)
+        assertFalse(updatedState.allBuses.find { it.bus.id == "bus-2" }!!.isOperating)
+    }
+
     private class FakeFleetRepository : FleetRepository {
         private val list = mutableListOf<Bus>()
         private val flow = MutableStateFlow<List<Bus>>(emptyList())
@@ -234,5 +296,24 @@ class GarageViewModelTest {
             }
             return false
         }
+    }
+
+    private class FakeSimulationTripRepository : SimulationTripRepository {
+        private val _trips = MutableStateFlow<List<ActiveBusTrip>>(emptyList())
+        override val activeTrips: StateFlow<List<ActiveBusTrip>> = _trips
+
+        fun setActiveTrips(trips: List<ActiveBusTrip>) {
+            _trips.value = trips
+        }
+
+        override fun dispatchBus(bus: Bus, route: BusRoute, direction: RouteDirection, currentTime: GameCalendar): ActiveBusTrip {
+            error("Not implemented")
+        }
+
+        override fun advanceTripsTime(advanceMinutes: Int): List<ActiveBusTrip> = emptyList()
+
+        override fun cancelTrip(tripId: String) {}
+
+        override fun clearTrips() {}
     }
 }

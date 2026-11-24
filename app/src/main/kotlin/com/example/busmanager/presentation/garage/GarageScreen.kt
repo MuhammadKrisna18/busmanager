@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -139,11 +140,62 @@ fun GarageScreen(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(uiState.filteredBuses) { item ->
-                        GarageBusCard(
-                            item = item,
-                            onAssignRouteClick = onNavigateToRoutes
-                        )
+                    if (uiState.filteredBuses.isEmpty()) {
+                        item {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 32.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = when (uiState.selectedFilter) {
+                                            GarageFilter.OPERATING -> "🚌"
+                                            GarageFilter.STANDBY -> "🏢"
+                                            GarageFilter.ALL -> "🚍"
+                                        },
+                                        fontSize = 36.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = when (uiState.selectedFilter) {
+                                            GarageFilter.OPERATING -> "Tidak Ada Armada Berdinas"
+                                            GarageFilter.STANDBY -> "Tidak Ada Armada di Garasi"
+                                            GarageFilter.ALL -> "Belum Ada Armada Bus"
+                                        },
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TextDark
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = when (uiState.selectedFilter) {
+                                            GarageFilter.OPERATING -> "Semua armada saat ini sedang standby di garasi."
+                                            GarageFilter.STANDBY -> "Semua armada saat ini sedang aktif melayani trayek di jalan raya."
+                                            GarageFilter.ALL -> "Silakan beli bus di Showroom untuk memulai armada PO Anda."
+                                        },
+                                        fontSize = 12.sp,
+                                        color = TextMuted,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        items(uiState.filteredBuses) { item ->
+                            GarageBusCard(
+                                item = item,
+                                onAssignRouteClick = onNavigateToRoutes
+                            )
+                        }
                     }
                     item {
                         Spacer(modifier = Modifier.height(24.dp))
@@ -337,12 +389,22 @@ private fun GarageBusCard(
                         Text(text = "Rute Aktif:", fontSize = 12.sp, color = TextMuted)
                     }
                     if (item.routeName != null) {
-                        Text(
-                            text = item.routeName,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryBlueDark
-                        )
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = item.routeName,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryBlueDark
+                            )
+                            if (item.activeTripDirection != null && item.activeTripProgressPercent != null) {
+                                Text(
+                                    text = "${item.activeTripDirection} • Progres ${item.activeTripProgressPercent}%",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = SuccessGreen
+                                )
+                            }
+                        }
                     } else {
                         Box(
                             modifier = Modifier

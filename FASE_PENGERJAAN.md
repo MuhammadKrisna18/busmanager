@@ -208,10 +208,12 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 5 [Medium]: Global Fade-In Transition Framework (Fix Diskusi 5)
-- Buat arsitektur transisi global `AppTransitions.kt` menggunakan efek fade-in dengan durasi 1 detik (1000ms).
-- Terapkan transisi global fade-in ini pada navigasi antar-halaman (`Navigation.kt`) dan animasi konten dinamis (`AnimatedContent`, `AnimatedVisibility`).
-- Pengujian transisi & Git Commit Fase 5.
+### ✅ Fase 5 [Medium]: Global Fade-In Transition Framework (Fix Diskusi 5) - SELESAI
+- Membangun arsitektur transisi global `AppTransitions.kt` di package `presentation/common` dengan standar durasi fade-in 1 detik (1000ms). (Selesai)
+- Terapkan transisi global fade-in pada navigasi antar-halaman `NavDisplay` di `Navigation.kt` (`transitionSpec`, `popTransitionSpec`, dan `predictivePopTransitionSpec`). (Selesai)
+- Terapkan transisi global fade-in pada konten dinamis wizard rute (`RouteWizardScreen.kt`) dan animasi splash screen (`SplashScreen.kt`). (Selesai)
+- Penambahan unit test `AppTransitionsTest` untuk memverifikasi durasi 1000ms dan konfigurasi spesifikasi transisi fade. (Selesai)
+- Pengujian unit test & Git Commit Fase 5. (Selesai)
 
 ---
 

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.R
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
+import com.example.busmanager.presentation.common.AppTransitions
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.PrimaryBlue
 import com.example.busmanager.ui.theme.PrimaryBlueDark
@@ -62,7 +63,7 @@ fun SplashScreen(
         launch {
             alpha.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 1000)
+                animationSpec = AppTransitions.fadeTweenSpec()
             )
         }
         delay(3000L)

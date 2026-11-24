@@ -1,9 +1,7 @@
 package com.example.busmanager.presentation.route.wizard
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
+import com.example.busmanager.presentation.common.AppTransitions
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -100,7 +98,7 @@ fun RouteWizardScreen(
         ) {
             AnimatedContent(
                 targetState = uiState.currentStep,
-                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                transitionSpec = { AppTransitions.contentTransform() },
                 label = "WizardStepTransition"
             ) { step ->
                 when (step) {

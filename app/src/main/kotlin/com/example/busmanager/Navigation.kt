@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.example.busmanager.di.AppContainer
+import com.example.busmanager.presentation.common.AppTransitions
 import com.example.busmanager.presentation.dashboard.HomeScreen
 import com.example.busmanager.presentation.dashboard.HomeScreenViewModel
 import com.example.busmanager.presentation.driver.DriverManagementScreen
@@ -31,6 +32,9 @@ fun MainNavigation(appContainer: AppContainer) {
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
+        transitionSpec = { AppTransitions.contentTransform() },
+        popTransitionSpec = { AppTransitions.contentTransform() },
+        predictivePopTransitionSpec = { AppTransitions.contentTransform() },
         entryProvider = entryProvider {
             entry<SplashRoute> {
                 SplashScreen(

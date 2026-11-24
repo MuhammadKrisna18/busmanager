@@ -5,16 +5,21 @@ import com.example.busmanager.domain.simulation.model.RouteDirection
 data class RouteSchedule(
     val id: String,
     val routeId: String,
-    val departureHour: Int,
-    val departureMinute: Int,
-    val direction: RouteDirection,
+    val departureHour: Int = 8,
+    val departureMinute: Int = 0,
+    val direction: RouteDirection = RouteDirection.ORIGIN_TO_DESTINATION,
     val assignedBusId: String? = null,
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    val headwayMinutes: Int = 60,
+    val transitDwellMinutes: Int = 10,
+    val nextDepartureEpochMinutes: Long = 0L
 ) {
     init {
         require(departureHour in 0..23) { "Departure hour must be between 0 and 23" }
         require(departureMinute in 0..59) { "Departure minute must be between 0 and 59" }
         require(routeId.isNotBlank()) { "Route ID cannot be blank" }
+        require(headwayMinutes >= 0) { "Headway minutes must be positive or zero" }
+        require(transitDwellMinutes in 0..15) { "Transit dwell minutes must be between 0 and 15" }
     }
 
     val formattedTime: String

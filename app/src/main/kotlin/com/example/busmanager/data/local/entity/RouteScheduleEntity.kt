@@ -12,5 +12,8 @@ data class RouteScheduleEntity(
     val departureMinute: Int,
     val direction: String,
     val assignedBusId: String? = null,
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    val headwayMinutes: Int = 60,
+    val transitDwellMinutes: Int = 10,
+    val nextDepartureEpochMinutes: Long = 0L
 )

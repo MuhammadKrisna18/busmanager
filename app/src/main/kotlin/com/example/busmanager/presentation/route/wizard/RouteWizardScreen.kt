@@ -138,7 +138,9 @@ fun RouteWizardScreen(
                             onSetDirection = { viewModel.setDirection(it) },
                             onSetIsRoundTrip = { viewModel.setIsRoundTrip(it) },
                             onSetReturnTime = { h, m -> viewModel.setReturnTime(h, m) },
-                            onResetReturnTime = { viewModel.resetReturnTimeToRecommendation() }
+                            onResetReturnTime = { viewModel.resetReturnTimeToRecommendation() },
+                            onSetHeadwayMinutes = { viewModel.setHeadwayMinutes(it) },
+                            onSetTransitDwellMinutes = { viewModel.setTransitDwellMinutes(it) }
                         )
                     }
                 }

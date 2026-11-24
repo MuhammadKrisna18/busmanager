@@ -17,6 +17,17 @@ interface SimulationTripRepository {
         currentTime: GameCalendar
     ): ActiveBusTrip
 
+    fun dispatchBus(
+        bus: Bus,
+        route: BusRoute,
+        direction: RouteDirection,
+        currentTime: GameCalendar,
+        headwayMinutes: Int,
+        transitDwellMinutes: Int
+    ): ActiveBusTrip {
+        return dispatchBus(bus, route, direction, currentTime)
+    }
+
     fun advanceTripsTime(advanceMinutes: Int): List<ActiveBusTrip>
 
     fun cancelTrip(tripId: String)

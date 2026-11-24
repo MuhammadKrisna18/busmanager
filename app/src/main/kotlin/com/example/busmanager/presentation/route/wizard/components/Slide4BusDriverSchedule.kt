@@ -57,6 +57,8 @@ fun Slide4BusDriverSchedule(
     onSetIsRoundTrip: (Boolean) -> Unit,
     onSetReturnTime: (Int, Int) -> Unit,
     onResetReturnTime: () -> Unit,
+    onSetHeadwayMinutes: (Int) -> Unit = {},
+    onSetTransitDwellMinutes: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val originCity = uiState.selectedOrigin?.city ?: "Asal"
@@ -406,51 +408,19 @@ fun Slide4BusDriverSchedule(
 
         item {
             Text(
-                text = "3. Atur Pola & Jam Keberangkatan",
+                text = "3. Atur Pola & Jadwal Operasional 24 Jam",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Tentukan pola dinas bolak-balik atau satu arah serta jam berangkat armada",
+                text = "Armada beroperasi 24 jam non-stop dengan jeda istirahat di terminal tujuan dan waktu singgah di terminal ampiran",
                 fontSize = 12.sp,
                 color = TextMuted
             )
             Spacer(modifier = Modifier.height(10.dp))
 
-            Text(
-                text = "Pola Perjalanan",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextDark
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterChip(
-                    selected = uiState.isRoundTrip,
-                    onClick = { onSetIsRoundTrip(true) },
-                    label = { Text("🔄 Pulang-Pergi (A-B & B-A)") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = IceBlue,
-                        selectedLabelColor = PrimaryBlueDark
-                    )
-                )
-                FilterChip(
-                    selected = !uiState.isRoundTrip,
-                    onClick = { onSetIsRoundTrip(false) },
-                    label = { Text("➡️ Satu Arah") },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = IceBlue,
-                        selectedLabelColor = PrimaryBlueDark
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text = "Arah Berangkat Perdana",
                 fontSize = 13.sp,
@@ -484,98 +454,75 @@ fun Slide4BusDriverSchedule(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            Card(
+            Text(
+                text = "Jeda Keberangkatan (Waktu Istirahat di Terminal Tujuan)",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Bus akan beristirahat selama waktu ini setelah tiba sebelum otomatis berangkat kembali (PP)",
+                fontSize = 11.sp,
+                color = TextMuted
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-                border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(CardBorder))
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Jadwal Keberangkatan Pergi",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = TextMuted
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Jam ${String.format("%02d:%02d WIB", uiState.departureHour, uiState.departureMinute)} menuju $outboundToCity dari $outboundFromCity",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PrimaryBlueDark
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = String.format("%02d:%02d WIB", uiState.departureHour, uiState.departureMinute),
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = PrimaryBlueDark
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedButton(
-                            onClick = {
-                                val newH = (uiState.departureHour - 1).let { if (it < 0) 23 else it }
-                                onSetDepartureTime(newH, uiState.departureMinute)
-                            }
-                        ) {
-                            Text("-1 Jam")
-                        }
-                        OutlinedButton(
-                            onClick = {
-                                val newH = (uiState.departureHour + 1) % 24
-                                onSetDepartureTime(newH, uiState.departureMinute)
-                            }
-                        ) {
-                            Text("+1 Jam")
-                        }
-                        OutlinedButton(
-                            onClick = {
-                                val newM = (uiState.departureMinute + 15) % 60
-                                onSetDepartureTime(uiState.departureHour, newM)
-                            }
-                        ) {
-                            Text("+15 Mnt")
-                        }
+                listOf(30, 45, 60, 90, 120).forEach { mins ->
+                    val label = when (mins) {
+                        60 -> "1 Jam"
+                        120 -> "2 Jam"
+                        else -> "$mins Mnt"
                     }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        val quickHours = listOf(Pair(6, 0), Pair(7, 30), Pair(13, 0), Pair(19, 30))
-                        quickHours.forEach { (h, m) ->
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(IceBlue)
-                                    .clickable { onSetDepartureTime(h, m) }
-                                    .padding(vertical = 6.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = String.format("%02d:%02d", h, m),
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = PrimaryBlue
-                                )
-                            }
-                        }
-                    }
+                    FilterChip(
+                        selected = uiState.headwayMinutes == mins,
+                        onClick = { onSetHeadwayMinutes(mins) },
+                        label = { Text(label) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = IceBlue,
+                            selectedLabelColor = PrimaryBlueDark
+                        )
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = "Waktu Pemberhentian di Terminal Ampiran / Transit",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Waktu berhenti bus untuk naik-turun penumpang di tiap terminal transit (Maksimal 15 Menit)",
+                fontSize = 11.sp,
+                color = TextMuted
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf(0, 5, 10, 15).forEach { mins ->
+                    val label = if (mins == 0) "0 Mnt (Kilat)" else "$mins Mnt"
+                    FilterChip(
+                        selected = uiState.transitDwellMinutes == mins,
+                        onClick = { onSetTransitDwellMinutes(mins) },
+                        label = { Text(label) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = IceBlue,
+                            selectedLabelColor = PrimaryBlueDark
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -583,211 +530,40 @@ fun Slide4BusDriverSchedule(
                 colors = CardDefaults.cardColors(containerColor = IceBlue),
                 border = CardDefaults.outlinedCardBorder().copy(brush = SolidColor(PrimaryBlue.copy(alpha = 0.3f)))
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = "⏱️", fontSize = 16.sp)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Estimasi Perjalanan & Waktu Tiba",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryBlueDark
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = "Durasi Tempuh ($distanceText)", fontSize = 12.sp, color = TextDark)
-                        Text(text = durationText, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = PrimaryBlueDark)
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(text = "Estimasi Tiba di $outboundToCity", fontSize = 12.sp, color = TextDark)
-                        Text(
-                            text = String.format("%02d:%02d WIB", uiState.arrivalHour, uiState.arrivalMinute),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryBlueDark
-                        )
-                    }
-                    if (uiState.isRoundTrip) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = "Jeda Istirahat Minimal Kru", fontSize = 12.sp, color = TextDark)
-                            Text(text = "1 Jam (Wajib)", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextDark)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = "Keberangkatan Pulang Tercepat", fontSize = 12.sp, color = TextDark)
-                            Text(
-                                text = String.format("%02d:%02d WIB", uiState.minReturnHour, uiState.minReturnMinute),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = SuccessGreen
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (uiState.isRoundTrip) {
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-                    border = CardDefaults.outlinedCardBorder().copy(
-                        brush = SolidColor(if (uiState.hasLayoverConflict) WarningAmber else CardBorder)
-                    )
+                Column(
+                    modifier = Modifier.padding(14.dp)
                 ) {
-                    Column(
-                        modifier = Modifier.padding(14.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "Jadwal Keberangkatan Pulang",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = TextMuted
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Jam ${String.format("%02d:%02d WIB", uiState.returnHour, uiState.returnMinute)} menuju $returnToCity dari $returnFromCity",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (uiState.hasLayoverConflict) WarningAmber else PrimaryBlueDark
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = String.format("%02d:%02d WIB", uiState.returnHour, uiState.returnMinute),
-                            fontSize = 28.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (uiState.hasLayoverConflict) WarningAmber else PrimaryBlueDark
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            OutlinedButton(
-                                onClick = {
-                                    val newH = (uiState.returnHour - 1).let { if (it < 0) 23 else it }
-                                    onSetReturnTime(newH, uiState.returnMinute)
-                                }
-                            ) {
-                                Text("-1 Jam")
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    val newH = (uiState.returnHour + 1) % 24
-                                    onSetReturnTime(newH, uiState.returnMinute)
-                                }
-                            ) {
-                                Text("+1 Jam")
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    val newM = (uiState.returnMinute + 15) % 60
-                                    onSetReturnTime(uiState.returnHour, newM)
-                                }
-                            ) {
-                                Text("+15 Mnt")
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(IceBlue)
-                                .clickable { onResetReturnTime() }
-                                .padding(vertical = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = String.format("Set ke Rekomendasi Tercepat (%02d:%02d WIB)", uiState.minReturnHour, uiState.minReturnMinute),
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PrimaryBlue
-                            )
-                        }
-                    }
+                    Text(
+                        text = "📋 Ringkasan Operasional 24 Jam",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "• Pola: Berjalan terus menerus bolak-balik (PP) 24 jam",
+                        fontSize = 12.sp,
+                        color = TextDark
+                    )
+                    Text(
+                        text = "• Jeda Balik: ${uiState.headwayMinutes} Menit istirahat di terminal tujuan",
+                        fontSize = 12.sp,
+                        color = TextDark
+                    )
+                    Text(
+                        text = "• Singgah Transit: ${uiState.transitDwellMinutes} Menit di tiap terminal ampiran",
+                        fontSize = 12.sp,
+                        color = TextDark
+                    )
+                    Text(
+                        text = "• Keberangkatan Perdana: Menuju $outboundToCity dari $outboundFromCity",
+                        fontSize = 12.sp,
+                        color = TextDark
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
-        }
-
-        if (uiState.hasLayoverConflict) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
-                ) {
-                    Text(
-                        text = "⚠️ Jeda istirahat bus & kru kurang dari 1 jam! Bus baru tiba pukul ${String.format("%02d:%02d", uiState.arrivalHour, uiState.arrivalMinute)} WIB, sehingga paling cepat dapat berangkat kembali pukul ${String.format("%02d:%02d", uiState.minReturnHour, uiState.minReturnMinute)} WIB.",
-                        modifier = Modifier.padding(14.dp),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB45309)
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-        }
-
-        if (uiState.hasOutboundConflict) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
-                ) {
-                    Text(
-                        text = "⚠️ Jadwal keberangkatan menuju $outboundToCity bentrok! Sudah ada bus yang berangkat pada rute dan jam yang sama. Silakan geser jam keberangkatan.",
-                        modifier = Modifier.padding(14.dp),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB45309)
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-        }
-
-        if (uiState.hasReturnConflict) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
-                ) {
-                    Text(
-                        text = "⚠️ Jadwal keberangkatan menuju $returnToCity bentrok! Sudah ada bus yang berangkat pada rute pulang pada jam tersebut. Silakan sesuaikan jam pulang.",
-                        modifier = Modifier.padding(14.dp),
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB45309)
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-            }
         }
 
         if (uiState.builtRoute != null && uiState.selectedBus != null && uiState.selectedDriver != null && !uiState.hasConflict) {

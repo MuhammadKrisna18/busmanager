@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -148,15 +149,16 @@ fun EastJavaMapCanvas(
 
         activeTrips.forEach { trip ->
             val isTracked = trip.id == trackedTripId
-            val markerOffsetX = if (isTracked) 45.dp.value else 20.dp.value
-            val markerOffsetY = if (isTracked) 58.dp.value else 24.dp.value
-            val xPx = (trip.currentCoordinate.x * canvasWidth) - markerOffsetX
-            val yPx = (trip.currentCoordinate.y * canvasHeight) - markerOffsetY
+            val xPx = trip.currentCoordinate.x * canvasWidth
+            val yPx = trip.currentCoordinate.y * canvasHeight
 
             Box(
-                modifier = Modifier.offset {
-                    IntOffset(xPx.roundToInt(), yPx.roundToInt())
-                }
+                modifier = Modifier
+                    .offset {
+                        IntOffset(xPx.roundToInt(), yPx.roundToInt())
+                    }
+                    .size(0.dp)
+                    .wrapContentSize(Alignment.Center, unbounded = true)
             ) {
                 MovingBusMarker(
                     trip = trip,

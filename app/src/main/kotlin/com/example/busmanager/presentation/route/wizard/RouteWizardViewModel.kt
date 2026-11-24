@@ -375,6 +375,14 @@ class RouteWizardViewModel(
         checkScheduleConflict()
     }
 
+    fun setHeadwayMinutes(minutes: Int) {
+        _uiState.update { it.copy(headwayMinutes = minutes.coerceIn(15, 180)) }
+    }
+
+    fun setTransitDwellMinutes(minutes: Int) {
+        _uiState.update { it.copy(transitDwellMinutes = minutes.coerceIn(0, 15)) }
+    }
+
     private fun checkScheduleConflict() {
         val state = _uiState.value
         val routeId = state.builtRoute?.id ?: return
@@ -504,7 +512,9 @@ class RouteWizardViewModel(
                     departureHour = state.departureHour,
                     departureMinute = state.departureMinute,
                     direction = state.direction,
-                    assignedBusId = bus.id
+                    assignedBusId = bus.id,
+                    headwayMinutes = state.headwayMinutes,
+                    transitDwellMinutes = state.transitDwellMinutes
                 )
                 routeScheduleRepository.addSchedule(outboundSchedule)
                 routeScheduleRepository.assignBusToSchedule(outboundScheduleId, bus.id)
@@ -517,7 +527,9 @@ class RouteWizardViewModel(
                         departureHour = state.returnHour,
                         departureMinute = state.returnMinute,
                         direction = state.returnDirection,
-                        assignedBusId = bus.id
+                        assignedBusId = bus.id,
+                        headwayMinutes = state.headwayMinutes,
+                        transitDwellMinutes = state.transitDwellMinutes
                     )
                     routeScheduleRepository.addSchedule(returnSchedule)
                     routeScheduleRepository.assignBusToSchedule(returnScheduleId, bus.id)

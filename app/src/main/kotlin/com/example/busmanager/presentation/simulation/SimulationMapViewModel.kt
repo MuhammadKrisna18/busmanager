@@ -192,6 +192,28 @@ class SimulationMapViewModel(
                                 currentTerminalId = destTerminal.id
                             )
                         )
+                        val busSchedules = routeScheduleRepository?.getSchedulesForBus(bus.id)
+                        val schedule = busSchedules?.firstOrNull { it.routeId == trip.route.id }
+                            ?: busSchedules?.firstOrNull()
+                        if (schedule != null && routeScheduleRepository != null) {
+                            val currentTotalMinutes = currentTime.day * 1440L + currentTime.hour * 60L + currentTime.minute
+                            val nextDepMinutes = currentTotalMinutes + schedule.headwayMinutes
+                            val nextDepHour = ((currentTime.hour * 60 + currentTime.minute + schedule.headwayMinutes) / 60) % 24
+                            val nextDepMin = (currentTime.minute + schedule.headwayMinutes) % 60
+                            val returnDir = if (trip.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                                RouteDirection.DESTINATION_TO_ORIGIN
+                            } else {
+                                RouteDirection.ORIGIN_TO_DESTINATION
+                            }
+                            routeScheduleRepository.updateSchedule(
+                                schedule.copy(
+                                    departureHour = nextDepHour,
+                                    departureMinute = nextDepMin,
+                                    direction = returnDir,
+                                    nextDepartureEpochMinutes = nextDepMinutes
+                                )
+                            )
+                        }
                     }
                 }
 
@@ -250,21 +272,14 @@ class SimulationMapViewModel(
     }
 
     private suspend fun handleScheduledDepartures(time: GameCalendar) {
-        if (time.day != lastObservedDay) {
-            dispatchedSchedulesInCurrentDay.clear()
-            lastObservedDay = time.day
-        }
-
         val schedules = _uiState.value.schedules
         val buses = _uiState.value.ownedBuses
         val activeTrips = _uiState.value.activeTrips
         val routes = _uiState.value.routes
+        val currentTotalMinutes = time.day * 1440L + time.hour * 60L + time.minute
 
         for (schedule in schedules) {
             val busId = schedule.assignedBusId ?: continue
-            val scheduleKey = "${schedule.id}-${time.day}"
-            if (dispatchedSchedulesInCurrentDay.contains(scheduleKey)) continue
-
             val bus = buses.find { it.id == busId } ?: continue
             val isAlreadyOnTrip = activeTrips.any { it.busId == bus.id }
             if (isAlreadyOnTrip) continue
@@ -273,22 +288,20 @@ class SimulationMapViewModel(
             if (status != null && !status.canOperate) continue
 
             val route = routes.find { it.id == schedule.routeId } ?: continue
-            val originTerminalForSchedule = if (schedule.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
-                route.originTerminal
+
+            val shouldDepart = if (schedule.nextDepartureEpochMinutes <= 0L) {
+                true
             } else {
-                route.destinationTerminal
-            }
-            if (bus.currentTerminalId != null && bus.currentTerminalId != originTerminalForSchedule.id) {
-                continue
+                currentTotalMinutes >= schedule.nextDepartureEpochMinutes
             }
 
-            val scheduleMinutes = schedule.departureHour * 60 + schedule.departureMinute
-            val currentMinutes = time.hour * 60 + time.minute
-            val isTimeMatching = currentMinutes >= scheduleMinutes && (currentMinutes - scheduleMinutes) <= 30
-
-            if (isTimeMatching) {
-                dispatchedSchedulesInCurrentDay.add(scheduleKey)
-                executeDispatchAndRevenue(bus, route, schedule.direction, time)
+            if (shouldDepart) {
+                val direction = if (bus.currentTerminalId == route.destinationTerminal.id) {
+                    RouteDirection.DESTINATION_TO_ORIGIN
+                } else {
+                    RouteDirection.ORIGIN_TO_DESTINATION
+                }
+                executeDispatchAndRevenue(bus, route, direction, time)
             }
         }
     }
@@ -299,11 +312,16 @@ class SimulationMapViewModel(
         direction: RouteDirection,
         currentTime: GameCalendar
     ) {
+        val schedule = _uiState.value.schedules.find { it.assignedBusId == bus.id && it.routeId == route.id }
+        val headway = schedule?.headwayMinutes ?: 60
+        val dwell = schedule?.transitDwellMinutes ?: 10
         val trip = dispatchBusUseCase(
             bus = bus,
             route = route,
             direction = direction,
-            currentTime = currentTime
+            currentTime = currentTime,
+            headwayMinutes = headway,
+            transitDwellMinutes = dwell
         )
 
         viewModelScope.launch {

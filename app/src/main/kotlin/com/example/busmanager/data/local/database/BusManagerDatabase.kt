@@ -32,7 +32,7 @@ import com.example.busmanager.data.local.entity.TerminalPassengerRecordEntity
         TerminalPassengerRecordEntity::class,
         CustomRouteEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class BusManagerDatabase : RoomDatabase() {

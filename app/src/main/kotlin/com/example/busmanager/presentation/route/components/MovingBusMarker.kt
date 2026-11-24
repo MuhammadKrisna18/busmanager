@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -36,71 +38,103 @@ fun MovingBusMarker(
     modifier: Modifier = Modifier,
     isTracking: Boolean = false
 ) {
-    Column(
-        modifier = modifier.clickable(onClick = onClick),
-        horizontalAlignment = Alignment.CenterHorizontally
+    val busRadius = 13.dp
+    val busDiameter = busRadius * 2
+
+    Box(
+        modifier = modifier.wrapContentSize(Alignment.Center, unbounded = true),
+        contentAlignment = Alignment.Center
     ) {
-        if (isTracking) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(
-                    modifier = Modifier
-                        .shadow(6.dp, RoundedCornerShape(AppDimens.radiusMedium))
-                        .clip(RoundedCornerShape(AppDimens.radiusMedium))
-                        .background(Color.White)
-                        .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(AppDimens.radiusMedium))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .offset(y = -busRadius - 2.dp)
+                .wrapContentSize(Alignment.BottomCenter, unbounded = true)
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (isTracking) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = "⏱️ ${trip.remainingMinutes} mnt",
-                                color = Color(0xFF1D4ED8),
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "➔ ${trip.currentDestinationName}",
-                                color = Color(0xFF1E293B),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                        Box(
+                            modifier = Modifier
+                                .shadow(6.dp, RoundedCornerShape(AppDimens.radiusMedium))
+                                .clip(RoundedCornerShape(AppDimens.radiusMedium))
+                                .background(Color.White)
+                                .border(1.dp, Color(0xFFBFDBFE), RoundedCornerShape(AppDimens.radiusMedium))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "⏱️ ${trip.remainingMinutes} mnt",
+                                        color = Color(0xFF1D4ED8),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.ExtraBold
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "➔ ${trip.currentDestinationName}",
+                                        color = Color(0xFF1E293B),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Text(
+                                    text = "👥 ${trip.passengerCount} pnp • ${trip.ticketEarnings.formatCompact()}",
+                                    color = Color(0xFF64748B),
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
-                        Text(
-                            text = "👥 ${trip.passengerCount} pnp • ${trip.ticketEarnings.formatCompact()}",
-                            color = Color(0xFF64748B),
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Medium
+                        Box(
+                            modifier = Modifier
+                                .size(width = 6.dp, height = 3.dp)
+                                .background(Color(0xFFBFDBFE))
                         )
                     }
+                    Spacer(modifier = Modifier.height(2.dp))
                 }
+
+                if (trip.isDwellingAtTransit) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(Color(0xFFD97706))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "⏳ Singgah di ${trip.dwellingTerminalName ?: "Transit"}",
+                            color = Color.White,
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(2.dp))
+                }
+
                 Box(
                     modifier = Modifier
-                        .size(width = 6.dp, height = 3.dp)
-                        .background(Color(0xFFBFDBFE))
-                )
+                        .clip(RoundedCornerShape(AppDimens.radiusPill))
+                        .background(if (isTracking) Color(0xFF1E40AF) else PrimaryBlueDark)
+                        .padding(horizontal = if (isTracking) 8.dp else 6.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (isTracking) "🎯 ${trip.busCode}" else trip.busCode,
+                        color = Color.White,
+                        fontSize = if (isTracking) 10.sp else 9.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(2.dp))
         }
 
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(AppDimens.radiusPill))
-                .background(if (isTracking) Color(0xFF1E40AF) else PrimaryBlueDark)
-                .padding(horizontal = if (isTracking) 8.dp else 6.dp, vertical = 2.dp)
-        ) {
-            Text(
-                text = if (isTracking) "🎯 ${trip.busCode}" else trip.busCode,
-                color = Color.White,
-                fontSize = if (isTracking) 10.sp else 9.sp,
-                fontWeight = FontWeight.ExtraBold
-            )
-        }
-
-        Spacer(modifier = Modifier.height(2.dp))
-
-        Box(
-            modifier = Modifier.size(if (isTracking) 38.dp else 24.dp),
+                .align(Alignment.Center)
+                .size(busDiameter)
+                .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
             if (isTracking) {
@@ -113,7 +147,7 @@ fun MovingBusMarker(
             }
             Box(
                 modifier = Modifier
-                    .size(if (isTracking) 30.dp else 24.dp)
+                    .size(24.dp)
                     .shadow(if (isTracking) 8.dp else 4.dp, CircleShape)
                     .clip(CircleShape)
                     .background(if (isTracking) Color(0xFF2563EB) else PrimaryBlue)
@@ -122,7 +156,7 @@ fun MovingBusMarker(
             ) {
                 Text(
                     text = "🚌",
-                    fontSize = if (isTracking) 15.sp else 12.sp
+                    fontSize = 12.sp
                 )
             }
         }

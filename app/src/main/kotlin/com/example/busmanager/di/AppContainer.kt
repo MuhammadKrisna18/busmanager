@@ -90,7 +90,8 @@ class AppContainer(context: Context) {
     val simulationTripRepository: SimulationTripRepository = SimulationTripRepositoryImpl()
     val simulationTimeRepository: SimulationTimeRepository = SimulationTimeRepositoryImpl(
         simulationTripRepository = simulationTripRepository,
-        simulationStateRepository = simulationStateRepository
+        simulationStateRepository = simulationStateRepository,
+        initialPlayState = true
     )
 
     val companyRepository: CompanyRepository = CompanyRepositoryImpl(database.companyDao())

@@ -41,6 +41,8 @@ data class RouteWizardUiState(
     val returnHour: Int = 10,
     val returnMinute: Int = 0,
     val direction: RouteDirection = RouteDirection.ORIGIN_TO_DESTINATION,
+    val headwayMinutes: Int = 60,
+    val transitDwellMinutes: Int = 10,
     val hasOutboundConflict: Boolean = false,
     val hasReturnConflict: Boolean = false,
 

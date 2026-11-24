@@ -14,13 +14,17 @@ class DispatchBusUseCase(
         bus: Bus,
         route: BusRoute,
         direction: RouteDirection = RouteDirection.ORIGIN_TO_DESTINATION,
-        currentTime: GameCalendar = GameCalendar.initial()
+        currentTime: GameCalendar = GameCalendar.initial(),
+        headwayMinutes: Int = 60,
+        transitDwellMinutes: Int = 10
     ): ActiveBusTrip {
         return simulationTripRepository.dispatchBus(
             bus = bus,
             route = route,
             direction = direction,
-            currentTime = currentTime
+            currentTime = currentTime,
+            headwayMinutes = headwayMinutes,
+            transitDwellMinutes = transitDwellMinutes
         )
     }
 

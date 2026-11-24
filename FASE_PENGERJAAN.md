@@ -78,12 +78,12 @@ Dokumen ini memuat detail perencanaan perbaikan arsitektural, logika simulasi, d
 
 ## 📋 Pembagian Fase Pengerjaan (Season 7 Roadmap)
 
-### 🔹 Fase 1 [Kritis]: Core Simulation Engine (Headway 24 Jam, Real-Line Tracking & Auto-Running)
-- Mengubah model jadwal dan logika simulasi dari jam statis menjadi sistem **Headway 24 jam** & **Waktu Ampiran / Dwell Time** (Fix Diskusi 1).
-- Perhitungan posisi bus presisi menyusuri titik-titik **polyline rute jalan raya** (Fix Diskusi 6).
-- Memisahkan kamera tracking dari koordinat bus untuk menghilangkan glitch posisi meloncat saat di-track (Fix Diskusi 16).
-- Penghapusan tombol Play awal; simulasi otomatis aktif berjalan dengan tombol Jeda (Pause) dan seleksi kecepatan (Fix Diskusi 7).
-- Pengujian unit test & Git Commit Fase 1.
+### 🔹 Fase 1 [Kritis]: Core Simulation Engine (Headway 24 Jam, Real-Line Tracking & Auto-Running) - [SELESAI]
+- [x] Mengubah model jadwal dan logika simulasi dari jam statis menjadi sistem **Headway 24 jam** & **Waktu Ampiran / Dwell Time** (Fix Diskusi 1).
+- [x] Perhitungan posisi bus presisi menyusuri titik-titik **polyline rute jalan raya** (Fix Diskusi 6).
+- [x] Memisahkan kamera tracking dan penjangkaran koordinat bus terpusat (0, 0) untuk menghilangkan glitch posisi meloncat saat di-track (Fix Diskusi 16).
+- [x] Penghapusan tombol Play awal; simulasi otomatis aktif berjalan sejak app dibuka dengan tombol Jeda (Pause) dan seleksi kecepatan (Fix Diskusi 7).
+- [x] Pengujian 261 unit test lolos 100% & Git Commit Fase 1.
 
 ---
 

@@ -11,7 +11,10 @@ fun RouteScheduleEntity.toDomain(): RouteSchedule = RouteSchedule(
     departureMinute = departureMinute,
     direction = RouteDirection.valueOf(direction),
     assignedBusId = assignedBusId,
-    isActive = isActive
+    isActive = isActive,
+    headwayMinutes = headwayMinutes,
+    transitDwellMinutes = transitDwellMinutes,
+    nextDepartureEpochMinutes = nextDepartureEpochMinutes
 )
 
 fun RouteSchedule.toEntity(): RouteScheduleEntity = RouteScheduleEntity(
@@ -21,5 +24,8 @@ fun RouteSchedule.toEntity(): RouteScheduleEntity = RouteScheduleEntity(
     departureMinute = departureMinute,
     direction = direction.name,
     assignedBusId = assignedBusId,
-    isActive = isActive
+    isActive = isActive,
+    headwayMinutes = headwayMinutes,
+    transitDwellMinutes = transitDwellMinutes,
+    nextDepartureEpochMinutes = nextDepartureEpochMinutes
 )

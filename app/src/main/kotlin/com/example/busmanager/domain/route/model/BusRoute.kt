@@ -17,7 +17,20 @@ data class BusRoute(
 
     val totalEstimatedDurationMinutes: Int get() = segments.sumOf { it.baseDurationMinutes }
 
-    val allWaypoints: List<MapCoordinate> get() = segments.flatMap { it.waypoints }
+    val allWaypoints: List<MapCoordinate>
+        get() {
+            val raw = segments.flatMap { it.waypoints }
+            if (raw.isEmpty()) return emptyList()
+            val result = mutableListOf(raw.first())
+            for (i in 1 until raw.size) {
+                val curr = raw[i]
+                val prev = result.last()
+                if (curr.x != prev.x || curr.y != prev.y) {
+                    result.add(curr)
+                }
+            }
+            return result
+        }
 
     fun containsTerminal(terminalId: String): Boolean {
         return originTerminal.id == terminalId ||

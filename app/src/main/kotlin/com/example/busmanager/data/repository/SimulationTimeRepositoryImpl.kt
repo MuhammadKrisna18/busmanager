@@ -23,19 +23,26 @@ class SimulationTimeRepositoryImpl(
     private val tickIntervalMillis: Long = 1000L,
     private val minutesPerTick: Int = 1,
     private val simulationTripRepository: SimulationTripRepository? = null,
-    private val simulationStateRepository: SimulationStateRepository? = null
+    private val simulationStateRepository: SimulationStateRepository? = null,
+    initialPlayState: Boolean = false
 ) : SimulationTimeRepository {
 
     private val _currentTime = MutableStateFlow(initialTime)
     override val currentTime: StateFlow<GameCalendar> = _currentTime.asStateFlow()
 
-    private val _isPlaying = MutableStateFlow(false)
+    private val _isPlaying = MutableStateFlow(initialPlayState)
     override val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
     private val _currentSpeed = MutableStateFlow(SimulationSpeed.NORMAL)
     override val currentSpeed: StateFlow<SimulationSpeed> = _currentSpeed.asStateFlow()
 
     private var tickerJob: Job? = null
+
+    init {
+        if (initialPlayState) {
+            startTicker()
+        }
+    }
 
     override fun play() {
         if (_isPlaying.value) return

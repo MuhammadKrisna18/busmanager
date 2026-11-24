@@ -253,7 +253,7 @@ private fun SimulationTopBar(
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                 ) {
                     Text(
-                        text = if (isPlaying) "⏸️ Jeda" else "▶️ PLAY",
+                        text = if (isPlaying) "⏸️ Jeda" else "▶️ Lanjut",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp

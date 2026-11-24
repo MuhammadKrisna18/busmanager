@@ -22,7 +22,11 @@ data class ActiveBusTrip(
     val visitedTransitStopIndices: Set<Int> = emptySet(),
     val totalBoardedPassengers: Int = passengerCount,
     val totalAlightedPassengers: Int = 0,
-    val cancelNextSchedule: Boolean = false
+    val cancelNextSchedule: Boolean = false,
+    val isDwellingAtTransit: Boolean = false,
+    val dwellingTerminalName: String? = null,
+    val headwayMinutes: Int = 60,
+    val transitDwellMinutes: Int = 10
 ) {
     val remainingMinutes: Int
         get() = (estimatedArrivalMinutes - elapsedMinutes).coerceAtLeast(0)

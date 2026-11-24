@@ -207,7 +207,7 @@ class GarageViewModelTest {
         assertNotNull(bus2Item)
         assertTrue(bus2Item!!.isOperating)
         assertEquals(sampleRoute.name, bus2Item.routeName)
-        assertEquals("Malang ➔ Surabaya", bus2Item.activeTripDirection)
+        assertEquals("Menuju Surabaya dari Malang", bus2Item.activeTripDirection)
         assertEquals(50, bus2Item.activeTripProgressPercent)
 
         fakeTripRepo.setActiveTrips(emptyList())

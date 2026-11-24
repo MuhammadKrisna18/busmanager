@@ -330,9 +330,9 @@ private fun ActiveBusDetailCard(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "${trip.currentOriginName} ➔ ${trip.currentDestinationName}",
+                        text = "Menuju ${trip.currentDestinationName} dari ${trip.currentOriginName}",
                         color = TextDark,
-                        fontSize = 13.sp,
+                        fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }

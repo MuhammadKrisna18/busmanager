@@ -465,7 +465,7 @@ fun Slide4BusDriverSchedule(
                 FilterChip(
                     selected = uiState.direction == RouteDirection.ORIGIN_TO_DESTINATION,
                     onClick = { onSetDirection(RouteDirection.ORIGIN_TO_DESTINATION) },
-                    label = { Text("$originCity ➔ $destCity") },
+                    label = { Text("Menuju $destCity dari $originCity") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = IceBlue,
                         selectedLabelColor = PrimaryBlueDark
@@ -474,7 +474,7 @@ fun Slide4BusDriverSchedule(
                 FilterChip(
                     selected = uiState.direction == RouteDirection.DESTINATION_TO_ORIGIN,
                     onClick = { onSetDirection(RouteDirection.DESTINATION_TO_ORIGIN) },
-                    label = { Text("$destCity ➔ $originCity") },
+                    label = { Text("Menuju $originCity dari $destCity") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = IceBlue,
                         selectedLabelColor = PrimaryBlueDark
@@ -495,10 +495,17 @@ fun Slide4BusDriverSchedule(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Jadwal Berangkat Pergi ($outboundFromCity ➔ $outboundToCity)",
+                        text = "Jadwal Keberangkatan Pergi",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = TextMuted
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Jam ${String.format("%02d:%02d WIB", uiState.departureHour, uiState.departureMinute)} menuju $outboundToCity dari $outboundFromCity",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
@@ -650,10 +657,17 @@ fun Slide4BusDriverSchedule(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Jadwal Berangkat Pulang ($returnFromCity ➔ $returnToCity)",
+                            text = "Jadwal Keberangkatan Pulang",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium,
                             color = TextMuted
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Jam ${String.format("%02d:%02d WIB", uiState.returnHour, uiState.returnMinute)} menuju $returnToCity dari $returnFromCity",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (uiState.hasLayoverConflict) WarningAmber else PrimaryBlueDark
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
@@ -746,7 +760,7 @@ fun Slide4BusDriverSchedule(
                     colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
                 ) {
                     Text(
-                        text = "⚠️ Jadwal pergi bentrok! Sudah ada bus yang berangkat pada rute dan jam yang sama. Silakan geser jam keberangkatan.",
+                        text = "⚠️ Jadwal keberangkatan menuju $outboundToCity bentrok! Sudah ada bus yang berangkat pada rute dan jam yang sama. Silakan geser jam keberangkatan.",
                         modifier = Modifier.padding(14.dp),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
@@ -765,7 +779,7 @@ fun Slide4BusDriverSchedule(
                     colors = CardDefaults.cardColors(containerColor = WarningAmberLight)
                 ) {
                     Text(
-                        text = "⚠️ Jadwal pulang bentrok! Sudah ada bus yang berangkat pada rute pulang pada jam tersebut. Silakan sesuaikan jam pulang.",
+                        text = "⚠️ Jadwal keberangkatan menuju $returnToCity bentrok! Sudah ada bus yang berangkat pada rute pulang pada jam tersebut. Silakan sesuaikan jam pulang.",
                         modifier = Modifier.padding(14.dp),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,

@@ -798,11 +798,13 @@ private fun RouteOperationalItemCard(item: RouteOperationalInfo) {
                         )
                     }
                     if (item.departureSchedules.isNotEmpty()) {
-                        Text(
-                            text = "⏰ Jadwal: ${item.departureSchedules.joinToString(" • ")}",
-                            fontSize = 10.sp,
-                            color = TextMuted
-                        )
+                        item.departureSchedules.forEach { scheduleText ->
+                            Text(
+                                text = "⏰ $scheduleText",
+                                fontSize = 10.sp,
+                                color = TextMuted
+                            )
+                        }
                     }
                 }
             } else {

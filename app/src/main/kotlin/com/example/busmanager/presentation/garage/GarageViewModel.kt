@@ -63,7 +63,7 @@ class GarageViewModel(
                         routeName = route?.name,
                         hasPricings = pricings.isNotEmpty(),
                         isOperating = isOperating,
-                        activeTripDirection = activeTrip?.let { "${it.currentOriginName} ➔ ${it.currentDestinationName}" },
+                        activeTripDirection = activeTrip?.let { "Menuju ${it.currentDestinationName} dari ${it.currentOriginName}" },
                         activeTripProgressPercent = activeTrip?.let { (it.progressFraction * 100).toInt() }
                     )
                 }

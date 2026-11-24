@@ -176,11 +176,15 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 2 [Tinggi]: Standarisasi Format Informasi Jadwal Keberangkatan & Kepulangan (Fix Diskusi 1)
-- Ubah format informasi jadwal di semua layar (Route Planner, Wizard, Live Tracking, BottomSheet) menjadi:
-  `Jam [HH:mm WIB] menuju [Kota Tujuan] dari [Kota Asal]`.
-- Perapian layout tata letak teks (*alignment, badge styling, readability*) agar mudah dibaca oleh user.
-- Pengujian unit test/UI & Git Commit Fase 2.
+### ✅ Fase 2 [Tinggi]: Standarisasi Format Informasi Jadwal Keberangkatan & Kepulangan (Fix Diskusi 1) - SELESAI
+- Tambahkan metode domain `formatScheduleInfo(originCity, destinationCity)` dan `formatScheduleInfo(route)` pada `RouteSchedule` model. (Selesai)
+- Standarisasi format teks di semua halaman menjadi: `Jam [HH:mm WIB] menuju [Kota Tujuan] dari [Kota Asal]`. (Selesai)
+- Terapkan di `RoutePlannerScreen` (header section jadwal, item card jadwal, dialog penugasan armada, dan dialog tambah jadwal). (Selesai)
+- Terapkan di `Slide4BusDriverSchedule` (wizard pembuatan rute: header & subteks jadwal pergi/pulang, filter chips arah rute, serta peringatan bentrok jadwal). (Selesai)
+- Terapkan di `RoutesOverviewBottomSheet` (daftar jadwal armada terformat rapi per baris dengan icon `🕒`), `BusLiveTrackingCard`, `FleetOverviewBottomSheet`, dan `GarageViewModel`. (Selesai)
+- Terapkan di `HomeScreen` pada kartu informasi operasional trayek aktif. (Selesai)
+- Penambahan unit test domain di `RouteScheduleTest` untuk verifikasi formatting jadwal outbound, inbound, dan bus route. (Selesai)
+- Pengujian unit test & Git Commit Fase 2. (Selesai)
 
 ---
 

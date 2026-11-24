@@ -2,7 +2,13 @@ package com.example.busmanager.domain.route
 
 import com.example.busmanager.data.mapper.toDomain
 import com.example.busmanager.data.mapper.toEntity
+import com.example.busmanager.domain.company.model.Money
+import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.model.MapCoordinate
+import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RouteSchedule
+import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.domain.route.model.TerminalType
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -88,6 +94,71 @@ class RouteScheduleTest {
             departureMinute = 60,
             direction = RouteDirection.ORIGIN_TO_DESTINATION
         )
+    }
+
+    @Test
+    fun formatScheduleInfo_outbound_returnsCorrectFormat() {
+        val schedule = RouteSchedule(
+            id = "sched-out",
+            routeId = "route-1",
+            departureHour = 7,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION
+        )
+
+        val formatted = schedule.formatScheduleInfo("Surabaya", "Banyuwangi")
+        assertEquals("Jam 07:00 WIB menuju Banyuwangi dari Surabaya", formatted)
+    }
+
+    @Test
+    fun formatScheduleInfo_inbound_returnsCorrectFormat() {
+        val schedule = RouteSchedule(
+            id = "sched-in",
+            routeId = "route-1",
+            departureHour = 14,
+            departureMinute = 30,
+            direction = RouteDirection.DESTINATION_TO_ORIGIN
+        )
+
+        val formatted = schedule.formatScheduleInfo("Surabaya", "Banyuwangi")
+        assertEquals("Jam 14:30 WIB menuju Surabaya dari Banyuwangi", formatted)
+    }
+
+    @Test
+    fun formatScheduleInfo_withRoute_returnsCorrectFormat() {
+        val originTerm = Terminal(
+            id = "t1",
+            name = "Terminal Purabaya",
+            city = "Surabaya",
+            type = TerminalType.TIPE_A,
+            coordinate = MapCoordinate(0f, 0f, 0.0, 0.0),
+            retributionFee = Money.rupiah(5_000L)
+        )
+        val destTerm = Terminal(
+            id = "t2",
+            name = "Terminal Blambangan",
+            city = "Banyuwangi",
+            type = TerminalType.TIPE_A,
+            coordinate = MapCoordinate(0f, 0f, 0.0, 0.0),
+            retributionFee = Money.rupiah(5_000L)
+        )
+        val route = BusRoute(
+            id = "r1",
+            name = "Surabaya - Banyuwangi",
+            originTerminal = originTerm,
+            destinationTerminal = destTerm,
+            segments = emptyList(),
+            pathType = RoutePathType.TOLL
+        )
+        val schedule = RouteSchedule(
+            id = "sched-1",
+            routeId = "r1",
+            departureHour = 8,
+            departureMinute = 15,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION
+        )
+
+        assertEquals("Jam 08:15 WIB menuju Banyuwangi dari Surabaya", schedule.formatScheduleInfo(route))
     }
 
     @Test

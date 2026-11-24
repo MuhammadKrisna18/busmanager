@@ -263,6 +263,7 @@ fun RoutePlannerScreen(
         if (uiState.selectedScheduleForBusAssignment != null) {
             AssignScheduleBusDialog(
                 schedule = uiState.selectedScheduleForBusAssignment!!,
+                route = uiState.selectedRoute,
                 buses = uiState.availableBuses,
                 drivers = uiState.hiredDrivers,
                 onDismiss = { viewModel.closeAssignBusDialog() },
@@ -490,7 +491,7 @@ private fun SchedulesSectionCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Keberangkatan: ${route.originTerminal.city} ➔ ${route.destinationTerminal.city}",
+                text = "Jadwal Keberangkatan menuju ${route.destinationTerminal.city} dari ${route.originTerminal.city}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
                 color = PrimaryBlueDark
@@ -504,6 +505,7 @@ private fun SchedulesSectionCard(
                     forwardSchedules.forEach { schedule ->
                         ScheduleItemCard(
                             schedule = schedule,
+                            route = route,
                             buses = buses,
                             drivers = drivers,
                             onAssignBusClick = { onAssignBusClick(schedule) },
@@ -516,7 +518,7 @@ private fun SchedulesSectionCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Keberangkatan: ${route.destinationTerminal.city} ➔ ${route.originTerminal.city}",
+                text = "Jadwal Keberangkatan menuju ${route.originTerminal.city} dari ${route.destinationTerminal.city}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
                 color = PrimaryBlueDark
@@ -530,6 +532,7 @@ private fun SchedulesSectionCard(
                     backwardSchedules.forEach { schedule ->
                         ScheduleItemCard(
                             schedule = schedule,
+                            route = route,
                             buses = buses,
                             drivers = drivers,
                             onAssignBusClick = { onAssignBusClick(schedule) },
@@ -545,6 +548,7 @@ private fun SchedulesSectionCard(
 @Composable
 private fun ScheduleItemCard(
     schedule: RouteSchedule,
+    route: BusRoute,
     buses: List<Bus>,
     drivers: List<Driver>,
     onAssignBusClick: () -> Unit,
@@ -567,11 +571,12 @@ private fun ScheduleItemCard(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = schedule.formattedTime,
+                text = schedule.formatScheduleInfo(route),
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = 14.sp,
+                fontSize = 13.sp,
                 color = TextDark
             )
+            Spacer(modifier = Modifier.height(2.dp))
 
             if (assignedBus != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -738,7 +743,7 @@ private fun AddScheduleDialog(
                         onClick = { selectedDirection = RouteDirection.ORIGIN_TO_DESTINATION }
                     )
                     Text(
-                        text = "${route.originTerminal.city} ➔ ${route.destinationTerminal.city}",
+                        text = "Menuju ${route.destinationTerminal.city} dari ${route.originTerminal.city}",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -750,7 +755,7 @@ private fun AddScheduleDialog(
                         onClick = { selectedDirection = RouteDirection.DESTINATION_TO_ORIGIN }
                     )
                     Text(
-                        text = "${route.destinationTerminal.city} ➔ ${route.originTerminal.city}",
+                        text = "Menuju ${route.originTerminal.city} dari ${route.destinationTerminal.city}",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -874,6 +879,7 @@ private fun MinuteDropdown(selectedMinute: Int, onMinuteSelected: (Int) -> Unit)
 @Composable
 private fun AssignScheduleBusDialog(
     schedule: RouteSchedule,
+    route: BusRoute?,
     buses: List<Bus>,
     drivers: List<Driver>,
     onDismiss: () -> Unit,
@@ -883,9 +889,9 @@ private fun AssignScheduleBusDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Tugaskan Armada (${schedule.formattedTime})",
+                text = if (route != null) "Tugaskan Armada\n(${schedule.formatScheduleInfo(route)})" else "Tugaskan Armada (${schedule.formattedTime})",
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                fontSize = 16.sp
             )
         },
         text = {

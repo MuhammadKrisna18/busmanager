@@ -55,11 +55,7 @@ class GetRouteOperationalStatusUseCase(
                 }
 
                 val routeSchedules = schedules.filter { it.routeId == route.id }
-                val departureSchedules = routeSchedules.map {
-                    val hour = String.format("%02d", it.departureHour)
-                    val minute = String.format("%02d", it.departureMinute)
-                    "$hour:$minute WIB (${it.direction.displayName})"
-                }
+                val departureSchedules = routeSchedules.map { it.formatScheduleInfo(route) }
 
                 val routeTrips = trips.filter { it.route.id == route.id }
                 val isActive = assignedBuses.isNotEmpty() &&

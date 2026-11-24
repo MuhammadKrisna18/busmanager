@@ -82,9 +82,9 @@ fun BusLiveTrackingCard(
 
                     Column {
                         Text(
-                            text = "Menuju ${trip.currentDestinationName}",
+                            text = "Menuju ${trip.currentDestinationName} dari ${trip.currentOriginName}",
                             color = TextDark,
-                            fontSize = 14.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
@@ -116,9 +116,9 @@ fun BusLiveTrackingCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "${trip.route.name} (${trip.currentOriginName} ➔ ${trip.currentDestinationName})",
+                text = "${trip.route.name} • Menuju ${trip.currentDestinationName} dari ${trip.currentOriginName}",
                 color = TextMuted,
-                fontSize = 12.sp
+                fontSize = 11.sp
             )
 
             Spacer(modifier = Modifier.height(8.dp))

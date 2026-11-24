@@ -288,13 +288,6 @@ private fun ActiveRouteItemCard(
                     val isRunning = activeTrips.any { it.busCode == bus.busCode }
                     val busDriver = drivers.find { it.id == bus.driverId || it.assignedBusId == bus.id }
                     val busSchedules = schedules.filter { it.assignedBusId == bus.id }
-                    val scheduleSummary = if (busSchedules.isNotEmpty()) {
-                        busSchedules.joinToString(" • ") { sched ->
-                            String.format("%02d:%02d WIB (%s)", sched.departureHour, sched.departureMinute, sched.direction.displayName)
-                        }
-                    } else {
-                        "Jadwal Standby"
-                    }
 
                     Row(
                         modifier = Modifier
@@ -320,11 +313,30 @@ private fun ActiveRouteItemCard(
                                     fontSize = 11.sp
                                 )
                             }
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = "👨‍✈️ ${busDriver?.name ?: "Sopir Ditugaskan"} • $scheduleSummary",
-                                color = TextMuted,
-                                fontSize = 10.sp
+                                text = "👨‍✈️ ${busDriver?.name ?: "Sopir Ditugaskan"}",
+                                color = TextDark,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold
                             )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            if (busSchedules.isNotEmpty()) {
+                                busSchedules.forEach { sched ->
+                                    Text(
+                                        text = "🕒 ${sched.formatScheduleInfo(route)}",
+                                        color = PrimaryBlueDark,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = "🕒 Belum ada penugasan jadwal",
+                                    color = TextMuted,
+                                    fontSize = 10.sp
+                                )
+                            }
                         }
 
                         Box(

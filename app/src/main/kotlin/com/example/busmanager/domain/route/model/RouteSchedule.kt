@@ -22,6 +22,16 @@ data class RouteSchedule(
 
     val hasAssignedBus: Boolean get() = !assignedBusId.isNullOrBlank()
 
+    fun formatScheduleInfo(originCity: String, destinationCity: String): String {
+        val targetDest = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) destinationCity else originCity
+        val targetOrigin = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) originCity else destinationCity
+        return "Jam $formattedTime menuju $targetDest dari $targetOrigin"
+    }
+
+    fun formatScheduleInfo(route: BusRoute): String {
+        return formatScheduleInfo(route.originTerminal.city, route.destinationTerminal.city)
+    }
+
     fun hasConflictWith(other: RouteSchedule): Boolean {
         return id != other.id &&
                 routeId == other.routeId &&

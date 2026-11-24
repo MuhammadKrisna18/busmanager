@@ -527,10 +527,18 @@ private fun FleetBusItemCard(
                         )
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
+                    val currentTerminalName = if (assignedRoute != null) {
+                        if (bus.currentTerminalId == assignedRoute.destinationTerminal.id) {
+                            assignedRoute.destinationTerminal.name
+                        } else {
+                            assignedRoute.originTerminal.name
+                        }
+                    } else null
+
                     Text(
                         text = when {
                             activeTrip != null -> "● Berdinas (${(activeTrip.progressFraction * 100).toInt()}%)"
-                            canOperate -> "Menunggu Jadwal Keberangkatan"
+                            canOperate -> if (currentTerminalName != null) "Menunggu di $currentTerminalName" else "Menunggu Jadwal Keberangkatan"
                             else -> "Belum Siap Operasi"
                         },
                         color = when {

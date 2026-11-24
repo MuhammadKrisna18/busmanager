@@ -63,6 +63,7 @@ class SimulationMapViewModel(
     val uiState: StateFlow<SimulationMapUiState> = _uiState.asStateFlow()
 
     private val dispatchedSchedulesInCurrentDay = mutableSetOf<String>()
+    private val recordedTransitExchangeKeys = mutableSetOf<String>()
     private var lastObservedDay = -1
 
     init {
@@ -125,6 +126,8 @@ class SimulationMapViewModel(
                 if (completedTrips.isNotEmpty()) {
                     handleCompletedTrips(completedTrips)
                 }
+
+                handleTransitPassengerExchanges(trips)
 
                 _uiState.update { current ->
                     val updatedSelectedTrip = current.selectedTrip?.let { sel -> ongoingTrips.find { it.id == sel.id } }
@@ -218,6 +221,42 @@ class SimulationMapViewModel(
                 }
 
                 dispatchBusUseCase.completeTrip(trip.id)
+            }
+        }
+    }
+
+    private fun handleTransitPassengerExchanges(trips: List<ActiveBusTrip>) {
+        if (terminalPassengerRepository == null) return
+        viewModelScope.launch {
+            val currentTime = _uiState.value.currentTime
+            val dateText = "${currentTime.dayOfWeekName()}, ${currentTime.formatDate()}"
+            val timeText = currentTime.formatTime()
+
+            for (trip in trips) {
+                for (exchange in trip.transitExchanges) {
+                    val exchangeKey = "${trip.id}-${exchange.terminalId}-${exchange.stopIndex}"
+                    if (!recordedTransitExchangeKeys.contains(exchangeKey)) {
+                        recordedTransitExchangeKeys.add(exchangeKey)
+                        terminalPassengerRepository.recordPassengerExchange(
+                            TerminalPassengerRecord(
+                                id = "rec-term-trans-${trip.busId}-${exchange.terminalId}-${System.nanoTime()}",
+                                terminalId = exchange.terminalId,
+                                terminalName = exchange.terminalName,
+                                busId = trip.busId,
+                                busCode = trip.busCode,
+                                routeId = trip.route.id,
+                                routeName = trip.route.name,
+                                day = currentTime.day,
+                                month = currentTime.month,
+                                year = currentTime.year,
+                                dateFormatted = dateText,
+                                timeFormatted = timeText,
+                                boardedCount = exchange.boardedCount,
+                                alightedCount = exchange.alightedCount
+                            )
+                        )
+                    }
+                }
             }
         }
     }

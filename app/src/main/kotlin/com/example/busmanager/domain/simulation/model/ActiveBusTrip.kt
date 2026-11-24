@@ -26,7 +26,8 @@ data class ActiveBusTrip(
     val isDwellingAtTransit: Boolean = false,
     val dwellingTerminalName: String? = null,
     val headwayMinutes: Int = 60,
-    val transitDwellMinutes: Int = 10
+    val transitDwellMinutes: Int = 10,
+    val transitExchanges: List<TransitExchangeInfo> = emptyList()
 ) {
     val remainingMinutes: Int
         get() = (estimatedArrivalMinutes - elapsedMinutes).coerceAtLeast(0)
@@ -43,3 +44,11 @@ data class ActiveBusTrip(
             RouteDirection.DESTINATION_TO_ORIGIN -> route.destinationTerminal.city
         }
 }
+
+data class TransitExchangeInfo(
+    val stopIndex: Int,
+    val terminalId: String,
+    val terminalName: String,
+    val boardedCount: Int,
+    val alightedCount: Int
+)

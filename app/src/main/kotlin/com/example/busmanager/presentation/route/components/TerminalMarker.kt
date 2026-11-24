@@ -59,7 +59,7 @@ fun TerminalMarker(
     val badgeText = when (role) {
         TerminalNodeRole.ORIGIN -> "Asal"
         TerminalNodeRole.DESTINATION -> "Tujuan"
-        TerminalNodeRole.TRANSIT -> "Transit"
+        TerminalNodeRole.TRANSIT -> null
         TerminalNodeRole.DEFAULT -> null
     }
 

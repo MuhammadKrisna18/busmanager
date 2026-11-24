@@ -8,6 +8,7 @@ import com.example.busmanager.domain.simulation.model.BusMovementInterpolator
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.PassengerDemandGenerator
 import com.example.busmanager.domain.simulation.model.RouteDirection
+import com.example.busmanager.domain.simulation.model.TransitExchangeInfo
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -129,6 +130,7 @@ class SimulationTripRepositoryImpl(
                     var totalBoarded = trip.totalBoardedPassengers
                     var totalAlighted = trip.totalAlightedPassengers
                     val newlyVisitedStops = trip.visitedTransitStopIndices.toMutableSet()
+                    val newTransitExchanges = trip.transitExchanges.toMutableList()
 
                     for (i in segmentsForDirection.indices) {
                         val seg = segmentsForDirection[i]
@@ -167,6 +169,18 @@ class SimulationTripRepositoryImpl(
                                 val remainingDistance = segmentsForDirection.drop(i + 1).sumOf { it.distanceKm }
                                 val transitTicketAmount = (650L * remainingDistance.toLong() * boarded).coerceAtLeast(0L)
                                 currentEarnings += Money.rupiah(transitTicketAmount)
+
+                                if (transitTerm != null) {
+                                    newTransitExchanges.add(
+                                        TransitExchangeInfo(
+                                            stopIndex = i,
+                                            terminalId = transitTerm.id,
+                                            terminalName = transitTerm.name,
+                                            boardedCount = boarded,
+                                            alightedCount = alighted
+                                        )
+                                    )
+                                }
                             }
 
                             if (newElapsed < dwellEnd) {
@@ -190,7 +204,8 @@ class SimulationTripRepositoryImpl(
                         totalBoardedPassengers = totalBoarded,
                         totalAlightedPassengers = totalAlighted,
                         isDwellingAtTransit = isDwelling,
-                        dwellingTerminalName = dwellingName
+                        dwellingTerminalName = dwellingName,
+                        transitExchanges = newTransitExchanges
                     )
                 }
             }

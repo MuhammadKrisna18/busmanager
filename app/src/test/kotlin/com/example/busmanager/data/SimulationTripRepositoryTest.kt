@@ -155,4 +155,28 @@ class SimulationTripRepositoryTest {
         repository.clearTrips()
         assertTrue(repository.activeTrips.value.isEmpty())
     }
+
+    @Test
+    fun advanceTripsTime_recordsTransitExchangeWhenPassingTransitStop() {
+        val bus = createTestBus()
+        val routeWithTransit = routeDataSource.getPredefinedRoutes().first { it.transitTerminals.isNotEmpty() }
+
+        repository.dispatchBus(
+            bus = bus,
+            route = routeWithTransit,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            currentTime = GameCalendar.initial(),
+            headwayMinutes = 60,
+            transitDwellMinutes = 10
+        )
+
+        val firstSegDuration = routeWithTransit.segments.first().baseDurationMinutes
+        repository.advanceTripsTime(firstSegDuration + 2)
+
+        val updatedTrip = repository.activeTrips.value.first()
+        assertTrue(updatedTrip.visitedTransitStopIndices.contains(0))
+        assertEquals(1, updatedTrip.transitExchanges.size)
+        assertEquals(routeWithTransit.transitTerminals.first().id, updatedTrip.transitExchanges.first().terminalId)
+        assertTrue(updatedTrip.isDwellingAtTransit)
+    }
 }

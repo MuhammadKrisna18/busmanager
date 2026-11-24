@@ -288,6 +288,11 @@ private fun ActiveRouteItemCard(
                     val isRunning = activeTrips.any { it.busCode == bus.busCode }
                     val busDriver = drivers.find { it.id == bus.driverId || it.assignedBusId == bus.id }
                     val busSchedules = schedules.filter { it.assignedBusId == bus.id }
+                    val currentTerminalName = if (bus.currentTerminalId == route.destinationTerminal.id) {
+                        route.destinationTerminal.name
+                    } else {
+                        route.originTerminal.name
+                    }
 
                     Row(
                         modifier = Modifier
@@ -337,6 +342,15 @@ private fun ActiveRouteItemCard(
                                     fontSize = 10.sp
                                 )
                             }
+                            if (!isRunning) {
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "🅿️ Lokasi: Parkir di $currentTerminalName",
+                                    color = Color(0xFF475569),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
 
                         Box(
@@ -346,7 +360,7 @@ private fun ActiveRouteItemCard(
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = if (isRunning) "● Berdinas" else "Menunggu Jadwal Keberangkatan",
+                                text = if (isRunning) "● Berdinas" else "Menunggu di $currentTerminalName",
                                 color = if (isRunning) SuccessGreen else PrimaryBlueDark,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold

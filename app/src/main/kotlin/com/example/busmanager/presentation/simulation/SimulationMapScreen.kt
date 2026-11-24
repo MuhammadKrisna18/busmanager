@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.simulation.model.SimulationSpeed
 import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
-import com.example.busmanager.presentation.route.components.RouteMapLegend
 import com.example.busmanager.presentation.simulation.components.BusLiveTrackingCard
 import com.example.busmanager.presentation.simulation.components.FleetOverviewBottomSheet
 import com.example.busmanager.presentation.simulation.components.RoutesOverviewBottomSheet
@@ -110,9 +109,11 @@ fun SimulationMapScreen(
                     selectedOrigin = state.selectedTerminal,
                     transitTerminals = state.selectedRoute?.transitTerminals ?: emptyList(),
                     activeTrips = state.activeTrips,
+                    parkedBuses = state.parkedBuses,
                     trackedTripId = state.trackedTripId,
                     onTerminalClick = { terminal -> viewModel.onTerminalClick(terminal) },
-                    onTripClick = { trip -> viewModel.onTripClick(trip) }
+                    onTripClick = { trip -> viewModel.onTripClick(trip) },
+                    onParkedBusClick = { viewModel.openBusesBottomSheet() }
                 )
             }
 
@@ -131,14 +132,11 @@ fun SimulationMapScreen(
                         onClose = { viewModel.clearSelectedTerminal() }
                     )
                     Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
-                } else {
-                    RouteMapLegend()
-                    Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
                 }
 
                 SimulationBottomBar(
                     ownedBusCount = state.ownedBusCount,
-                    routeCount = state.routes.size,
+                    routeCount = state.openedRoutes.size,
                     onOpenBuses = { viewModel.openBusesBottomSheet() },
                     onOpenRoutes = { viewModel.openRoutesBottomSheet() }
                 )

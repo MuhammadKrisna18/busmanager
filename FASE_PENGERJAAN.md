@@ -87,11 +87,11 @@ Dokumen ini memuat detail perencanaan perbaikan arsitektural, logika simulasi, d
 
 ---
 
-### 🔹 Fase 2 [Tinggi]: Data Integrity Terminal & Visualisasi Peta Simulasi
-- Pencatatan aktivitas naik-turun penumpang di seluruh terminal singgah/ampiran ke database Room (Fix Diskusi 9).
-- Pembersihan antarmuka peta Play: hapus legend baris bawah, hapus badge transit oranye, dan perbaiki penghitungan counter tombol rute aktif (Fix Diskusi 10).
-- Menampilkan armada yang berstatus *"Menunggu Jadwal Keberangkatan"* tetap terlihat parkir di terminal posisinya pada peta, lengkap dengan teks lokasi fisik di kartu trayek (Fix Diskusi 11).
-- Pengujian unit test & Git Commit Fase 2.
+### 🔹 Fase 2 [Tinggi]: Data Integrity Terminal & Visualisasi Peta Simulasi - [SELESAI]
+- [x] Pencatatan aktivitas naik-turun penumpang di seluruh terminal singgah/ampiran ke database Room (Fix Diskusi 9).
+- [x] Pembersihan antarmuka peta Play: hapus legend baris bawah, hapus badge transit oranye, dan perbaiki penghitungan counter tombol rute aktif (Fix Diskusi 10).
+- [x] Menampilkan armada yang berstatus *"Menunggu Jadwal Keberangkatan"* tetap terlihat parkir di terminal posisinya pada peta, lengkap dengan teks lokasi fisik di kartu trayek (Fix Diskusi 11).
+- [x] Pengujian unit test & Git Commit Fase 2.
 
 ---
 

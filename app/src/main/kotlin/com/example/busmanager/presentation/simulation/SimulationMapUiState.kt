@@ -59,4 +59,25 @@ data class SimulationMapUiState(
 
     val openedRoutes: List<BusRoute>
         get() = routes.filter { openedRouteIds.contains(it.id) }
+
+    val parkedBuses: List<ParkedBusInfo>
+        get() {
+            val activeBusIds = activeTrips.map { it.busId }.toSet()
+            return ownedBuses
+                .filter { it.routeId != null && !activeBusIds.contains(it.id) }
+                .mapNotNull { bus ->
+                    val route = routes.find { it.id == bus.routeId }
+                    val termId = bus.currentTerminalId ?: route?.originTerminal?.id
+                    val term = terminals.find { it.id == termId } ?: route?.originTerminal
+                    if (term != null) {
+                        ParkedBusInfo(bus = bus, terminal = term, route = route)
+                    } else null
+                }
+        }
 }
+
+data class ParkedBusInfo(
+    val bus: Bus,
+    val terminal: Terminal,
+    val route: BusRoute?
+)

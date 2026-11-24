@@ -64,9 +64,11 @@ fun EastJavaMapCanvas(
     selectedDestination: Terminal? = null,
     transitTerminals: List<Terminal> = emptyList(),
     activeTrips: List<ActiveBusTrip> = emptyList(),
+    parkedBuses: List<com.example.busmanager.presentation.simulation.ParkedBusInfo> = emptyList(),
     trackedTripId: String? = null,
     onTerminalClick: (Terminal) -> Unit = {},
-    onTripClick: (ActiveBusTrip) -> Unit = {}
+    onTripClick: (ActiveBusTrip) -> Unit = {},
+    onParkedBusClick: (com.example.busmanager.domain.fleet.model.Bus) -> Unit = {}
 ) {
     BoxWithConstraints(
         modifier = modifier
@@ -165,6 +167,32 @@ fun EastJavaMapCanvas(
                     isTracking = isTracked,
                     onClick = { onTripClick(trip) }
                 )
+            }
+        }
+
+        val parkedGroupedByTerminal = parkedBuses.groupBy { it.terminal.id }
+        parkedGroupedByTerminal.forEach { (_, busesAtTerminal) ->
+            busesAtTerminal.forEachIndexed { index, parked ->
+                val baseXPx = parked.terminal.coordinate.x * canvasWidth
+                val baseYPx = parked.terminal.coordinate.y * canvasHeight
+                val offsetXPx = baseXPx + 20.dp.value + (index * 22.dp.value)
+                val posYPx = baseYPx - 10.dp.value
+
+                Box(
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(offsetXPx.roundToInt(), posYPx.roundToInt())
+                        }
+                        .size(0.dp)
+                        .wrapContentSize(Alignment.Center, unbounded = true)
+                ) {
+                    ParkedBusMarker(
+                        bus = parked.bus,
+                        terminal = parked.terminal,
+                        route = parked.route,
+                        onClick = { onParkedBusClick(parked.bus) }
+                    )
+                }
             }
         }
 

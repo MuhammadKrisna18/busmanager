@@ -156,6 +156,28 @@ class ProcessOfflineProgressionUseCase(
                 )
             )
 
+            for (transitTerm in route.transitTerminals) {
+                val transitCount = (busPassengers / (route.transitTerminals.size + 2)).coerceAtLeast(1)
+                terminalPassengerRepository?.recordPassengerExchange(
+                    TerminalPassengerRecord(
+                        id = "rec-off-trans-${bus.id}-${transitTerm.id}-${System.nanoTime()}",
+                        terminalId = transitTerm.id,
+                        terminalName = transitTerm.name,
+                        busId = bus.id,
+                        busCode = bus.busCode,
+                        routeId = route.id,
+                        routeName = route.name,
+                        day = updatedCalendar.day,
+                        month = updatedCalendar.month,
+                        year = updatedCalendar.year,
+                        dateFormatted = dateText,
+                        timeFormatted = timeText,
+                        boardedCount = transitCount,
+                        alightedCount = transitCount
+                    )
+                )
+            }
+
             totalTrips += tripsCompleted
             totalPassengers += busPassengers
             totalGrossRevenueAmount += grossAmount

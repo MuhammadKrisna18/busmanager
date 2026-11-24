@@ -12,9 +12,11 @@ import com.example.busmanager.di.AppContainer
 import com.example.busmanager.ui.theme.TransNusantaraTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var appContainer: AppContainer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val appContainer = AppContainer(applicationContext)
+        appContainer = AppContainer(applicationContext)
 
         enableEdgeToEdge()
         setContent {
@@ -26,6 +28,13 @@ class MainActivity : ComponentActivity() {
                     MainNavigation(appContainer)
                 }
             }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        if (::appContainer.isInitialized) {
+            appContainer.saveSimulationStateUseCase()
         }
     }
 }

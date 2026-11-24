@@ -108,10 +108,11 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 
 ---
 
-### 🔹 Fase 6 [Medium]: Simulasi Latar Belakang (Offline Progression Engine) (Fix Diskusi 10)
-- Terapkan Delta Time Catch-Up engine saat aplikasi dibuka kembali: majukan jam game, hitung operasional bus selama aplikasi ditutup, dan kreditkan pendapatan tiket.
-- Dialog pop-up ringkasan pendapatan offline saat user membuka game kembali.
-- Pengujian unit test & Git Commit Fase 6.
+### ✅ Fase 6 [Medium]: Simulasi Latar Belakang (Offline Progression Engine) (Fix Diskusi 10) - SELESAI
+- Persistensi status simulasi (`SavedSimulationState` via SharedPreferences) saat aplikasi ditutup/dijeda: kecepatan, waktu wall-clock, jam game, dan status running. (Selesai)
+- Delta Time Catch-Up engine saat aplikasi dibuka kembali: majukan jam game, hitung rit operasional bus aktif selama aplikasi ditutup, catatkan transaksi bagi hasil sopir (30%) & laba bersih (70%), serta kreditkan saldo kas perusahaan. (Selesai)
+- Dialog pop-up ringkasan pendapatan offline (`OfflineProgressionDialog`) di HomeScreen saat user membuka game kembali dengan rincian durasi offline, pendapatan kotor, bagi hasil sopir, laba bersih, dan statistik per bus. (Selesai)
+- Pengujian unit test & Git Commit Fase 6. (Selesai)
 
 ---
 

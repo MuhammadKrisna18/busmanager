@@ -38,6 +38,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.ui.window.Dialog
 import com.example.busmanager.domain.route.model.RouteOperationalInfo
 import com.example.busmanager.domain.route.model.RoutePathType
+import com.example.busmanager.domain.simulation.model.OfflineProgressionResult
 import com.example.busmanager.ui.theme.SuccessGreenLight
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -143,6 +144,13 @@ fun HomeScreen(
         RouteInfoDialog(
             routeOperationalList = state.routeOperationalList,
             onDismiss = { viewModel.dismissRouteInfoModal() }
+        )
+    }
+
+    if (state.offlineProgressionResult != null) {
+        OfflineProgressionDialog(
+            result = state.offlineProgressionResult!!,
+            onDismiss = { viewModel.dismissOfflineProgressionDialog() }
         )
     }
 
@@ -800,6 +808,201 @@ private fun RouteOperationalItemCard(item: RouteOperationalInfo) {
                     color = Color(0xFFB45309),
                     fontSize = 10.sp
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun OfflineProgressionDialog(
+    result: OfflineProgressionResult,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            shape = RoundedCornerShape(AppDimens.radiusMedium),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(AppDimens.paddingMedium)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "🚌 Operasi Latar Belakang",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextDark
+                        )
+                        Text(
+                            text = "Armada terus berdinas saat aplikasi ditutup",
+                            fontSize = 11.sp,
+                            color = TextMuted
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(IceBlue)
+                            .clickable(onClick = onDismiss),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "✕", fontSize = 12.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(IceBlue)
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = "⏱️ Waktu Offline: ${result.offlineGameHours} Jam Permainan (${result.offlineDurationMinutes} mnt)",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(containerColor = SuccessGreenLight)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Laba Bersih Masuk Kas:",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = TextDark
+                            )
+                            Text(
+                                text = "+ ${result.netEarnings.formatRupiah()}",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = SuccessGreen
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Pendapatan Tiket:", fontSize = 11.sp, color = TextMuted)
+                            Text(text = "+ ${result.totalRevenue.formatRupiah()}", fontSize = 11.sp, color = TextDark, fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Bagi Hasil Sopir (30%):", fontSize = 11.sp, color = TextMuted)
+                            Text(text = "- ${result.totalDriverWages.formatRupiah()}", fontSize = 11.sp, color = Color(0xFFDC2626), fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "Total Penumpang & Rit:", fontSize = 11.sp, color = TextMuted)
+                            Text(text = "${result.totalPassengersCarried} pnp • ${result.totalTripsCompleted} rit", fontSize = 11.sp, color = TextDark, fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = "Armada yang Berdinas (${result.busSummaries.size} Bus):",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextDark
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(160.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    items(result.busSummaries) { summary ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(6.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "${summary.busCode} • ${summary.routeName}",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TextDark
+                                    )
+                                    Text(
+                                        text = "${summary.tripsCompleted} rit • ${summary.passengersCarried} pnp • Posisi: ${summary.currentTerminalName}",
+                                        fontSize = 10.sp,
+                                        color = TextMuted
+                                    )
+                                }
+                                Text(
+                                    text = "+ ${summary.netEarnings.formatRupiah()}",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = SuccessGreen
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(AppDimens.radiusMedium),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                ) {
+                    Text(text = "Klaim & Lanjutkan", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

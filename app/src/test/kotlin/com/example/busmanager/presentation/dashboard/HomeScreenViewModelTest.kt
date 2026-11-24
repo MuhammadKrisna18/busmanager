@@ -23,6 +23,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -110,6 +111,16 @@ class HomeScreenViewModelTest {
 
         viewModel.dismissRouteInfoModal()
         assertFalse(viewModel.uiState.value.showRouteInfoModal)
+    }
+
+    @Test
+    fun offlineProgressionDialog_dismissesCorrectly() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.offlineProgressionResult)
+
+        viewModel.dismissOfflineProgressionDialog()
+        assertNull(viewModel.uiState.value.offlineProgressionResult)
     }
 
     private class FakeCompanyRepository : CompanyRepository {

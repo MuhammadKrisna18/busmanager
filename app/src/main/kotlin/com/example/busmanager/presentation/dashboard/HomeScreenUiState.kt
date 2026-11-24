@@ -4,6 +4,7 @@ import com.example.busmanager.core.update.UpdateInfo
 import com.example.busmanager.domain.company.model.Company
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.RouteOperationalInfo
+import com.example.busmanager.domain.simulation.model.OfflineProgressionResult
 
 data class HomeScreenUiState(
     val company: Company? = null,
@@ -16,5 +17,6 @@ data class HomeScreenUiState(
     val updateInfo: UpdateInfo? = null,
     val downloadProgress: Float? = null,
     val routeOperationalList: List<RouteOperationalInfo> = emptyList(),
-    val showRouteInfoModal: Boolean = false
+    val showRouteInfoModal: Boolean = false,
+    val offlineProgressionResult: OfflineProgressionResult? = null
 )

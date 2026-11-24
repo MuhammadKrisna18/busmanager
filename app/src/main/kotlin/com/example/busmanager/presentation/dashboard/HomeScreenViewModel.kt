@@ -11,6 +11,7 @@ import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
 import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
+import com.example.busmanager.domain.simulation.usecase.ProcessOfflineProgressionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +27,8 @@ class HomeScreenViewModel(
     private val getHiredDriversUseCase: GetHiredDriversUseCase? = null,
     private val appUpdateManager: AppUpdateManager = AppUpdateManager(),
     private val resetGameUseCase: ResetGameUseCase? = null,
-    private val getRouteOperationalStatusUseCase: GetRouteOperationalStatusUseCase? = null
+    private val getRouteOperationalStatusUseCase: GetRouteOperationalStatusUseCase? = null,
+    private val processOfflineProgressionUseCase: ProcessOfflineProgressionUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeScreenUiState())
@@ -39,6 +41,10 @@ class HomeScreenViewModel(
     private fun initializeData() {
         viewModelScope.launch {
             startNewGameUseCase()
+            val offlineResult = processOfflineProgressionUseCase?.invoke()
+            if (offlineResult != null && offlineResult.netEarnings.amount > 0) {
+                _uiState.update { it.copy(offlineProgressionResult = offlineResult) }
+            }
             val driversFlow = getHiredDriversUseCase?.invoke() ?: flowOf(emptyList())
             val operationalFlow = getRouteOperationalStatusUseCase?.invoke() ?: flowOf(emptyList())
             combine(
@@ -106,6 +112,10 @@ class HomeScreenViewModel(
 
     fun dismissRouteInfoModal() {
         _uiState.update { it.copy(showRouteInfoModal = false) }
+    }
+
+    fun dismissOfflineProgressionDialog() {
+        _uiState.update { it.copy(offlineProgressionResult = null) }
     }
 }
 

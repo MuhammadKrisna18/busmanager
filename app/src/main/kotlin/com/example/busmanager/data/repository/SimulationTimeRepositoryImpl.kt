@@ -1,7 +1,9 @@
 package com.example.busmanager.data.repository
 
 import com.example.busmanager.domain.simulation.model.GameCalendar
+import com.example.busmanager.domain.simulation.model.SavedSimulationState
 import com.example.busmanager.domain.simulation.model.SimulationSpeed
+import com.example.busmanager.domain.simulation.repository.SimulationStateRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
 import kotlinx.coroutines.CoroutineScope
@@ -20,7 +22,8 @@ class SimulationTimeRepositoryImpl(
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default),
     private val tickIntervalMillis: Long = 1000L,
     private val minutesPerTick: Int = 1,
-    private val simulationTripRepository: SimulationTripRepository? = null
+    private val simulationTripRepository: SimulationTripRepository? = null,
+    private val simulationStateRepository: SimulationStateRepository? = null
 ) : SimulationTimeRepository {
 
     private val _currentTime = MutableStateFlow(initialTime)
@@ -37,12 +40,14 @@ class SimulationTimeRepositoryImpl(
     override fun play() {
         if (_isPlaying.value) return
         _isPlaying.value = true
+        persistCurrentState()
         startTicker()
     }
 
     override fun pause() {
         if (!_isPlaying.value) return
         _isPlaying.value = false
+        persistCurrentState()
         stopTicker()
     }
 
@@ -52,6 +57,7 @@ class SimulationTimeRepositoryImpl(
 
     override fun setSpeed(speed: SimulationSpeed) {
         _currentSpeed.value = speed
+        persistCurrentState()
         if (_isPlaying.value) {
             startTicker()
         }
@@ -60,10 +66,25 @@ class SimulationTimeRepositoryImpl(
     override fun advanceMinutes(minutes: Int) {
         _currentTime.update { it.advanceMinutes(minutes) }
         simulationTripRepository?.advanceTripsTime(minutes)
+        if (_currentTime.value.minute % 10 == 0) {
+            persistCurrentState()
+        }
     }
 
     override fun setTime(calendar: GameCalendar) {
         _currentTime.value = calendar
+        persistCurrentState()
+    }
+
+    private fun persistCurrentState() {
+        simulationStateRepository?.saveState(
+            SavedSimulationState(
+                lastWallClockMillis = System.currentTimeMillis(),
+                isPlaying = _isPlaying.value,
+                speed = _currentSpeed.value,
+                gameCalendar = _currentTime.value
+            )
+        )
     }
 
     private fun startTicker() {

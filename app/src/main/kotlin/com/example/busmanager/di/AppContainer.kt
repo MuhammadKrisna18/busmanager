@@ -13,6 +13,7 @@ import com.example.busmanager.data.repository.RouteCatalogRepositoryImpl
 import com.example.busmanager.data.repository.RoutePricingRepositoryImpl
 import com.example.busmanager.data.repository.RouteScheduleRepositoryImpl
 import com.example.busmanager.data.repository.ShowroomCatalogRepositoryImpl
+import com.example.busmanager.data.repository.SimulationStateRepositoryImpl
 import com.example.busmanager.data.repository.SimulationTimeRepositoryImpl
 import com.example.busmanager.data.repository.SimulationTripRepositoryImpl
 import com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl
@@ -59,11 +60,14 @@ import com.example.busmanager.domain.route.usecase.GetRouteTransitStopsUseCase
 import com.example.busmanager.domain.route.usecase.InitializeDefaultRoutePricingsUseCase
 import com.example.busmanager.domain.route.usecase.SaveCustomRouteUseCase
 import com.example.busmanager.domain.route.usecase.SaveRoutePricingUseCase
+import com.example.busmanager.domain.simulation.repository.SimulationStateRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
 import com.example.busmanager.domain.simulation.usecase.DispatchBusUseCase
 import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
+import com.example.busmanager.domain.simulation.usecase.ProcessOfflineProgressionUseCase
+import com.example.busmanager.domain.simulation.usecase.SaveSimulationStateUseCase
 import com.example.busmanager.domain.simulation.usecase.SetSimulationSpeedUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
 
@@ -76,9 +80,11 @@ class AppContainer(context: Context) {
     val showroomCatalogRepository: ShowroomCatalogRepository = ShowroomCatalogRepositoryImpl()
     val terminalRepository: TerminalRepository = TerminalCatalogRepositoryImpl()
     val routeRepository: RouteRepository = RouteCatalogRepositoryImpl()
+    val simulationStateRepository: SimulationStateRepository = SimulationStateRepositoryImpl(context)
     val simulationTripRepository: SimulationTripRepository = SimulationTripRepositoryImpl()
     val simulationTimeRepository: SimulationTimeRepository = SimulationTimeRepositoryImpl(
-        simulationTripRepository = simulationTripRepository
+        simulationTripRepository = simulationTripRepository,
+        simulationStateRepository = simulationStateRepository
     )
 
     val companyRepository: CompanyRepository = CompanyRepositoryImpl(database.companyDao())
@@ -115,7 +121,8 @@ class AppContainer(context: Context) {
         financialTransactionRepository = financialTransactionRepository,
         terminalPassengerRepository = terminalPassengerRepository,
         simulationTripRepository = simulationTripRepository,
-        simulationTimeRepository = simulationTimeRepository
+        simulationTimeRepository = simulationTimeRepository,
+        simulationStateRepository = simulationStateRepository
     )
     val getCompanyUseCase = GetCompanyUseCase(companyRepository)
     val getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepository)
@@ -170,6 +177,19 @@ class AppContainer(context: Context) {
     val setSimulationSpeedUseCase = SetSimulationSpeedUseCase(simulationTimeRepository)
     val getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepository)
     val dispatchBusUseCase = DispatchBusUseCase(simulationTripRepository)
+    val saveSimulationStateUseCase = SaveSimulationStateUseCase(simulationStateRepository, simulationTimeRepository)
+    val processOfflineProgressionUseCase = ProcessOfflineProgressionUseCase(
+        simulationStateRepository = simulationStateRepository,
+        simulationTimeRepository = simulationTimeRepository,
+        companyRepository = companyRepository,
+        fleetRepository = fleetRepository,
+        driverRepository = driverRepository,
+        routeRepository = routeRepository,
+        routeScheduleRepository = routeScheduleRepository,
+        routePricingRepository = routePricingRepository,
+        financialTransactionRepository = financialTransactionRepository,
+        terminalPassengerRepository = terminalPassengerRepository
+    )
 
     val appUpdateManager = AppUpdateManager()
 }

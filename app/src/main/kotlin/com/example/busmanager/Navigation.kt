@@ -50,7 +50,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         getHiredDriversUseCase = appContainer.getHiredDriversUseCase,
                         appUpdateManager = appContainer.appUpdateManager,
                         resetGameUseCase = appContainer.resetGameUseCase,
-                        getRouteOperationalStatusUseCase = appContainer.getRouteOperationalStatusUseCase
+                        getRouteOperationalStatusUseCase = appContainer.getRouteOperationalStatusUseCase,
+                        processOfflineProgressionUseCase = appContainer.processOfflineProgressionUseCase
                     )
                 }
                 HomeScreen(

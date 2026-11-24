@@ -16,7 +16,9 @@ fun OwnedBusEntity.toDomain(chassis: Chassis, body: KaroseriBody): Bus = Bus(
         bodyHealthPercent = bodyHealthPercent,
         odometerKm = odometerKm
     ),
-    isOperating = isOperating
+    isOperating = isOperating,
+    routeId = routeId,
+    driverId = driverId
 )
 
 fun Bus.toEntity(): OwnedBusEntity = OwnedBusEntity(
@@ -27,5 +29,7 @@ fun Bus.toEntity(): OwnedBusEntity = OwnedBusEntity(
     engineHealthPercent = condition.engineHealthPercent,
     bodyHealthPercent = condition.bodyHealthPercent,
     odometerKm = condition.odometerKm,
-    isOperating = isOperating
+    isOperating = isOperating,
+    routeId = routeId,
+    driverId = driverId
 )

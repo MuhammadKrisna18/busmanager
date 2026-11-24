@@ -5,19 +5,34 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.busmanager.data.local.dao.CompanyDao
+import com.example.busmanager.data.local.dao.DriverDao
 import com.example.busmanager.data.local.dao.OwnedBusDao
+import com.example.busmanager.data.local.dao.RoutePricingDao
+import com.example.busmanager.data.local.dao.RouteScheduleDao
 import com.example.busmanager.data.local.entity.CompanyEntity
+import com.example.busmanager.data.local.entity.DriverEntity
 import com.example.busmanager.data.local.entity.OwnedBusEntity
+import com.example.busmanager.data.local.entity.RoutePricingEntity
+import com.example.busmanager.data.local.entity.RouteScheduleEntity
 
 @Database(
-    entities = [CompanyEntity::class, OwnedBusEntity::class],
-    version = 2,
+    entities = [
+        CompanyEntity::class,
+        OwnedBusEntity::class,
+        DriverEntity::class,
+        RoutePricingEntity::class,
+        RouteScheduleEntity::class
+    ],
+    version = 3,
     exportSchema = false
 )
 abstract class BusManagerDatabase : RoomDatabase() {
 
     abstract fun companyDao(): CompanyDao
     abstract fun ownedBusDao(): OwnedBusDao
+    abstract fun driverDao(): DriverDao
+    abstract fun routePricingDao(): RoutePricingDao
+    abstract fun routeScheduleDao(): RouteScheduleDao
 
     companion object {
         private const val DATABASE_NAME = "bus_manager.db"

@@ -14,5 +14,7 @@ data class OwnedBusEntity(
     val bodyHealthPercent: Int = 100,
     val odometerKm: Long = 0L,
     val isOperating: Boolean = false,
+    val routeId: String? = null,
+    val driverId: String? = null,
     val purchasedAtTimestamp: Long = System.currentTimeMillis()
 )

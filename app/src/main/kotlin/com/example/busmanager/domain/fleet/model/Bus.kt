@@ -8,7 +8,9 @@ data class Bus(
     val chassis: Chassis,
     val body: KaroseriBody,
     val condition: BusCondition = BusCondition(),
-    val isOperating: Boolean = false
+    val isOperating: Boolean = false,
+    val routeId: String? = null,
+    val driverId: String? = null
 ) {
     init {
         if (body.requiresTronton) {
@@ -23,4 +25,7 @@ data class Bus(
 
     val fullName: String
         get() = "${chassis.brand.displayName} ${chassis.modelName} - ${body.brand.displayName} ${body.modelName}"
+
+    val hasRoute: Boolean get() = !routeId.isNullOrBlank()
+    val hasDriver: Boolean get() = !driverId.isNullOrBlank()
 }

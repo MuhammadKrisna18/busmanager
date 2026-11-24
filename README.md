@@ -1,4 +1,4 @@
-# TransNusantara - Bus Manager (v2.1.0)
+# TransNusantara - Bus Manager (v2.4.0)
 
 Aplikasi game simulasi manajemen Perusahaan Otobus (PO Bus) Antar Kota Dalam Provinsi (AKDP) Jawa Timur berbasis Android Native modern yang dibangun menggunakan **Kotlin** dan **Jetpack Compose**.
 
@@ -118,8 +118,8 @@ Rencana penyempurnaan antarmuka pengguna, penataan insets sistem operasi Android
 - ✅ **Fase 2 [Tinggi]**: Standarisasi Format Informasi Jadwal Keberangkatan & Kepulangan (Fix Diskusi 1 - Format deskriptif & layout rapi).
 - ✅ **Fase 3 [Tinggi]**: Klasifikasi Status Armada di Garasi & Penggantian Istilah Standby (Fix Diskusi 3 & 4 - Pindah ke tab Berdinas & ganti "Menunggu Jadwal Keberangkatan").
 - ✅ **Fase 4 [Medium]**: Otomasi Keberangkatan Murni & Penghapusan Tombol Manual "Berdinas Sekarang" (Fix Diskusi 2 - Auto-dispatch saat Play).
-- ✅ **Fase 5 [Medium]**: Global Fade-In Transition Framework (Fix Diskusi 5 - Transisi global fade-in 1 detik).
-- ⏳ **Fase 6 [Final]**: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.4.0 & Publikasi Rilis.
+- ✅ **Fase 5 [Medium]**: Global Fade-In Transition Framework (Fix Diskusi 5 - Transisi global fade-in 1 detik pada NavDisplay, Route Wizard, dan Splash Screen).
+- ✅ **Fase 6 [Final]**: QA Menyeluruh, Strict Zero Comments, Desain Baru Icon Aplikasi Modern, Bump Versi ke v2.4.0 & Publikasi Rilis.
 
 ---
 
@@ -131,9 +131,11 @@ Rencana penyempurnaan antarmuka pengguna, penataan insets sistem operasi Android
   - Clean Architecture + Domain-Driven Design (DDD)
   - Single Responsibility & SOLID Principles
   - Navigation Compose & Navigation3
-  - Room Database v5 (`buses`, `company`, `drivers`, `route_pricings`, `route_schedules`, `financial_transactions`, `terminal_passenger_records`)
+  - Room Database v7 (`buses`, `company`, `drivers`, `route_pricings`, `route_schedules`, `financial_transactions`, `terminal_passenger_records`, `custom_routes`)
   - Kotlin Coroutines & Reactive StateFlow UI State
-- **Versi Rilis**: v2.1.0 (Build VersionCode: 8)
+  - Window Insets & System Bars Padding Management
+  - Global Motion & Transition Framework (Fade-In 1000ms)
+- **Versi Rilis**: v2.4.0 (Build VersionCode: 11)
 - **Min SDK**: API 24 (Android 7.0 Nougat)
 - **Target SDK**: API 36 (Android 16)
 - **Java Compatibility**: JDK 17

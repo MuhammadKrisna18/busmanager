@@ -1,21 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
+        android:fillColor="#050B14"
+        android:pathData="M28,82 C28,80 80,80 80,82 C80,84 28,84 28,82 Z" />
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M31,70 L34,70 L34,81 C34,82 31,82 31,81 Z" />
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M74,70 L77,70 L77,81 C77,82 74,82 74,81 Z" />
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M33,26 C33,23 37,21 43,21 L65,21 C71,21 75,23 75,26 L77,76 C77,78 74,80 70,80 L38,80 C34,80 31,78 31,76 Z" />
+    <path
+        android:fillColor="#F8FAFC"
+        android:pathData="M34,27 C34,24 38,22 43,22 L65,22 C70,22 74,24 74,27 L76,75 C76,77 73,78 69,78 L39,78 C35,78 32,77 32,75 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M35,26 C35,24 38,23 43,23 L65,23 C70,23 73,24 73,26 L74,38 L34,38 Z" />
+    <path
+        android:fillColor="#38BDF8"
+        android:fillAlpha="0.6"
+        android:pathData="M36,26 L48,26 L44,37 L35,37 Z" />
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M33.5,38 L74.5,38 L74.5,41 L33.5,41 Z" />
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M52,38.5 L56,38.5 L56,40.5 L52,40.5 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M34,41 L74,41 L75,58 L33,58 Z" />
+    <path
+        android:fillColor="#38BDF8"
+        android:fillAlpha="0.4"
+        android:pathData="M35,42 L46,42 L42,57 L34,57 Z" />
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M32.5,58 L75.5,58 L76.5,76 C76.5,77 74,78 70,78 L38,78 C34,78 31.5,77 31.5,76 Z" />
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M32,58 L76,58 L76,61 L32,61 Z" />
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M54,62.5 L55.5,65.5 L58.5,65.5 L56,67.5 L57,70.5 L54,68.5 L51,70.5 L52,67.5 L49.5,65.5 L52.5,65.5 Z" />
+    <path
         android:fillColor="#FFFFFF"
-        android:pathData="M30,22 C30,16.48 34.48,12 40,12 L68,12 C73.52,12 78,16.48 78,22 L78,76 C78,81.52 73.52,86 68,86 L40,86 C34.48,86 30,81.52 30,76 Z" />
-    <path
-        android:fillColor="#0F52BA"
-        android:pathData="M35,20 C35,17.79 36.79,16 39,16 L69,16 C71.21,16 73,17.79 73,20 L73,34 L35,34 Z" />
-    <path
-        android:fillColor="#0F52BA"
-        android:pathData="M35,40 L73,40 L73,58 L35,58 Z" />
+        android:pathData="M34,64 L44,64 C45,64 45,66 43,67 L34,67 C33,67 33,64 34,64 Z" />
     <path
         android:fillColor="#38BDF8"
-        android:pathData="M36,68 C36,65.79 37.79,64 40,64 L48,64 C50.21,64 52,65.79 52,68 C52,70.21 50.21,72 48,72 L40,72 C37.79,72 36,70.21 36,68 Z" />
+        android:pathData="M33,63.5 L43,63.5 L42,65 L33,65 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M74,64 L64,64 C63,64 63,66 65,67 L74,67 C75,67 75,64 74,64 Z" />
     <path
         android:fillColor="#38BDF8"
-        android:pathData="M56,68 C56,65.79 57.79,64 60,64 L68,64 C70.21,64 72,65.79 72,68 C72,70.21 70.21,72 68,72 L60,72 C57.79,72 56,70.21 56,68 Z" />
+        android:pathData="M75,63.5 L65,63.5 L66,65 L75,65 Z" />
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M42,71 L66,71 L65,76 L43,76 Z" />
+    <path
+        android:fillColor="#FCD34D"
+        android:pathData="M35,72 C35,71 37,71 37,72 C37,73 35,73 35,72 Z" />
+    <path
+        android:fillColor="#FCD34D"
+        android:pathData="M71,72 C71,71 73,71 73,72 C73,73 71,73 71,72 Z" />
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M27,30 C27,27 30,27 33,29 L33,32 L29,32 C28,32 27,31 27,30 Z" />
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M81,30 C81,27 78,27 75,29 L75,32 L79,32 C80,32 81,31 81,30 Z" />
 </vector>

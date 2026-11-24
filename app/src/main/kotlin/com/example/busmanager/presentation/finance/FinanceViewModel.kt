@@ -46,7 +46,7 @@ class FinanceViewModel(
         }
 
         viewModelScope.launch {
-            val routes = routeRepository.getAllPredefinedRoutes()
+            val routes = routeRepository.getAllRoutes()
             _uiState.update { it.copy(availableRoutes = routes) }
         }
     }

@@ -17,15 +17,15 @@ Dokumen ini memuat daftar rencana tahapan perbaikan, penyederhanaan informasi, d
 
 ## 📋 Pembagian Fase Pengerjaan
 
-### 🟢 Fase 1 [Medium]: Pembersihan Informasi Redundan & Sinkronisasi Trayek (Garasi vs Play->Bus)
+### ✅ Fase 1 [Medium]: Pembersihan Informasi Redundan & Sinkronisasi Trayek (Garasi vs Play->Bus) - SELESAI
 - **Tujuan**: Menghapus data spesifikasi yang tidak memiliki fungsi gameplay, menyederhanakan Showroom, serta menyinkronkan rute bus antara Garasi dan Play ➔ Bus.
 - **Deliverables**:
-  1. **Pembersihan Spesifikasi Chassis**: Hapus informasi suspensi, tenaga (HP), dan torsi dari model data sasis serta kartu tampilan Showroom.
-  2. **Pembersihan Spesifikasi Bodi**: Hapus informasi tipe bodi dan volume bagasi dari model data bodi serta kartu tampilan Showroom.
-  3. **Hapus Biaya Tambahan Kelas**: Pemilihan kelas bus di Showroom Langkah 3 murni menentukan kelas layanan armada tanpa membebankan harga tambahan pada pembelian bus.
-  4. **Pembersihan Kondisi Mesin**: Hapus tampilan & atribut kondisi mesin (100% Mesin Sehat) dari Showroom, Garasi, Wizard, dan model Bus.
-  5. **Sinkronisasi Rute Kustom di Play ➔ Bus**: Ubah pemanggilan `routeRepository.getAllPredefinedRoutes()` menjadi `getAllRoutes()` pada `SimulationMapViewModel` agar rute kustom terbaca di kartu armada dan tidak tertulis `Kosong`.
-  6. **Pengujian & Git Commit Fase 1**.
+  1. **Pembersihan Spesifikasi Chassis**: Hapus informasi suspensi, tenaga (HP), dan torsi dari kartu tampilan Showroom. (Selesai)
+  2. **Pembersihan Spesifikasi Bodi**: Hapus informasi tipe bodi dan volume bagasi dari kartu bodi karoseri di Showroom. (Selesai)
+  3. **Hapus Biaya Tambahan Kelas**: Pemilihan kelas bus di Showroom Langkah 3 murni menentukan kelas layanan armada tanpa membebankan harga tambahan pada pembelian bus. (Selesai)
+  4. **Pembersihan Kondisi Mesin**: Hapus tampilan kondisi mesin (100% Mesin Sehat) dari Showroom, Garasi, Wizard, dan BottomSheet armada. (Selesai)
+  5. **Sinkronisasi Rute Kustom di Play ➔ Bus**: Menggunakan `routeRepository.getAllRoutes()` pada `SimulationMapViewModel` dan `FinanceViewModel` sehingga rute kustom terbaca di kartu armada dan tidak tertulis `Kosong`. (Selesai)
+  6. **Pengujian & Git Commit Fase 1**. (Selesai)
 
 ---
 

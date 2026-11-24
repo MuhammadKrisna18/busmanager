@@ -220,6 +220,7 @@ fun ShowroomScreen(
                             BusClassSelectionCard(
                                 busClass = busClass,
                                 body = uiState.selectedBody,
+                                chassis = uiState.selectedChassis,
                                 isSelected = uiState.selectedBusClass == busClass,
                                 onSelect = { viewModel.selectBusClass(busClass) }
                             )
@@ -488,12 +489,10 @@ private fun ChassisSelectionCard(
                     .clip(RoundedCornerShape(6.dp))
                     .background(Color(0xFFF8FAFC))
                     .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                SpecBadge(label = "Tenaga", value = "${chassis.horsepower} HP")
-                SpecBadge(label = "Torsi", value = "${chassis.torqueNm} Nm")
                 SpecBadge(label = "Gandar", value = chassis.axleType.displayName)
-                SpecBadge(label = "Suspensi", value = chassis.suspension.displayName)
+                SpecBadge(label = "Posisi Mesin", value = chassis.engineLocation.displayName)
             }
         }
     }
@@ -636,12 +635,10 @@ private fun KaroseriBodySelectionCard(
                     .clip(RoundedCornerShape(6.dp))
                     .background(Color(0xFFF8FAFC))
                     .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                SpecBadge(label = "Tipe", value = body.bodyType.name)
-                SpecBadge(label = "Bagasi", value = "${body.luggageCapacityKg} kg")
                 SpecBadge(label = "Kenyamanan", value = "${body.comfortRating}/100")
-                SpecBadge(label = "Tronton", value = if (body.requiresTronton) "Wajib 6x2" else "4x2 / 6x2")
+                SpecBadge(label = "Kompatibilitas", value = if (body.requiresTronton) "Wajib 6x2 (Tronton)" else "4x2 / 6x2")
             }
         }
     }
@@ -683,25 +680,20 @@ private fun ConfigurationSummaryHeader(
 private fun BusClassSelectionCard(
     busClass: BusClass,
     body: KaroseriBody?,
+    chassis: Chassis? = null,
     isSelected: Boolean,
     onSelect: () -> Unit
 ) {
-    val capacity = when (busClass) {
-        BusClass.EKONOMI -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 65 else 50
-        BusClass.BISNIS -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 54 else 40
-        BusClass.VIP -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 46 else 34
-        BusClass.EKSEKUTIF -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 40 else 30
-        BusClass.SUPER_EKSEKUTIF -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 30 else 22
-        BusClass.SUITES_CLASS -> if (body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD) 32 else 21
-    }
+    val isTronton = chassis?.axleType == com.example.busmanager.domain.fleet.model.AxleType.TRONTON_6X2 || body?.requiresTronton == true
+    val isDoubleDecker = body?.bodyType == com.example.busmanager.domain.fleet.model.BusBodyType.SDD
 
-    val classPriceAddition = when (busClass) {
-        BusClass.EKONOMI -> Money.rupiah(0L)
-        BusClass.BISNIS -> Money.rupiah(20_000_000L)
-        BusClass.VIP -> Money.rupiah(40_000_000L)
-        BusClass.EKSEKUTIF -> Money.rupiah(60_000_000L)
-        BusClass.SUPER_EKSEKUTIF -> Money.rupiah(90_000_000L)
-        BusClass.SUITES_CLASS -> Money.rupiah(140_000_000L)
+    val capacity = when (busClass) {
+        BusClass.EKONOMI -> if (isDoubleDecker) 60 else if (isTronton) 54 else 48
+        BusClass.BISNIS -> if (isDoubleDecker) 50 else if (isTronton) 44 else 38
+        BusClass.VIP -> if (isDoubleDecker) 42 else if (isTronton) 38 else 34
+        BusClass.EKSEKUTIF -> if (isDoubleDecker) 36 else if (isTronton) 32 else 28
+        BusClass.SUPER_EKSEKUTIF -> if (isDoubleDecker) 28 else if (isTronton) 26 else 22
+        BusClass.SUITES_CLASS -> if (isDoubleDecker) 24 else 21
     }
 
     Card(
@@ -759,13 +751,13 @@ private fun BusClassSelectionCard(
 
             Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = if (classPriceAddition.amount > 0L) "+${classPriceAddition.formatRupiah()}" else "Standar",
+                    text = "Bebas Biaya",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (classPriceAddition.amount > 0L) Color(0xFFB45309) else SuccessGreen
+                    color = SuccessGreen
                 )
                 Text(
-                    text = "Biaya Interior",
+                    text = "Tarif Manual",
                     fontSize = 10.sp,
                     color = TextMuted
                 )

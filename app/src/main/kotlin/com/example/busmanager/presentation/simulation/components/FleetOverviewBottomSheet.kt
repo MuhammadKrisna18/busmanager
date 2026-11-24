@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.company.model.Money
@@ -353,7 +355,7 @@ private fun ActiveBusDetailCard(
 
             if (bus != null) {
                 Text(
-                    text = "${bus.chassis.brand.displayName} ${bus.chassis.modelName} • ${bus.body.busClass.displayName}",
+                    text = "${bus.chassis.brand.displayName} ${bus.chassis.modelName} - ${bus.body.brand.displayName} ${bus.body.modelName} • ${bus.body.busClass.displayName}",
                     color = PrimaryBlueDark,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold
@@ -509,7 +511,7 @@ private fun FleetBusItemCard(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "${bus.body.busClass.displayName} • ${bus.body.passengerCapacity} Kursi • Kondisi: ${bus.condition.engineHealthPercent}%",
+                text = "${bus.body.busClass.displayName} • ${bus.body.passengerCapacity} Kursi",
                 color = TextMuted,
                 fontSize = 12.sp
             )
@@ -527,7 +529,7 @@ private fun FleetBusItemCard(
                 ConditionCheckChip(
                     label = "Trayek",
                     isSatisfied = operationStatus?.hasRoute ?: !bus.routeId.isNullOrBlank(),
-                    detail = assignedRoute?.name?.take(15) ?: "Kosong"
+                    detail = assignedRoute?.name ?: "Kosong"
                 )
                 ConditionCheckChip(
                     label = "Sopir",
@@ -593,12 +595,15 @@ private fun FleetBusItemCard(
 }
 
 @Composable
-private fun ConditionCheckChip(
+private fun RowScope.ConditionCheckChip(
     label: String,
     isSatisfied: Boolean,
     detail: String
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        modifier = Modifier.weight(1f),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = if (isSatisfied) "✓" else "✕",
@@ -617,7 +622,9 @@ private fun ConditionCheckChip(
         Text(
             text = detail,
             fontSize = 10.sp,
-            color = if (isSatisfied) TextMuted else Color(0xFFDC2626)
+            color = if (isSatisfied) TextMuted else Color(0xFFDC2626),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

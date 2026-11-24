@@ -159,7 +159,7 @@ class SimulationMapViewModel(
         viewModelScope.launch {
             val terminals = getAvailableTerminalsUseCase()
             val allSegments = routeRepository.getAllSegments()
-            val routes = routeRepository.getAllPredefinedRoutes()
+            val routes = routeRepository.getAllRoutes()
 
             _uiState.update { current ->
                 current.copy(
@@ -347,11 +347,13 @@ class SimulationMapViewModel(
     }
 
     fun openBusesBottomSheet() {
-        _uiState.update { it.copy(activeBottomSheet = SimulationBottomSheetType.BUSES) }
+        val routes = routeRepository.getAllRoutes()
+        _uiState.update { it.copy(routes = routes, activeBottomSheet = SimulationBottomSheetType.BUSES) }
     }
 
     fun openRoutesBottomSheet() {
-        _uiState.update { it.copy(activeBottomSheet = SimulationBottomSheetType.ROUTES) }
+        val routes = routeRepository.getAllRoutes()
+        _uiState.update { it.copy(routes = routes, activeBottomSheet = SimulationBottomSheetType.ROUTES) }
     }
 
     fun dismissBottomSheet() {

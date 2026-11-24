@@ -329,7 +329,7 @@ private fun GarageBusCard(
                 color = TextDark
             )
             Text(
-                text = "${bus.body.passengerCapacity} Kursi Penumpang • Kondisi: ${bus.condition.engineHealthPercent}% Mesin Sehat",
+                text = "${bus.body.passengerCapacity} Kursi Penumpang",
                 fontSize = 12.sp,
                 color = TextMuted
             )

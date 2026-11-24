@@ -183,13 +183,13 @@ class ShowroomViewModelTest {
         val stateSuites = viewModel.uiState.value
         assertEquals(BusClass.SUITES_CLASS, stateSuites.selectedBusClass)
         assertTrue(stateSuites.calculatedCapacity < 35)
-        assertEquals(Money.rupiah(140_000_000L), stateSuites.classPriceAddition)
+        assertEquals(Money.ZERO, stateSuites.classPriceAddition)
 
         viewModel.selectBusClass(BusClass.EKONOMI)
         val stateEkonomi = viewModel.uiState.value
         assertEquals(BusClass.EKONOMI, stateEkonomi.selectedBusClass)
-        assertTrue(stateEkonomi.calculatedCapacity >= 50)
-        assertEquals(Money.rupiah(0L), stateEkonomi.classPriceAddition)
+        assertTrue(stateEkonomi.calculatedCapacity >= 48)
+        assertEquals(Money.ZERO, stateEkonomi.classPriceAddition)
     }
 
     @Test

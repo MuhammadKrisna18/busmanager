@@ -57,25 +57,22 @@ data class ShowroomUiState(
         }
 
     val classPriceAddition: Money
-        get() = when (selectedBusClass) {
-            BusClass.EKONOMI -> Money.rupiah(0L)
-            BusClass.BISNIS -> Money.rupiah(20_000_000L)
-            BusClass.VIP -> Money.rupiah(40_000_000L)
-            BusClass.EKSEKUTIF -> Money.rupiah(60_000_000L)
-            BusClass.SUPER_EKSEKUTIF -> Money.rupiah(90_000_000L)
-            BusClass.SUITES_CLASS -> Money.rupiah(140_000_000L)
-        }
+        get() = Money.ZERO
 
     val calculatedCapacity: Int
         get() {
             val body = selectedBody ?: return 30
+            val chassis = selectedChassis
+            val isTronton = chassis?.axleType == AxleType.TRONTON_6X2 || body.requiresTronton
+            val isDoubleDecker = body.bodyType == BusBodyType.SDD
+
             return when (selectedBusClass) {
-                BusClass.EKONOMI -> if (body.bodyType == BusBodyType.SDD) 65 else 50
-                BusClass.BISNIS -> if (body.bodyType == BusBodyType.SDD) 54 else 40
-                BusClass.VIP -> if (body.bodyType == BusBodyType.SDD) 46 else 34
-                BusClass.EKSEKUTIF -> if (body.bodyType == BusBodyType.SDD) 40 else 30
-                BusClass.SUPER_EKSEKUTIF -> if (body.bodyType == BusBodyType.SDD) 30 else 22
-                BusClass.SUITES_CLASS -> if (body.bodyType == BusBodyType.SDD) 32 else 21
+                BusClass.EKONOMI -> if (isDoubleDecker) 60 else if (isTronton) 54 else 48
+                BusClass.BISNIS -> if (isDoubleDecker) 50 else if (isTronton) 44 else 38
+                BusClass.VIP -> if (isDoubleDecker) 42 else if (isTronton) 38 else 34
+                BusClass.EKSEKUTIF -> if (isDoubleDecker) 36 else if (isTronton) 32 else 28
+                BusClass.SUPER_EKSEKUTIF -> if (isDoubleDecker) 28 else if (isTronton) 26 else 22
+                BusClass.SUITES_CLASS -> if (isDoubleDecker) 24 else 21
             }
         }
 
@@ -85,7 +82,7 @@ data class ShowroomUiState(
             return body.copy(
                 busClass = selectedBusClass,
                 passengerCapacity = calculatedCapacity,
-                price = body.price + classPriceAddition
+                price = body.price
             )
         }
 

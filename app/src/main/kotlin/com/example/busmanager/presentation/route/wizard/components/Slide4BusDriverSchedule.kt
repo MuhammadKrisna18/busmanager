@@ -149,7 +149,7 @@ fun Slide4BusDriverSchedule(
                                 )
                             }
                             Text(
-                                text = "${bus.body.busClass.displayName} • ${bus.body.passengerCapacity} Kursi • Kesehatan: ${bus.condition.engineHealthPercent}%",
+                                text = "${bus.body.busClass.displayName} • ${bus.body.passengerCapacity} Kursi",
                                 fontSize = 11.sp,
                                 color = TextMuted
                             )

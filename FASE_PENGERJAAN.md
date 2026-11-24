@@ -163,3 +163,51 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 - Audit seluruh file Kotlin: 100% bebas komentar (`//` atau `/* */`) dan bebas dead code. (Selesai)
 - Full Regression Testing seluruh 250+ unit test (100% passing). (Selesai)
 - Bump versi ke `v2.3.0` (versionCode 10), build signed release APK (`app-release.apk`), dan publikasi Git Tag Rilis `v2.3.0`. (Selesai)
+
+---
+
+## 🚀 SEASON 6: UI/UX Refinement, Auto-Dispatch Engine & System Insets Overhaul
+
+### ✅ Fase 1 [Kritis]: Penanganan System Bars & Insets Android (Fix Diskusi 6) - SELESAI
+- Terapkan `statusBarsPadding()` & `navigationBarsPadding()` secara menyeluruh pada root layout navigasi dan seluruh layar (`HomeScreen`, `GarageScreen`, `ShowroomScreen`, `RoutePlannerScreen`, `RouteWizardScreen`, `FinanceScreen`, `DriverManagementScreen`, `TerminalReportScreen`, `SimulationMapScreen`, `SplashScreen`, serta bottom sheet). (Selesai)
+- Header aplikasi (`CompanyHeader` dan seluruh top bar) terlindungi dari tumpukan elemen status bar Android (jam, icon notifikasi, wifi, baterai). (Selesai)
+- Konten bawah (`LiveInfoBanner`, action bar showroom/wizard, dan tombol bottom sheet) aman di atas bilah navigasi 3-tombol sistem Android tanpa terpotong. (Selesai)
+- Pengujian tampilan & Git Commit Fase 1. (Selesai)
+
+---
+
+### 🔹 Fase 2 [Tinggi]: Standarisasi Format Informasi Jadwal Keberangkatan & Kepulangan (Fix Diskusi 1)
+- Ubah format informasi jadwal di semua layar (Route Planner, Wizard, Live Tracking, BottomSheet) menjadi:
+  `Jam [HH:mm WIB] menuju [Kota Tujuan] dari [Kota Asal]`.
+- Perapian layout tata letak teks (*alignment, badge styling, readability*) agar mudah dibaca oleh user.
+- Pengujian unit test/UI & Git Commit Fase 2.
+
+---
+
+### 🔹 Fase 3 [Tinggi]: Klasifikasi Status Armada di Garasi & Penggantian Istilah Standby (Fix Diskusi 3 & 4)
+- Armada yang sudah memiliki penugasan trayek & pengemudi (menunggu jam keberangkatan) otomatis dikelompokkan ke tab **"Berdinas"** di Garasi.
+- Tab **"Di Garasi"** hanya menampilkan armada yang belum memiliki penugasan trayek/pengemudi (menganggur).
+- Ganti seluruh teks, chip, dan status `"Standby"` di seluruh aplikasi menjadi `"Menunggu Jadwal Keberangkatan"`.
+- Pengujian unit test & Git Commit Fase 3.
+
+---
+
+### 🔹 Fase 4 [Medium]: Otomasi Keberangkatan Murni & Penghapusan Tombol Manual "Berdinas Sekarang" (Fix Diskusi 2)
+- Hapus/nonaktifkan tombol manual `Berdinas Sekarang` pada BottomSheet simulasi armada.
+- Tampilkan badge status kesiapan otomatisasi (`Menunggu Jam Keberangkatan`).
+- Pastikan ketika user menekan Play dan waktu simulasi mencapai jadwal, engine simulasi langsung memberangkatkan bus secara otomatis.
+- Pengujian unit test & Git Commit Fase 4.
+
+---
+
+### 🔹 Fase 5 [Medium]: Global Fade-In Transition Framework (Fix Diskusi 5)
+- Buat arsitektur transisi global `AppTransitions.kt` menggunakan efek fade-in dengan durasi 1 detik (1000ms).
+- Terapkan transisi global fade-in ini pada navigasi antar-halaman (`Navigation.kt`) dan animasi konten dinamis (`AnimatedContent`, `AnimatedVisibility`).
+- Pengujian transisi & Git Commit Fase 5.
+
+---
+
+### 🔹 Fase 6 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.4.0 & Publikasi Rilis
+- Audit zero comments (`0` komentar di seluruh file Kotlin).
+- Full regression testing 100% passing.
+- Bump versi ke `v2.4.0` (versionCode 11), build signed release APK, dan publikasi Git Tag Rilis `v2.4.0`.

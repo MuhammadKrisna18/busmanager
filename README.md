@@ -111,6 +111,18 @@ Rencana perbaikan operasional, validasi business rules ketat, penambahan fitur r
 
 ---
 
+## 📋 Roadmap Pengerjaan Season 6 (UI/UX Refinement, Auto-Dispatch Engine & System Insets Overhaul)
+
+Rencana penyempurnaan antarmuka pengguna, penataan insets sistem operasi Android, otomasi keberangkatan armada berbasis jadwal, dan perapian navigasi berdasarkan hasil evaluasi 6 poin diskusi UI/UX:
+- ✅ **Fase 1 [Kritis]**: Penanganan System Bars & Insets Android (Fix Diskusi 6 - Atasi tabrakan status bar & navigation bar).
+- ⏳ **Fase 2 [Tinggi]**: Standarisasi Format Informasi Jadwal Keberangkatan & Kepulangan (Fix Diskusi 1 - Format deskriptif & layout rapi).
+- ⏳ **Fase 3 [Tinggi]**: Klasifikasi Status Armada di Garasi & Penggantian Istilah Standby (Fix Diskusi 3 & 4 - Pindah ke tab Berdinas & ganti "Menunggu Jadwal Keberangkatan").
+- ⏳ **Fase 4 [Medium]**: Otomasi Keberangkatan Murni & Penghapusan Tombol Manual "Berdinas Sekarang" (Fix Diskusi 2 - Auto-dispatch saat Play).
+- ⏳ **Fase 5 [Medium]**: Global Fade-In Transition Framework (Fix Diskusi 5 - Transisi global fade-in 1 detik).
+- ⏳ **Fase 6 [Final]**: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.4.0 & Publikasi Rilis.
+
+---
+
 ## 📱 Spesifikasi Teknis
 
 - **Bahasa**: Kotlin 2.3+

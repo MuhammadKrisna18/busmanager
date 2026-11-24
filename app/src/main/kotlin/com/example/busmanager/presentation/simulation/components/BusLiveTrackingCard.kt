@@ -63,11 +63,11 @@ fun BusLiveTrackingCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(AppDimens.radiusSmall))
-                            .background(PrimaryBlueDark)
+                            .background(Color(0xFFDC2626))
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = trip.busCode,
+                            text = "🎯 ${trip.busCode}",
                             color = Color.White,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.ExtraBold
@@ -76,12 +76,20 @@ fun BusLiveTrackingCard(
 
                     Spacer(modifier = Modifier.size(8.dp))
 
-                    Text(
-                        text = "Menuju ${trip.currentDestinationName}",
-                        color = TextDark,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column {
+                        Text(
+                            text = "Menuju ${trip.currentDestinationName}",
+                            color = TextDark,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Kamera Terkunci • Melacak Armada",
+                            color = Color(0xFFDC2626),
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
 
                 Box(

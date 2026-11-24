@@ -125,6 +125,16 @@ class RoutePricingRepositoryTest {
         assertEquals(6, pricings.size)
     }
 
+    @Test
+    fun getAllPricingsReturnsAllItems() = runBlocking {
+        initializeDefaultRoutePricingsUseCase(sampleRoute)
+
+        val pricingsFlow = pricingRepository.getAllPricingsFlow().first()
+        val pricingsList = pricingRepository.getAllPricings()
+        assertEquals(6, pricingsFlow.size)
+        assertEquals(6, pricingsList.size)
+    }
+
     private class FakeRoutePricingDao : RoutePricingDao {
         private val pricingMap = mutableMapOf<String, RoutePricingEntity>()
         private val pricingFlow = MutableStateFlow<List<RoutePricingEntity>>(emptyList())
@@ -150,6 +160,10 @@ class RoutePricingRepositoryTest {
                         it.destinationTerminalId == destinationId
             }
         }
+
+        override fun getAllPricingsFlow(): Flow<List<RoutePricingEntity>> = pricingFlow
+
+        override suspend fun getAllPricings(): List<RoutePricingEntity> = pricingMap.values.toList()
 
         override suspend fun insertPricing(pricing: RoutePricingEntity) {
             pricingMap[pricing.id] = pricing

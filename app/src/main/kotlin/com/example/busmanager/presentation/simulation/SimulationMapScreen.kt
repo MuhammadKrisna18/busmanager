@@ -105,6 +105,7 @@ fun SimulationMapScreen(
                     selectedOrigin = state.selectedTerminal,
                     transitTerminals = state.selectedRoute?.transitTerminals ?: emptyList(),
                     activeTrips = state.activeTrips,
+                    trackedTripId = state.trackedTripId,
                     onTerminalClick = { terminal -> viewModel.onTerminalClick(terminal) },
                     onTripClick = { trip -> viewModel.onTripClick(trip) }
                 )
@@ -149,6 +150,7 @@ fun SimulationMapScreen(
                 schedules = state.schedules,
                 busOperationStatuses = state.busOperationStatuses,
                 onDispatchBus = { bus, route -> viewModel.dispatchBus(bus, route) },
+                onTrackBus = { viewModel.trackBus(it) },
                 onDismiss = { viewModel.dismissBottomSheet() },
                 onNavigateToShowroom = onNavigateToBuses
             )
@@ -157,6 +159,10 @@ fun SimulationMapScreen(
             RoutesOverviewBottomSheet(
                 routes = state.routes,
                 selectedRoute = state.selectedRoute,
+                routePricings = state.routePricings,
+                buses = state.ownedBuses,
+                activeTrips = state.activeTrips,
+                schedules = state.schedules,
                 onSelectRoute = { viewModel.selectRoute(it) },
                 onDismiss = { viewModel.dismissBottomSheet() },
                 onNavigateToRoutePlanner = onNavigateToRoutes

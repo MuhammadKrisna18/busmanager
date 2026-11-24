@@ -4,6 +4,7 @@ import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.usecase.BusOperationStatus
 import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.model.Terminal
@@ -32,10 +33,12 @@ data class SimulationMapUiState(
     val routes: List<BusRoute> = emptyList(),
     val drivers: List<Driver> = emptyList(),
     val schedules: List<RouteSchedule> = emptyList(),
+    val routePricings: Map<String, List<RoutePricing>> = emptyMap(),
     val busOperationStatuses: Map<String, BusOperationStatus> = emptyMap(),
     val selectedTerminal: Terminal? = null,
     val selectedRoute: BusRoute? = null,
     val selectedTrip: ActiveBusTrip? = null,
+    val trackedTripId: String? = null,
     val activeBottomSheet: SimulationBottomSheetType = SimulationBottomSheetType.NONE,
     val isLoading: Boolean = false
 ) {

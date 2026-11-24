@@ -65,6 +65,7 @@ class SimulationMapViewModel(
         observeCompanyAndFleet()
         observeActiveTrips()
         observeDriversAndSchedules()
+        observePricings()
         loadMapData()
     }
 
@@ -114,10 +115,13 @@ class SimulationMapViewModel(
         viewModelScope.launch {
             getActiveTripsUseCase().collect { trips ->
                 _uiState.update { current ->
+                    val updatedSelectedTrip = current.selectedTrip?.let { sel -> trips.find { it.id == sel.id } }
+                    val updatedTrackedId = if (trips.any { it.id == current.trackedTripId }) current.trackedTripId else null
                     current.copy(
                         activeTrips = trips,
                         activeBusCount = trips.size,
-                        selectedTrip = current.selectedTrip?.let { sel -> trips.find { it.id == sel.id } }
+                        selectedTrip = updatedSelectedTrip,
+                        trackedTripId = updatedTrackedId
                     )
                 }
             }
@@ -135,6 +139,15 @@ class SimulationMapViewModel(
         viewModelScope.launch {
             routeScheduleRepository?.getAllSchedules()?.collect { scheduleList ->
                 _uiState.update { it.copy(schedules = scheduleList) }
+            }
+        }
+    }
+
+    private fun observePricings() {
+        viewModelScope.launch {
+            routePricingRepository?.getAllPricingsFlow()?.collect { allPricings ->
+                val grouped = allPricings.groupBy { it.routeId }
+                _uiState.update { it.copy(routePricings = grouped) }
             }
         }
     }
@@ -338,14 +351,27 @@ class SimulationMapViewModel(
         _uiState.update { current ->
             current.copy(
                 selectedTrip = trip,
+                trackedTripId = trip.id,
                 selectedRoute = trip.route,
                 selectedTerminal = null
             )
         }
     }
 
+    fun trackBus(trip: ActiveBusTrip) {
+        _uiState.update { current ->
+            current.copy(
+                selectedTrip = trip,
+                trackedTripId = trip.id,
+                selectedRoute = trip.route,
+                selectedTerminal = null,
+                activeBottomSheet = SimulationBottomSheetType.NONE
+            )
+        }
+    }
+
     fun clearSelectedTrip() {
-        _uiState.update { it.copy(selectedTrip = null) }
+        _uiState.update { it.copy(selectedTrip = null, trackedTripId = null) }
     }
 
     fun dispatchBus(bus: Bus, route: BusRoute) {

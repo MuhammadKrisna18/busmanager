@@ -48,6 +48,7 @@ fun EastJavaMapCanvas(
     selectedDestination: Terminal? = null,
     transitTerminals: List<Terminal> = emptyList(),
     activeTrips: List<ActiveBusTrip> = emptyList(),
+    trackedTripId: String? = null,
     onTerminalClick: (Terminal) -> Unit = {},
     onTripClick: (ActiveBusTrip) -> Unit = {}
 ) {
@@ -112,8 +113,9 @@ fun EastJavaMapCanvas(
         }
 
         activeTrips.forEach { trip ->
-            val xPx = (trip.currentCoordinate.x * canvasWidth) - 20.dp.value
-            val yPx = (trip.currentCoordinate.y * canvasHeight) - 24.dp.value
+            val isTracked = trip.id == trackedTripId
+            val xPx = (trip.currentCoordinate.x * canvasWidth) - (if (isTracked) 24.dp.value else 20.dp.value)
+            val yPx = (trip.currentCoordinate.y * canvasHeight) - (if (isTracked) 28.dp.value else 24.dp.value)
 
             Box(
                 modifier = Modifier.offset {
@@ -122,6 +124,7 @@ fun EastJavaMapCanvas(
             ) {
                 MovingBusMarker(
                     trip = trip,
+                    isTracking = isTracked,
                     onClick = { onTripClick(trip) }
                 )
             }

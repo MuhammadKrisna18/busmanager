@@ -155,6 +155,10 @@ class ValidateBusOperationUseCaseTest {
             return pricings.filter { it.routeId == routeId }
         }
 
+        override fun getAllPricingsFlow(): Flow<List<RoutePricing>> = emptyFlow()
+
+        override suspend fun getAllPricings(): List<RoutePricing> = pricings.toList()
+
         override suspend fun savePricing(pricing: RoutePricing) {
             pricings.add(pricing)
         }

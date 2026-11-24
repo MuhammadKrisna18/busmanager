@@ -30,7 +30,8 @@ import com.example.busmanager.ui.theme.PrimaryBlueDark
 fun MovingBusMarker(
     trip: ActiveBusTrip,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isTracking: Boolean = false
 ) {
     Column(
         modifier = modifier.clickable(onClick = onClick),
@@ -39,13 +40,13 @@ fun MovingBusMarker(
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(AppDimens.radiusPill))
-                .background(PrimaryBlueDark)
-                .padding(horizontal = 6.dp, vertical = 2.dp)
+                .background(if (isTracking) Color(0xFFDC2626) else PrimaryBlueDark)
+                .padding(horizontal = if (isTracking) 8.dp else 6.dp, vertical = 2.dp)
         ) {
             Text(
-                text = trip.busCode,
+                text = if (isTracking) "🎯 ${trip.busCode}" else trip.busCode,
                 color = Color.White,
-                fontSize = 9.sp,
+                fontSize = if (isTracking) 10.sp else 9.sp,
                 fontWeight = FontWeight.ExtraBold
             )
         }
@@ -54,16 +55,16 @@ fun MovingBusMarker(
 
         Box(
             modifier = Modifier
-                .size(24.dp)
-                .shadow(6.dp, CircleShape)
+                .size(if (isTracking) 32.dp else 24.dp)
+                .shadow(if (isTracking) 10.dp else 6.dp, CircleShape)
                 .clip(CircleShape)
-                .background(PrimaryBlue)
-                .border(2.dp, Color.White, CircleShape),
+                .background(if (isTracking) Color(0xFFF59E0B) else PrimaryBlue)
+                .border(if (isTracking) 3.dp else 2.dp, Color.White, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = "🚌",
-                fontSize = 12.sp
+                fontSize = if (isTracking) 16.sp else 12.sp
             )
         }
     }

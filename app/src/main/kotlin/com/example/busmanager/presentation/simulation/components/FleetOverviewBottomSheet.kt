@@ -2,6 +2,7 @@ package com.example.busmanager.presentation.simulation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,10 +23,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.usecase.BusOperationStatus
@@ -43,8 +50,6 @@ import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
 import com.example.busmanager.ui.theme.CardBorder
-import com.example.busmanager.ui.theme.DisabledBackground
-import com.example.busmanager.ui.theme.DisabledGray
 import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
 import com.example.busmanager.ui.theme.PrimaryBlueDark
@@ -53,7 +58,6 @@ import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextMuted
-import com.example.busmanager.ui.theme.WarningAmber
 import com.example.busmanager.ui.theme.WarningAmberLight
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,10 +70,12 @@ fun FleetOverviewBottomSheet(
     schedules: List<RouteSchedule> = emptyList(),
     busOperationStatuses: Map<String, BusOperationStatus> = emptyMap(),
     onDispatchBus: (Bus, BusRoute) -> Unit,
+    onTrackBus: (ActiveBusTrip) -> Unit,
     onDismiss: () -> Unit,
     onNavigateToShowroom: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var selectedTab by remember { mutableIntStateOf(if (activeTrips.isNotEmpty()) 0 else 1) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -89,7 +95,7 @@ fun FleetOverviewBottomSheet(
             ) {
                 Column {
                     Text(
-                        text = "🚌 Status Armada & Syarat Operasi",
+                        text = "🚌 Status Armada & Pelacakan",
                         color = TextDark,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -119,57 +125,304 @@ fun FleetOverviewBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
+            Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
 
-            if (buses.isEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(AppDimens.radiusSmall))
+                    .background(IceBlue)
+                    .padding(4.dp)
+            ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 32.dp),
+                        .weight(1f)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (selectedTab == 0) PrimaryBlue else Color.Transparent)
+                        .clickable { selectedTab = 0 }
+                        .padding(vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = "🚌", fontSize = 40.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Belum Ada Armada di Garasi",
-                            color = TextDark,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Beli bus pertama di Showroom untuk memulai simulasi.",
-                            color = TextMuted,
-                            fontSize = 12.sp
-                        )
+                    Text(
+                        text = "Sedang Jalan (${activeTrips.size})",
+                        color = if (selectedTab == 0) Color.White else PrimaryBlueDark,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (selectedTab == 1) PrimaryBlue else Color.Transparent)
+                        .clickable { selectedTab = 1 }
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Semua Armada (${buses.size})",
+                        color = if (selectedTab == 1) Color.White else PrimaryBlueDark,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
+
+            if (selectedTab == 0) {
+                if (activeTrips.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "🚌", fontSize = 40.sp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Tidak Ada Bus Sedang Jalan",
+                                color = TextDark,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Pilih tab Semua Armada untuk memberangkatkan bus atau tunggu jadwal.",
+                                color = TextMuted,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall),
+                        contentPadding = PaddingValues(bottom = 24.dp)
+                    ) {
+                        items(activeTrips, key = { it.id }) { trip ->
+                            val bus = buses.find { it.id == trip.busId }
+                            ActiveBusDetailCard(
+                                trip = trip,
+                                bus = bus,
+                                onTrack = {
+                                    onTrackBus(trip)
+                                    onDismiss()
+                                }
+                            )
+                        }
                     }
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall),
-                    contentPadding = PaddingValues(bottom = 24.dp)
-                ) {
-                    items(buses, key = { it.id }) { bus ->
-                        val activeTrip = activeTrips.find { it.busId == bus.id }
-                        val driver = drivers.find { it.id == bus.driverId }
-                        val assignedRoute = availableRoutes.find { it.id == bus.routeId }
-                        val status = busOperationStatuses[bus.id]
+                if (buses.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = "🚌", fontSize = 40.sp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Belum Ada Armada di Garasi",
+                                color = TextDark,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Beli bus pertama di Showroom untuk memulai simulasi.",
+                                color = TextMuted,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall),
+                        contentPadding = PaddingValues(bottom = 24.dp)
+                    ) {
+                        items(buses, key = { it.id }) { bus ->
+                            val activeTrip = activeTrips.find { it.busId == bus.id }
+                            val driver = drivers.find { it.id == bus.driverId }
+                            val assignedRoute = availableRoutes.find { it.id == bus.routeId }
+                            val status = busOperationStatuses[bus.id]
 
-                        FleetBusItemCard(
-                            bus = bus,
-                            activeTrip = activeTrip,
-                            driver = driver,
-                            assignedRoute = assignedRoute,
-                            operationStatus = status,
-                            availableRoutes = availableRoutes,
-                            onDispatch = { route -> onDispatchBus(bus, route) }
-                        )
+                            FleetBusItemCard(
+                                bus = bus,
+                                activeTrip = activeTrip,
+                                driver = driver,
+                                assignedRoute = assignedRoute,
+                                operationStatus = status,
+                                availableRoutes = availableRoutes,
+                                onDispatch = { route -> onDispatchBus(bus, route) },
+                                onTrack = {
+                                    if (activeTrip != null) {
+                                        onTrackBus(activeTrip)
+                                        onDismiss()
+                                    }
+                                }
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ActiveBusDetailCard(
+    trip: ActiveBusTrip,
+    bus: Bus?,
+    onTrack: () -> Unit
+) {
+    val capacity = bus?.body?.passengerCapacity ?: 30
+    val remainingSeats = (capacity - trip.passengerCount).coerceAtLeast(0)
+    val pricePerPassenger = if (trip.passengerCount > 0) trip.ticketEarnings.amount / trip.passengerCount else 0L
+    val priceFormatted = if (pricePerPassenger > 0L) Money.rupiah(pricePerPassenger).formatRupiah() else trip.ticketEarnings.formatRupiah()
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppDimens.radiusMedium),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation),
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(AppDimens.paddingMedium)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusSmall))
+                            .background(PrimaryBlueDark)
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = trip.busCode,
+                            color = Color.White,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Text(
+                        text = "${trip.currentOriginName} ➔ ${trip.currentDestinationName}",
+                        color = TextDark,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(AppDimens.radiusPill))
+                        .background(SuccessGreenLight)
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "● ${(trip.progressFraction * 100).toInt()}%",
+                        color = SuccessGreen,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = trip.route.name,
+                color = TextMuted,
+                fontSize = 12.sp
+            )
+
+            if (bus != null) {
+                Text(
+                    text = "${bus.chassis.brand.displayName} ${bus.chassis.modelName} • ${bus.body.busClass.displayName}",
+                    color = PrimaryBlueDark,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFF8FAFC))
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                MetricChip(label = "Total Kursi", value = "$capacity Kursi")
+                MetricChip(label = "Sisa Kursi", value = "$remainingSeats Kursi")
+                MetricChip(label = "Tarif Tiket", value = priceFormatted)
+                MetricChip(label = "Sisa Waktu", value = "${trip.remainingMinutes} mnt")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LinearProgressIndicator(
+                progress = { trip.progressFraction },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(6.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                color = PrimaryBlue,
+                trackColor = IceBlue
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Button(
+                onClick = onTrack,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(AppDimens.radiusMedium),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                contentPadding = PaddingValues(vertical = 10.dp)
+            ) {
+                Text(
+                    text = "🎯 Track Bus (Kunci Kamera Lapangan)",
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MetricChip(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            color = TextMuted
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = value,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = TextDark
+        )
     }
 }
 
@@ -181,7 +434,8 @@ private fun FleetBusItemCard(
     assignedRoute: BusRoute?,
     operationStatus: BusOperationStatus?,
     availableRoutes: List<BusRoute>,
-    onDispatch: (BusRoute) -> Unit
+    onDispatch: (BusRoute) -> Unit,
+    onTrack: () -> Unit
 ) {
     val isOperating = activeTrip != null
     val canOperate = operationStatus?.canOperate ?: false
@@ -295,12 +549,19 @@ private fun FleetBusItemCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (activeTrip != null) {
-                    Text(
-                        text = "Rute: ${activeTrip.route.name}",
-                        color = SuccessGreen,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Button(
+                        onClick = onTrack,
+                        shape = RoundedCornerShape(AppDimens.radiusPill),
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "🎯 Track Bus",
+                            color = Color.White,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 } else if (canOperate) {
                     val targetRoute = assignedRoute ?: availableRoutes.firstOrNull()
                     if (targetRoute != null) {

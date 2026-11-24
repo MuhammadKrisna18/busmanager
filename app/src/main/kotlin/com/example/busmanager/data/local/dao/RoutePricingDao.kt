@@ -19,6 +19,12 @@ interface RoutePricingDao {
     @Query("SELECT * FROM route_pricings WHERE routeId = :routeId AND originTerminalId = :originId AND destinationTerminalId = :destinationId LIMIT 1")
     suspend fun getPricing(routeId: String, originId: String, destinationId: String): RoutePricingEntity?
 
+    @Query("SELECT * FROM route_pricings")
+    fun getAllPricingsFlow(): Flow<List<RoutePricingEntity>>
+
+    @Query("SELECT * FROM route_pricings")
+    suspend fun getAllPricings(): List<RoutePricingEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPricing(pricing: RoutePricingEntity)
 

@@ -37,6 +37,7 @@ import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
+import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import com.example.busmanager.domain.simulation.model.SimulationSpeed
@@ -582,6 +583,89 @@ class SimulationMapViewModelTest {
         assertEquals("bus-1", wageTx?.busId)
     }
 
+    @Test
+    fun trackBus_setsSelectedTripAndTrackedTripId() = runTest(testDispatcher) {
+        val sby = terminalRepo.getTerminalById("term_purabaya")!!
+        val mlg = terminalRepo.getTerminalById("term_arjosari")!!
+        val route = routeRepo.getAllPredefinedRoutes().first()
+        val trip = ActiveBusTrip(
+            id = "trip-test-1",
+            busId = "bus-1",
+            busCode = "TN-01",
+            route = route,
+            departureTime = GameCalendar.initial(),
+            estimatedArrivalMinutes = 120,
+            currentCoordinate = sby.coordinate,
+            passengerCount = 30,
+            ticketEarnings = Money.rupiah(1_500_000L)
+        )
+
+        viewModel.trackBus(trip)
+
+        val state = viewModel.uiState.value
+        assertEquals("trip-test-1", state.selectedTrip?.id)
+        assertEquals("trip-test-1", state.trackedTripId)
+        assertEquals(route.id, state.selectedRoute?.id)
+        assertEquals(SimulationBottomSheetType.NONE, state.activeBottomSheet)
+    }
+
+    @Test
+    fun clearSelectedTrip_clearsTrackedTripId() = runTest(testDispatcher) {
+        val sby = terminalRepo.getTerminalById("term_purabaya")!!
+        val route = routeRepo.getAllPredefinedRoutes().first()
+        val trip = ActiveBusTrip(
+            id = "trip-test-2",
+            busId = "bus-2",
+            busCode = "TN-02",
+            route = route,
+            departureTime = GameCalendar.initial(),
+            estimatedArrivalMinutes = 120,
+            currentCoordinate = sby.coordinate,
+            passengerCount = 25,
+            ticketEarnings = Money.rupiah(1_250_000L)
+        )
+
+        viewModel.trackBus(trip)
+        assertEquals("trip-test-2", viewModel.uiState.value.trackedTripId)
+
+        viewModel.clearSelectedTrip()
+        assertNull(viewModel.uiState.value.selectedTrip)
+        assertNull(viewModel.uiState.value.trackedTripId)
+    }
+
+    @Test
+    fun observePricings_populatesRoutePricingsMap() = runTest(testDispatcher) {
+        val pricingRepo = FakeRoutePricingRepository()
+        val pricing = RoutePricing(
+            id = "pr-1",
+            routeId = "route-1",
+            originTerminalId = "term_purabaya",
+            destinationTerminalId = "term_arjosari",
+            originCity = "Surabaya",
+            destinationCity = "Malang",
+            price = Money.rupiah(75_000L)
+        )
+        pricingRepo.savePricing(pricing)
+
+        val vmWithPricing = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fakeFleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(simulationTripRepo),
+            routePricingRepository = pricingRepo
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        val state = vmWithPricing.uiState.value
+        assertTrue(state.routePricings.containsKey("route-1"))
+        assertEquals(1, state.routePricings["route-1"]?.size)
+        assertEquals(Money.rupiah(75_000L), state.routePricings["route-1"]?.first()?.price)
+    }
+
     private class FakeFinancialTransactionRepository : FinancialTransactionRepository {
         private val list = mutableListOf<FinancialTransaction>()
         private val flow = MutableStateFlow<List<FinancialTransaction>>(emptyList())
@@ -623,6 +707,8 @@ class SimulationMapViewModelTest {
 
         override fun getPricingsForRoute(routeId: String): Flow<List<RoutePricing>> = flow
         override suspend fun getPricingsListForRoute(routeId: String): List<RoutePricing> = pricings
+        override fun getAllPricingsFlow(): Flow<List<RoutePricing>> = flow
+        override suspend fun getAllPricings(): List<RoutePricing> = pricings.toList()
         override suspend fun savePricing(pricing: RoutePricing) {
             pricings.add(pricing)
             flow.value = pricings.toList()

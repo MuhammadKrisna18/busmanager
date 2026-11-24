@@ -1,4 +1,4 @@
-# Roadmap & Rencana Fase Pengerjaan TransNusantara
+<!--  --># Roadmap & Rencana Fase Pengerjaan TransNusantara
 
 Dokumen ini merangkum rencana tahapan pengerjaan untuk 6 fitur dan penyempurnaan utama hasil diskusi:
 1. **Jadwal Bolak-Balik (A-B & B-A)** dengan minimal jeda istirahat/putar balik 1 jam dari waktu tiba.
@@ -80,7 +80,7 @@ Dokumen ini merangkum rencana tahapan pengerjaan untuk 6 fitur dan penyempurnaan
 
 ---
 
-### 🟣 Fase 5 [Hard]: Panel Interaktif Bus & Trayek di SimulationMap + Tracking Kamera & Rilis
+### 🟣 Fase 5 [Hard]: Panel Interaktif Bus & Trayek di SimulationMap + Tracking Kamera & Rilis [SELESAI ✅]
 - **Tujuan**: Menyempurnakan panel informasi lapangan dan fitur sorot armada, pembersihan kode, dan rilis versi baru.
 - **Deliverables**:
   1. **Panel Bus di Peta Simulasi (Diskusi 5)**:

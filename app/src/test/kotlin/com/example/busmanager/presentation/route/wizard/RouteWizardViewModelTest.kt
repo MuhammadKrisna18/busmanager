@@ -423,6 +423,8 @@ class RouteWizardViewModelTest {
 
         override fun getPricingsForRoute(routeId: String): Flow<List<RoutePricing>> = flow
         override suspend fun getPricingsListForRoute(routeId: String): List<RoutePricing> = list.filter { it.routeId == routeId }
+        override fun getAllPricingsFlow(): Flow<List<RoutePricing>> = flow
+        override suspend fun getAllPricings(): List<RoutePricing> = list.toList()
 
         override suspend fun savePricing(pricing: RoutePricing) {
             val idx = list.indexOfFirst { it.id == pricing.id }

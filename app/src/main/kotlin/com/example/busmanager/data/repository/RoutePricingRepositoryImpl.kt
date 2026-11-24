@@ -24,6 +24,16 @@ class RoutePricingRepositoryImpl(
         return pricingDao.getPricingsByRoute(routeId).map { it.toDomain() }
     }
 
+    override fun getAllPricingsFlow(): Flow<List<RoutePricing>> {
+        return pricingDao.getAllPricingsFlow().map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
+    override suspend fun getAllPricings(): List<RoutePricing> {
+        return pricingDao.getAllPricings().map { it.toDomain() }
+    }
+
     override suspend fun savePricing(pricing: RoutePricing) {
         pricingDao.insertPricing(pricing.toEntity())
     }

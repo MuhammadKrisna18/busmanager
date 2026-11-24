@@ -292,6 +292,10 @@ class RoutePlannerViewModelTest {
 
         override suspend fun getPricingsListForRoute(routeId: String): List<RoutePricing> = list
 
+        override fun getAllPricingsFlow(): Flow<List<RoutePricing>> = flow
+
+        override suspend fun getAllPricings(): List<RoutePricing> = list.toList()
+
         override suspend fun savePricing(pricing: RoutePricing) {
             val idx = list.indexOfFirst { it.id == pricing.id }
             if (idx >= 0) {

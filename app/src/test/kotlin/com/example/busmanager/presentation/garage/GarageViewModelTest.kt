@@ -196,6 +196,8 @@ class GarageViewModelTest {
     private class FakeRoutePricingRepository : RoutePricingRepository {
         override fun getPricingsForRoute(routeId: String): Flow<List<RoutePricing>> = flowOf(emptyList())
         override suspend fun getPricingsListForRoute(routeId: String): List<RoutePricing> = emptyList()
+        override fun getAllPricingsFlow(): Flow<List<RoutePricing>> = flowOf(emptyList())
+        override suspend fun getAllPricings(): List<RoutePricing> = emptyList()
         override suspend fun savePricing(pricing: RoutePricing) {}
         override suspend fun savePricings(pricings: List<RoutePricing>) {}
         override suspend fun getPricingBetween(

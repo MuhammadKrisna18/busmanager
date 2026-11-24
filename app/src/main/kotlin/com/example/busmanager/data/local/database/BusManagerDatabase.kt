@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.busmanager.data.local.dao.CompanyDao
+import com.example.busmanager.data.local.dao.CustomRouteDao
 import com.example.busmanager.data.local.dao.DriverDao
 import com.example.busmanager.data.local.dao.FinancialTransactionDao
 import com.example.busmanager.data.local.dao.TerminalPassengerRecordDao
@@ -12,6 +13,7 @@ import com.example.busmanager.data.local.dao.OwnedBusDao
 import com.example.busmanager.data.local.dao.RoutePricingDao
 import com.example.busmanager.data.local.dao.RouteScheduleDao
 import com.example.busmanager.data.local.entity.CompanyEntity
+import com.example.busmanager.data.local.entity.CustomRouteEntity
 import com.example.busmanager.data.local.entity.DriverEntity
 import com.example.busmanager.data.local.entity.FinancialTransactionEntity
 import com.example.busmanager.data.local.entity.OwnedBusEntity
@@ -27,9 +29,10 @@ import com.example.busmanager.data.local.entity.TerminalPassengerRecordEntity
         RoutePricingEntity::class,
         RouteScheduleEntity::class,
         FinancialTransactionEntity::class,
-        TerminalPassengerRecordEntity::class
+        TerminalPassengerRecordEntity::class,
+        CustomRouteEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class BusManagerDatabase : RoomDatabase() {
@@ -41,6 +44,7 @@ abstract class BusManagerDatabase : RoomDatabase() {
     abstract fun routeScheduleDao(): RouteScheduleDao
     abstract fun financialTransactionDao(): FinancialTransactionDao
     abstract fun terminalPassengerRecordDao(): TerminalPassengerRecordDao
+    abstract fun customRouteDao(): CustomRouteDao
 
     companion object {
         private const val DATABASE_NAME = "bus_manager.db"
@@ -54,7 +58,7 @@ abstract class BusManagerDatabase : RoomDatabase() {
                     context.applicationContext,
                     BusManagerDatabase::class.java,
                     DATABASE_NAME
-                ).fallbackToDestructiveMigration(true).build().also { instance = it }
+                ).fallbackToDestructiveMigration(true).allowMainThreadQueries().build().also { instance = it }
             }
         }
     }

@@ -33,6 +33,7 @@ class ResetGameUseCaseTest {
     private lateinit var fakeScheduleRepo: FakeRouteScheduleRepository
     private lateinit var fakePricingRepo: FakeRoutePricingRepository
     private lateinit var fakeTimeRepo: FakeSimulationTimeRepository
+    private lateinit var fakeRouteRepo: FakeRouteRepository
     private lateinit var resetGameUseCase: ResetGameUseCase
 
     @Before
@@ -43,6 +44,7 @@ class ResetGameUseCaseTest {
         fakeScheduleRepo = FakeRouteScheduleRepository()
         fakePricingRepo = FakeRoutePricingRepository()
         fakeTimeRepo = FakeSimulationTimeRepository()
+        fakeRouteRepo = FakeRouteRepository()
 
         resetGameUseCase = ResetGameUseCase(
             companyRepository = fakeCompanyRepo,
@@ -50,7 +52,8 @@ class ResetGameUseCaseTest {
             driverRepository = fakeDriverRepo,
             routeScheduleRepository = fakeScheduleRepo,
             routePricingRepository = fakePricingRepo,
-            simulationTimeRepository = fakeTimeRepo
+            simulationTimeRepository = fakeTimeRepo,
+            routeRepository = fakeRouteRepo
         )
     }
 
@@ -63,6 +66,7 @@ class ResetGameUseCaseTest {
         assertTrue(fakeDriverRepo.wasSeedCalled)
         assertTrue(fakeScheduleRepo.wasDeleteAllCalled)
         assertTrue(fakePricingRepo.wasDeleteAllCalled)
+        assertTrue(fakeRouteRepo.wasDeleteAllCalled)
         assertFalse(fakeTimeRepo.isPlaying.value)
         assertEquals(StartNewGameUseCase.DEFAULT_STARTING_BALANCE, fakeCompanyRepo.company?.balance)
         assertEquals(StartNewGameUseCase.DEFAULT_COMPANY_NAME, fakeCompanyRepo.company?.name)
@@ -169,6 +173,23 @@ class ResetGameUseCaseTest {
         override fun advanceMinutes(minutes: Int) {}
         override fun setTime(calendar: GameCalendar) {
             currentTime.value = calendar
+        }
+    }
+
+    private class FakeRouteRepository : com.example.busmanager.domain.route.repository.RouteRepository {
+        var wasDeleteAllCalled = false
+
+        override fun getAllSegments() = emptyList<com.example.busmanager.domain.route.model.RouteSegment>()
+        override fun getSegmentById(id: String) = null
+        override fun getSegmentsBetween(fromTerminalId: String, toTerminalId: String) = emptyList<com.example.busmanager.domain.route.model.RouteSegment>()
+        override fun getAllPredefinedRoutes() = emptyList<com.example.busmanager.domain.route.model.BusRoute>()
+        override fun getAllRoutes() = emptyList<com.example.busmanager.domain.route.model.BusRoute>()
+        override fun getRouteById(id: String) = null
+        override fun saveRoute(route: com.example.busmanager.domain.route.model.BusRoute) {}
+        override fun findRoutes(originTerminalId: String, destinationTerminalId: String, preferredPathType: com.example.busmanager.domain.route.model.RoutePathType?) = emptyList<com.example.busmanager.domain.route.model.BusRoute>()
+        override fun getConnectedTerminalIds(terminalId: String) = emptyList<String>()
+        override fun deleteAllCustomRoutes() {
+            wasDeleteAllCalled = true
         }
     }
 }

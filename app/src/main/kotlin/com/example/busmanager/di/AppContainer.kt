@@ -79,7 +79,10 @@ class AppContainer(context: Context) {
     val karoseriCatalogRepository: KaroseriCatalogRepository = KaroseriCatalogRepositoryImpl()
     val showroomCatalogRepository: ShowroomCatalogRepository = ShowroomCatalogRepositoryImpl()
     val terminalRepository: TerminalRepository = TerminalCatalogRepositoryImpl()
-    val routeRepository: RouteRepository = RouteCatalogRepositoryImpl()
+    val routeRepository: RouteRepository = RouteCatalogRepositoryImpl(
+        customRouteDao = database.customRouteDao(),
+        terminalRepository = terminalRepository
+    )
     val simulationStateRepository: SimulationStateRepository = SimulationStateRepositoryImpl(context)
     val simulationTripRepository: SimulationTripRepository = SimulationTripRepositoryImpl()
     val simulationTimeRepository: SimulationTimeRepository = SimulationTimeRepositoryImpl(
@@ -122,7 +125,8 @@ class AppContainer(context: Context) {
         terminalPassengerRepository = terminalPassengerRepository,
         simulationTripRepository = simulationTripRepository,
         simulationTimeRepository = simulationTimeRepository,
-        simulationStateRepository = simulationStateRepository
+        simulationStateRepository = simulationStateRepository,
+        routeRepository = routeRepository
     )
     val getCompanyUseCase = GetCompanyUseCase(companyRepository)
     val getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepository)

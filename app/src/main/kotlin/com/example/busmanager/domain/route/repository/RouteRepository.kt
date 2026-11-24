@@ -18,4 +18,6 @@ interface RouteRepository {
         preferredPathType: RoutePathType? = null
     ): List<BusRoute>
     fun getConnectedTerminalIds(terminalId: String): List<String>
+    fun deleteRoute(routeId: String) {}
+    fun deleteAllCustomRoutes() {}
 }

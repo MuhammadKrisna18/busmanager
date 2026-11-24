@@ -101,6 +101,16 @@ Rencana perbaikan operasional, validasi business rules ketat, penambahan fitur r
 
 ---
 
+## 📋 Roadmap Pengerjaan Season 5 (Database Persistence & Data Integrity Overhaul)
+
+- ✅ **Fase 1**: Persistensi Trayek ke Database Room (`CustomRouteEntity` & `CustomRouteDao` di Room DB v7).
+- ⏳ **Fase 2**: Perbaikan Penugasan Jadwal Pulang-Pergi (PP) & DAO Multi-Schedule.
+- ⏳ **Fase 3**: Sinkronisasi & Auto-Recovery Status Operasi Armada (State Reconciliation).
+- ⏳ **Fase 4**: Auto-Seeding Database Terpusat & Integritas Relasi Data (First-Launch Setup).
+- ⏳ **Fase 5**: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.3.0 & Publikasi Rilis.
+
+---
+
 ## 📱 Spesifikasi Teknis
 
 - **Bahasa**: Kotlin 2.3+

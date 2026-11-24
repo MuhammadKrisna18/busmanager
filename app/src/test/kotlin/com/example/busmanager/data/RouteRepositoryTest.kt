@@ -105,4 +105,107 @@ class RouteRepositoryTest {
         assertNotNull(fetched)
         assertEquals("Rute Khusus Test", fetched?.name)
     }
+
+    @Test
+    fun customRouteDao_persistsAndRestoresOnNewRepositoryInstance() {
+        val fakeDao = FakeCustomRouteDao()
+        val terminalRepo = com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl()
+        val repo1 = RouteCatalogRepositoryImpl(
+            customRouteDao = fakeDao,
+            terminalRepository = terminalRepo
+        )
+
+        val baseRoute = repo1.getAllPredefinedRoutes().first()
+        val customRoute = BusRoute(
+            id = "custom_persisted_route",
+            name = "Rute Surabaya - Malang Khusus",
+            originTerminal = baseRoute.originTerminal,
+            destinationTerminal = baseRoute.destinationTerminal,
+            pathType = baseRoute.pathType,
+            segments = baseRoute.segments,
+            transitTerminals = baseRoute.transitTerminals
+        )
+
+        repo1.saveRoute(customRoute)
+        assertEquals(1, fakeDao.list.size)
+        assertEquals("custom_persisted_route", fakeDao.list.first().id)
+
+        val repo2 = RouteCatalogRepositoryImpl(
+            customRouteDao = fakeDao,
+            terminalRepository = terminalRepo
+        )
+        val restored = repo2.getRouteById("custom_persisted_route")
+        assertNotNull(restored)
+        assertEquals("Rute Surabaya - Malang Khusus", restored?.name)
+
+        repo2.deleteRoute("custom_persisted_route")
+        assertEquals(0, fakeDao.list.size)
+        assertNull(repo2.getRouteById("custom_persisted_route"))
+    }
+
+    @Test
+    fun deleteAllCustomRoutes_clearsCustomRoutesFromDao() {
+        val fakeDao = FakeCustomRouteDao()
+        val terminalRepo = com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl()
+        val repo = RouteCatalogRepositoryImpl(
+            customRouteDao = fakeDao,
+            terminalRepository = terminalRepo
+        )
+
+        val baseRoute = repo.getAllPredefinedRoutes().first()
+        val customRoute = BusRoute(
+            id = "route_to_clear",
+            name = "Rute Hapus",
+            originTerminal = baseRoute.originTerminal,
+            destinationTerminal = baseRoute.destinationTerminal,
+            pathType = baseRoute.pathType,
+            segments = baseRoute.segments,
+            transitTerminals = baseRoute.transitTerminals
+        )
+
+        repo.saveRoute(customRoute)
+        assertEquals(1, fakeDao.list.size)
+
+        repo.deleteAllCustomRoutes()
+        assertEquals(0, fakeDao.list.size)
+        assertNull(repo.getRouteById("route_to_clear"))
+    }
+
+    private class FakeCustomRouteDao : com.example.busmanager.data.local.dao.CustomRouteDao {
+        val list = mutableListOf<com.example.busmanager.data.local.entity.CustomRouteEntity>()
+
+        override fun getAllCustomRoutesFlow(): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.data.local.entity.CustomRouteEntity>> =
+            kotlinx.coroutines.flow.flowOf(list.toList())
+
+        override fun getAllCustomRoutesSync(): List<com.example.busmanager.data.local.entity.CustomRouteEntity> = list.toList()
+
+        override suspend fun getAllCustomRoutes(): List<com.example.busmanager.data.local.entity.CustomRouteEntity> = list.toList()
+
+        override suspend fun getCustomRouteById(id: String): com.example.busmanager.data.local.entity.CustomRouteEntity? =
+            list.find { it.id == id }
+
+        override fun getCustomRouteByIdSync(id: String): com.example.busmanager.data.local.entity.CustomRouteEntity? =
+            list.find { it.id == id }
+
+        override suspend fun insertCustomRoute(route: com.example.busmanager.data.local.entity.CustomRouteEntity) {
+            list.removeAll { it.id == route.id }
+            list.add(route)
+        }
+
+        override fun insertCustomRouteSync(route: com.example.busmanager.data.local.entity.CustomRouteEntity) {
+            list.removeAll { it.id == route.id }
+            list.add(route)
+        }
+
+        override fun deleteCustomRouteById(id: String): Int {
+            val removed = list.removeAll { it.id == id }
+            return if (removed) 1 else 0
+        }
+
+        override fun deleteAllCustomRoutes(): Int {
+            val count = list.size
+            list.clear()
+            return count
+        }
+    }
 }

@@ -120,3 +120,40 @@ Dokumen ini memuat detail perencanaan perbaikan, pengetatan business rules, dan 
 - Audit seluruh file Kotlin: 100% bebas komentar (`//` atau `/* */`) dan pembersihan dead code template awal (`ui/main`). (Selesai)
 - Full Regression Testing seluruh unit test (100% passing). (Selesai)
 - Bump versi ke `v2.2.0` (versionCode 9), build signed release APK (`app-release.apk`), dan publikasi Git Tag Rilis `v2.2.0`. (Selesai)
+
+---
+
+## 🚀 SEASON 5: Database Persistence & Data Integrity Overhaul
+
+### ✅ Fase 1 [Kritis]: Persistensi Trayek ke Database Room (`CustomRouteEntity` & DAO) - SELESAI
+- Buat `CustomRouteEntity` & `CustomRouteDao` di database Room `bus_manager.db` (Database versi 7). (Selesai)
+- Mapper `RouteMapper.kt` untuk konversi dua arah antara domain `BusRoute` dan `CustomRouteEntity`. (Selesai)
+- Refaktor `RouteCatalogRepositoryImpl` berbasis database Room (sinkronisasi memori cache & DAO reaktif). (Selesai)
+- Integrasi penghapusan rute custom di `ResetGameUseCase`. (Selesai)
+- Pengujian unit test & Git Commit Fase 1. (Selesai)
+
+---
+
+### 🔹 Fase 2 [Tinggi]: Perbaikan Penugasan Jadwal Pulang-Pergi (PP) & DAO Multi-Schedule
+- Perbaiki logika `assignBusToSchedule` di `RouteScheduleRepositoryImpl` agar mendukung penugasan rute bolak-balik (outbound & return).
+- Perbarui `RouteScheduleDao` agar mendukung multi-schedule per armada.
+- Pengujian unit test & Git Commit Fase 2.
+
+---
+
+### 🔹 Fase 3 [Tinggi]: Sinkronisasi & Auto-Recovery Status Operasi Armada (State Reconciliation)
+- Engine pemulihan armada tersangkut: jika aplikasi ditutup paksa saat bus di jalan, pulihkan status bus standby di terminal terakhir.
+- Pengujian unit test & Git Commit Fase 3.
+
+---
+
+### 🔹 Fase 4 [Medium]: Auto-Seeding Database Terpusat & Integritas Relasi Data
+- Auto-seeding data awal perusahaan & 6 sopir kandidat sejak pertama kali database dibuat.
+- Pengujian unit test & Git Commit Fase 4.
+
+---
+
+### 🔹 Fase 5 [Final]: QA Menyeluruh, Strict Zero Comments, Bump Versi ke v2.3.0 & Publikasi Rilis
+- Audit 0 komentar dan verifikasi dead code.
+- Full regression test & build signed release APK `v2.3.0`.
+- Publikasi Git Tag Rilis `v2.3.0`.

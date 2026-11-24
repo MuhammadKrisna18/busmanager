@@ -1,23 +1,67 @@
 package com.example.busmanager.data.repository
 
+import com.example.busmanager.data.local.dao.CustomRouteDao
 import com.example.busmanager.data.local.datasource.RouteDataSource
+import com.example.busmanager.data.mapper.toCustomRouteEntity
+import com.example.busmanager.data.mapper.toDomain
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.repository.RouteRepository
+import com.example.busmanager.domain.route.repository.TerminalRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class RouteCatalogRepositoryImpl(
-    private val dataSource: RouteDataSource = RouteDataSource()
+    private val dataSource: RouteDataSource = RouteDataSource(),
+    private val customRouteDao: CustomRouteDao? = null,
+    private val terminalRepository: TerminalRepository? = null,
+    private val coroutineScope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : RouteRepository {
 
+    private val segmentMap = dataSource.getAllSegments().associateBy { it.id }
     private val customRoutes = mutableListOf<BusRoute>()
+
+    init {
+        loadCustomRoutesFromDatabase()
+    }
+
+    private fun loadCustomRoutesFromDatabase() {
+        if (customRouteDao != null && terminalRepository != null) {
+            try {
+                val entities = customRouteDao.getAllCustomRoutesSync()
+                val loadedRoutes = entities.mapNotNull { entity ->
+                    entity.toDomain(terminalRepository) { segmentMap[it] }
+                }
+                synchronized(customRoutes) {
+                    customRoutes.clear()
+                    customRoutes.addAll(loadedRoutes)
+                }
+            } catch (_: Exception) {}
+
+            coroutineScope.launch {
+                try {
+                    customRouteDao.getAllCustomRoutesFlow().collect { entities ->
+                        val loadedRoutes = entities.mapNotNull { entity ->
+                            entity.toDomain(terminalRepository) { segmentMap[it] }
+                        }
+                        synchronized(customRoutes) {
+                            customRoutes.clear()
+                            customRoutes.addAll(loadedRoutes)
+                        }
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+    }
 
     override fun getAllSegments(): List<RouteSegment> {
         return dataSource.getAllSegments()
     }
 
     override fun getSegmentById(id: String): RouteSegment? {
-        return dataSource.getAllSegments().find { it.id == id }
+        return segmentMap[id]
     }
 
     override fun getSegmentsBetween(fromTerminalId: String, toTerminalId: String): List<RouteSegment> {
@@ -31,20 +75,39 @@ class RouteCatalogRepositoryImpl(
     }
 
     override fun getAllRoutes(): List<BusRoute> {
-        return dataSource.getPredefinedRoutes() + customRoutes
+        val customs = synchronized(customRoutes) { customRoutes.toList() }
+        return dataSource.getPredefinedRoutes() + customs
     }
 
     override fun getRouteById(id: String): BusRoute? {
-        return customRoutes.find { it.id == id } ?: dataSource.getPredefinedRoutes().find { it.id == id }
+        val custom = synchronized(customRoutes) { customRoutes.find { it.id == id } }
+        return custom ?: dataSource.getPredefinedRoutes().find { it.id == id }
     }
 
     override fun saveRoute(route: BusRoute) {
-        val existingIndex = customRoutes.indexOfFirst { it.id == route.id }
-        if (existingIndex >= 0) {
-            customRoutes[existingIndex] = route
-        } else {
-            customRoutes.add(route)
+        synchronized(customRoutes) {
+            val existingIndex = customRoutes.indexOfFirst { it.id == route.id }
+            if (existingIndex >= 0) {
+                customRoutes[existingIndex] = route
+            } else {
+                customRoutes.add(route)
+            }
         }
+        customRouteDao?.insertCustomRouteSync(route.toCustomRouteEntity())
+    }
+
+    override fun deleteRoute(routeId: String) {
+        synchronized(customRoutes) {
+            customRoutes.removeAll { it.id == routeId }
+        }
+        customRouteDao?.deleteCustomRouteById(routeId)
+    }
+
+    override fun deleteAllCustomRoutes() {
+        synchronized(customRoutes) {
+            customRoutes.clear()
+        }
+        customRouteDao?.deleteAllCustomRoutes()
     }
 
     override fun findRoutes(

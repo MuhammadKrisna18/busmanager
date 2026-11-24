@@ -19,7 +19,7 @@ class SimulationTimeRepositoryImpl(
     initialTime: GameCalendar = GameCalendar.initial(),
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default),
     private val tickIntervalMillis: Long = 1000L,
-    private val minutesPerTick: Int = 10,
+    private val minutesPerTick: Int = 1,
     private val simulationTripRepository: SimulationTripRepository? = null
 ) : SimulationTimeRepository {
 

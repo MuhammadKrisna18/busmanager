@@ -528,14 +528,20 @@ class SimulationMapViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val txs = fakeTxRepo.getTransactions()
-        assertTrue(txs.isNotEmpty())
-        assertEquals(TransactionType.INCOME, txs.first().type)
-        assertEquals(TransactionCategory.TICKET_SALE, txs.first().category)
-        assertEquals("bus-1", txs.first().busId)
+        val ticketTx = txs.find { it.category == TransactionCategory.TICKET_SALE }
+        assertNotNull(ticketTx)
+        assertEquals(TransactionType.INCOME, ticketTx?.type)
+        assertEquals("bus-1", ticketTx?.busId)
+
+        val wageTx = txs.find { it.category == TransactionCategory.DRIVER_WAGE }
+        assertNotNull(wageTx)
+        assertEquals(TransactionType.EXPENSE, wageTx?.type)
+        assertEquals("bus-1", wageTx?.busId)
+        assertEquals((ticketTx!!.amount.amount * 0.30).toLong(), wageTx?.amount?.amount)
     }
 
     @Test
-    fun dayRollOver_recordsDriverWageExpense() = runTest {
+    fun scheduledTrip_recordsThirtyPercentDriverWageAndDayRolloverDoesNotDeductFlatWage() = runTest {
         val fakeDriverRepo = FakeDriverRepository()
         val fakePricingRepo = FakeRoutePricingRepository()
         val fakeScheduleRepo = FakeRouteScheduleRepository()
@@ -575,11 +581,21 @@ class SimulationMapViewModelTest {
         simulationTimeRepo.setTime(GameCalendar(2026, 11, 25, 1, 0))
         testDispatcher.scheduler.advanceUntilIdle()
 
-        val txs = fakeTxRepo.getTransactions()
-        val wageTx = txs.find { it.category == TransactionCategory.DRIVER_WAGE }
+        val idleTxs = fakeTxRepo.getTransactions()
+        assertTrue(idleTxs.isEmpty())
+
+        val route = routeRepo.getAllPredefinedRoutes().first()
+        customViewModel.dispatchBus(bus, route)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val activeTxs = fakeTxRepo.getTransactions()
+        val ticketTx = activeTxs.find { it.category == TransactionCategory.TICKET_SALE }
+        val wageTx = activeTxs.find { it.category == TransactionCategory.DRIVER_WAGE }
+
+        assertNotNull(ticketTx)
         assertNotNull(wageTx)
         assertEquals(TransactionType.EXPENSE, wageTx?.type)
-        assertEquals(Money.rupiah(200_000L), wageTx?.amount)
+        assertEquals((ticketTx!!.amount.amount * 0.30).toLong(), wageTx?.amount?.amount)
         assertEquals("bus-1", wageTx?.busId)
     }
 

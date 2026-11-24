@@ -87,6 +87,28 @@ class SimulationTimeRepositoryTest {
     }
 
     @Test
+    fun ticker_defaultMinutesPerTick_advancesOneMinutePerSecond() = runTest {
+        val testDispatcher = StandardTestDispatcher(testScheduler)
+        val testScope = TestScope(testDispatcher)
+        val initial = GameCalendar(2026, 11, 24, 8, 0)
+
+        val repository = SimulationTimeRepositoryImpl(
+            initialTime = initial,
+            scope = testScope,
+            tickIntervalMillis = 1000L
+        )
+
+        repository.play()
+        testScope.advanceTimeBy(1001L)
+        assertEquals(1, repository.currentTime.value.minute)
+
+        testScope.advanceTimeBy(1000L)
+        assertEquals(2, repository.currentTime.value.minute)
+
+        repository.pause()
+    }
+
+    @Test
     fun ticker_whenPlaying_advancesTimeAtIntervals() = runTest {
         val testDispatcher = StandardTestDispatcher(testScheduler)
         val testScope = TestScope(testDispatcher)

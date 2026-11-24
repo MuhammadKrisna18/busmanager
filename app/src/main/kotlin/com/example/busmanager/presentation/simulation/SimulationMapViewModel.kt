@@ -180,9 +180,6 @@ class SimulationMapViewModel(
     private suspend fun handleScheduledDepartures(time: GameCalendar) {
         if (time.day != lastObservedDay) {
             dispatchedSchedulesInCurrentDay.clear()
-            if (lastObservedDay != -1) {
-                deductDailyDriverWages(time)
-            }
             lastObservedDay = time.day
         }
 
@@ -215,38 +212,6 @@ class SimulationMapViewModel(
         }
     }
 
-    private fun deductDailyDriverWages(time: GameCalendar) {
-        val hiredDrivers = _uiState.value.drivers.filter { it.isHired }
-        val buses = _uiState.value.ownedBuses
-        val dateText = "${time.dayOfWeekName()}, ${time.formatDate()}"
-        val timeText = time.formatTime()
-
-        for (driver in hiredDrivers) {
-            val assignedBus = buses.find { it.driverId == driver.id || it.id == driver.assignedBusId }
-            val transaction = FinancialTransaction(
-                id = "tx-wage-${driver.id}-${time.year}-${time.month}-${time.day}",
-                dateText = dateText,
-                timeText = timeText,
-                day = time.day,
-                month = time.month,
-                year = time.year,
-                type = TransactionType.EXPENSE,
-                category = TransactionCategory.DRIVER_WAGE,
-                amount = driver.wagePerDay,
-                busId = assignedBus?.id,
-                busCode = assignedBus?.busCode,
-                description = "Gaji harian: ${driver.name}"
-            )
-            viewModelScope.launch {
-                if (recordFinancialTransactionUseCase != null) {
-                    recordFinancialTransactionUseCase.invoke(transaction)
-                } else {
-                    companyRepository?.deductBalance(driver.wagePerDay)
-                }
-            }
-        }
-    }
-
     private fun executeDispatchAndRevenue(
         bus: Bus,
         route: BusRoute,
@@ -272,8 +237,8 @@ class SimulationMapViewModel(
 
             val dateText = "${currentTime.dayOfWeekName()}, ${currentTime.formatDate()}"
             val timeText = currentTime.formatTime()
-            val transaction = FinancialTransaction(
-                id = "tx-ticket-${bus.id}-${System.currentTimeMillis()}",
+            val ticketTransaction = FinancialTransaction(
+                id = "tx-ticket-${bus.id}-${System.nanoTime()}",
                 dateText = dateText,
                 timeText = timeText,
                 day = currentTime.day,
@@ -290,9 +255,39 @@ class SimulationMapViewModel(
             )
 
             if (recordFinancialTransactionUseCase != null) {
-                recordFinancialTransactionUseCase.invoke(transaction)
+                recordFinancialTransactionUseCase.invoke(ticketTransaction)
             } else {
                 companyRepository?.addBalance(ticketEarnings)
+            }
+
+            val driverWageAmount = (ticketEarnings.amount * 0.30).toLong().coerceAtLeast(0L)
+            if (driverWageAmount > 0L) {
+                val driverWage = Money.rupiah(driverWageAmount)
+                val driver = bus.driverId?.let { driverRepository?.getDriverById(it) }
+                    ?: _uiState.value.drivers.find { it.id == bus.driverId }
+                val driverName = driver?.name ?: bus.busCode
+                val wageTransaction = FinancialTransaction(
+                    id = "tx-wage-${bus.id}-${System.nanoTime()}",
+                    dateText = dateText,
+                    timeText = timeText,
+                    day = currentTime.day,
+                    month = currentTime.month,
+                    year = currentTime.year,
+                    type = TransactionType.EXPENSE,
+                    category = TransactionCategory.DRIVER_WAGE,
+                    amount = driverWage,
+                    busId = bus.id,
+                    busCode = bus.busCode,
+                    routeId = route.id,
+                    routeName = route.name,
+                    description = "Bagi hasil 30% sopir: $driverName"
+                )
+
+                if (recordFinancialTransactionUseCase != null) {
+                    recordFinancialTransactionUseCase.invoke(wageTransaction)
+                } else {
+                    companyRepository?.deductBalance(driverWage)
+                }
             }
         }
     }

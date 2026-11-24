@@ -142,7 +142,7 @@ fun Slide4BusDriverSchedule(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "• ${bus.chassis.brand.displayName} - ${bus.body.modelName}",
+                                    text = "• ${bus.fullName}",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = TextDark

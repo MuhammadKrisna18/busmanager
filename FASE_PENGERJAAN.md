@@ -49,20 +49,19 @@ Dokumen ini memuat daftar rencana tahapan perbaikan, penyederhanaan informasi, d
 
 ---
 
-### 🟣 Fase 4 [Hard]: Penyesuaian Kapasitas Kursi Realistis (Chassis & Bodi) + Standardisasi Nama Armada
+### ✅ Fase 4 [Hard]: Penyesuaian Kapasitas Kursi Realistis (Chassis & Bodi) + Standardisasi Nama Armada - SELESAI
 - **Tujuan**: Menghadirkan kapasitas kursi yang realistis sesuai sasis dan bodi serta menyeragamkan format penamaan bus di seluruh antarmuka aplikasi.
 - **Deliverables**:
   1. **Kapasitas Kursi Realistis**:
      - Menyesuaikan kapasitas kursi penumpang berdasarkan kombinasi sasis dan model bodi:
        - `Suites / Sleeper Class` = 21–24 kursi mewah (bukan 44 kursi).
-       - `Eksekutif` = 28–32 kursi.
-       - `VIP / Bisnis AC` = 36–40 kursi.
-       - `Ekonomi` = 44–50 kursi.
-       - `Double Decker / Tronton` = Kapasitas bertingkat proporsional.
+       - `Eksekutif` = 28–36 kursi.
+       - `VIP / Bisnis AC` = 34–50 kursi.
+       - `Ekonomi` = 48–60 kursi.
+       - `Double Decker / Tronton` = Kapasitas proporsional terstandarisasi. (Selesai)
   2. **Standardisasi Format Penamaan Bus**:
-     - Format seragam di seluruh layar: `[Merk Sasis] [Model Sasis] - [Karoseri] [Model Bodi]` (Contoh: `Mercedes-Benz OC 500 RF 2542 Tronton - Tentrem Avante D2 Double Decker`).
-     - Memperbaiki Bottom Sheet Peta Simulasi (`FleetOverviewBottomSheet`) agar nama bodi karoseri (Adiputro Jetbus 5, Tentrem Avante D2, Laksana Legacy SR3) tidak hilang.
-  3. **Pengujian & Git Commit Fase 4**.
+     - Format seragam di seluruh layar: `[Merk Sasis] [Model Sasis] - [Karoseri] [Model Bodi]` menggunakan `bus.fullName` secara terpadu di Garasi, Peta Simulasi (`FleetOverviewBottomSheet`), Wizard Trayek, dan Manajemen Kru. (Selesai)
+  3. **Pengujian & Git Commit Fase 4**. (Selesai)
 
 ---
 

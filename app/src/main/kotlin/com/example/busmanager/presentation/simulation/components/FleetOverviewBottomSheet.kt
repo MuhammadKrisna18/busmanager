@@ -355,7 +355,7 @@ private fun ActiveBusDetailCard(
 
             if (bus != null) {
                 Text(
-                    text = "${bus.chassis.brand.displayName} ${bus.chassis.modelName} - ${bus.body.brand.displayName} ${bus.body.modelName} • ${bus.body.busClass.displayName}",
+                    text = "${bus.fullName} • ${bus.body.busClass.displayName}",
                     color = PrimaryBlueDark,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold
@@ -505,7 +505,7 @@ private fun FleetBusItemCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "${bus.chassis.brand.displayName} ${bus.chassis.modelName} - ${bus.body.brand.displayName} ${bus.body.modelName}",
+                text = bus.fullName,
                 color = TextDark,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold

@@ -79,10 +79,9 @@ Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau
 ## 🛠️ Roadmap Penyempurnaan & Pembersihan Fitur (In Progress)
 
 Daftar tahapan perbaikan dan penyederhanaan fitur yang sedang berjalan (merujuk pada `FASE_PENGERJAAN.md`):
-- **Fase 4 [Hard]**: Penyesuaian Kapasitas Kursi Realistis (Sleeper 21–24 kursi, Eksekutif 28–32 kursi) & Standardisasi Format Nama Armada (`[Sasis] - [Bodi]`).
 - **Fase 5 [Medium]**: QA Terpadu, Pembersihan Kode (Clean Code + Zero Comments) & Tag Rilis Versi Baru (v2.1.0).
 
-*(Catatan: Fase 1 [Pembersihan Spesifikasi Redundan Sasis/Bodi, Biaya Kelas, Kondisi Mesin, dan Sinkronisasi Rute Garasi vs Play->Bus], Fase 2 [Penyatuan Input Tarif Tiket Pulang-Pergi 1 Kolom A-B & B-A], serta Fase 3 [Proteksi Ketersediaan Sopir & Penyelarasan Skema Upah 30% di Wizard] telah selesai dan terintegrasi).*
+*(Catatan: Seluruh Fase 1 s.d. Fase 4 [Pembersihan Spesifikasi Chassis/Bodi, Biaya Kelas, Kondisi Mesin, Sinkronisasi Rute Garasi vs Play->Bus, Penyatuan Input Tarif PP, Proteksi Ketersediaan Sopir, Skema Upah 30%, Kapasitas Kursi Realistis, dan Standardisasi Format Nama Armada] telah selesai dan terintegrasi).*
 
 ---
 

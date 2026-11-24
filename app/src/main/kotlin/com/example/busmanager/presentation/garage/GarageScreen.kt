@@ -323,7 +323,7 @@ private fun GarageBusCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "${bus.chassis.brand.displayName} ${bus.chassis.modelName} - ${bus.body.brand.displayName} ${bus.body.modelName}",
+                text = bus.fullName,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark

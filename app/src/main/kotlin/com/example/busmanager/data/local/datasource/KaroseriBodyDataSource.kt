@@ -116,7 +116,7 @@ class KaroseriBodyDataSource {
             brand = KaroseriBrand.LAKSANA,
             bodyType = BusBodyType.SDD,
             busClass = BusClass.SUITES_CLASS,
-            passengerCapacity = 42,
+            passengerCapacity = 24,
             luggageCapacityKg = 3000,
             comfortRating = 96,
             price = Money.rupiah(1_100_000_000),

@@ -142,6 +142,9 @@ fun SimulationMapScreen(
                 buses = state.ownedBuses,
                 activeTrips = state.activeTrips,
                 availableRoutes = state.routes,
+                drivers = state.drivers,
+                schedules = state.schedules,
+                busOperationStatuses = state.busOperationStatuses,
                 onDispatchBus = { bus, route -> viewModel.dispatchBus(bus, route) },
                 onDismiss = { viewModel.dismissBottomSheet() },
                 onNavigateToShowroom = onNavigateToBuses

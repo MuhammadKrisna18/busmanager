@@ -10,6 +10,8 @@ import com.example.busmanager.domain.company.model.Company
 import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
+import com.example.busmanager.domain.driver.model.Driver
+import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.model.AxleType
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.model.BusBodyType
@@ -23,8 +25,15 @@ import com.example.busmanager.domain.fleet.model.SuspensionType
 import com.example.busmanager.domain.fleet.model.TransmissionType
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
+import com.example.busmanager.domain.fleet.usecase.ValidateBusOperationUseCase
+import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.model.RoutePricing
+import com.example.busmanager.domain.route.model.RouteSchedule
+import com.example.busmanager.domain.route.repository.RoutePricingRepository
+import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
 import com.example.busmanager.domain.simulation.model.GameCalendar
+import com.example.busmanager.domain.simulation.model.RouteDirection
 import com.example.busmanager.domain.simulation.usecase.DispatchBusUseCase
 import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
@@ -265,6 +274,219 @@ class SimulationMapViewModelTest {
         assertEquals("PO Sumber Kencono", state.companyName)
         assertEquals(Money.rupiah(500_000_000).formatRupiah(), state.balanceFormatted)
         assertEquals(1, state.ownedBusCount)
+    }
+
+    @Test
+    fun scheduledDepartureDispatchesBusWhenThreeConditionsMet() = runTest {
+        val fakeDriverRepo = FakeDriverRepository()
+        val fakePricingRepo = FakeRoutePricingRepository()
+        val fakeScheduleRepo = FakeRouteScheduleRepository()
+        val validateUseCase = ValidateBusOperationUseCase(fakeDriverRepo, fakePricingRepo)
+
+        val route = routeRepo.getAllPredefinedRoutes().first()
+
+        val bus = createDummyBus("TN-01").copy(
+            id = "bus-1",
+            routeId = route.id,
+            driverId = "driver-1"
+        )
+        fakeFleetRepo.emitBuses(listOf(bus))
+
+        fakeDriverRepo.saveDriver(
+            Driver(
+                id = "driver-1",
+                name = "Pak Bambang",
+                wagePerDay = Money.rupiah(180_000L),
+                assignedBusId = "bus-1",
+                isHired = true
+            )
+        )
+
+        fakePricingRepo.savePricing(
+            RoutePricing(
+                id = "price-1",
+                routeId = route.id,
+                originTerminalId = route.originTerminal.id,
+                destinationTerminalId = route.destinationTerminal.id,
+                originCity = route.originTerminal.city,
+                destinationCity = route.destinationTerminal.city,
+                price = Money.rupiah(100_000L)
+            )
+        )
+
+        val schedule = RouteSchedule(
+            id = "sched-1",
+            routeId = route.id,
+            departureHour = 8,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            assignedBusId = "bus-1"
+        )
+        fakeScheduleRepo.addSchedule(schedule)
+
+        val customViewModel = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fakeFleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(simulationTripRepo),
+            validateBusOperationUseCase = validateUseCase,
+            routeScheduleRepository = fakeScheduleRepo,
+            routePricingRepository = fakePricingRepo,
+            companyRepository = fakeCompanyRepo,
+            driverRepository = fakeDriverRepo
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val status = customViewModel.uiState.value.busOperationStatuses["bus-1"]
+        assertNotNull(status)
+        assertTrue(status!!.canOperate)
+
+        customViewModel.togglePlay()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val activeTrips = customViewModel.uiState.value.activeTrips
+        assertEquals(1, activeTrips.size)
+        assertEquals("bus-1", activeTrips.first().busId)
+    }
+
+    @Test
+    fun scheduledDepartureIgnoredWhenMissingDriver() = runTest {
+        val fakeDriverRepo = FakeDriverRepository()
+        val fakePricingRepo = FakeRoutePricingRepository()
+        val fakeScheduleRepo = FakeRouteScheduleRepository()
+        val validateUseCase = ValidateBusOperationUseCase(fakeDriverRepo, fakePricingRepo)
+
+        val route = routeRepo.getAllPredefinedRoutes().first()
+
+        val bus = createDummyBus("TN-02").copy(
+            id = "bus-2",
+            routeId = route.id,
+            driverId = null
+        )
+        fakeFleetRepo.emitBuses(listOf(bus))
+
+        fakePricingRepo.savePricing(
+            RoutePricing(
+                id = "price-2",
+                routeId = route.id,
+                originTerminalId = route.originTerminal.id,
+                destinationTerminalId = route.destinationTerminal.id,
+                originCity = route.originTerminal.city,
+                destinationCity = route.destinationTerminal.city,
+                price = Money.rupiah(100_000L)
+            )
+        )
+
+        val schedule = RouteSchedule(
+            id = "sched-2",
+            routeId = route.id,
+            departureHour = 8,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            assignedBusId = "bus-2"
+        )
+        fakeScheduleRepo.addSchedule(schedule)
+
+        val customViewModel = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(simulationTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(simulationTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fakeFleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(simulationTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(simulationTripRepo),
+            validateBusOperationUseCase = validateUseCase,
+            routeScheduleRepository = fakeScheduleRepo,
+            routePricingRepository = fakePricingRepo,
+            companyRepository = fakeCompanyRepo,
+            driverRepository = fakeDriverRepo
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val status = customViewModel.uiState.value.busOperationStatuses["bus-2"]
+        assertNotNull(status)
+        assertFalse(status!!.canOperate)
+        assertFalse(status.hasDriver)
+
+        customViewModel.togglePlay()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val activeTrips = customViewModel.uiState.value.activeTrips
+        assertEquals(0, activeTrips.size)
+    }
+
+    private class FakeDriverRepository : DriverRepository {
+        private val drivers = mutableMapOf<String, Driver>()
+        private val flow = MutableStateFlow<List<Driver>>(emptyList())
+
+        fun saveDriver(driver: Driver) {
+            drivers[driver.id] = driver
+            flow.value = drivers.values.toList()
+        }
+
+        override fun getAllDrivers(): Flow<List<Driver>> = flow
+        override fun getHiredDrivers(): Flow<List<Driver>> = flow
+        override suspend fun getDriverById(id: String): Driver? = drivers[id]
+        override suspend fun hireDriver(driverId: String): Boolean = true
+        override suspend fun assignDriverToBus(driverId: String, busId: String): Boolean = true
+        override suspend fun unassignDriver(driverId: String) {}
+        override suspend fun fireDriver(driverId: String) {}
+        override suspend fun seedCandidateDriversIfEmpty() {}
+    }
+
+    private class FakeRoutePricingRepository : RoutePricingRepository {
+        private val pricings = mutableListOf<RoutePricing>()
+        private val flow = MutableStateFlow<List<RoutePricing>>(emptyList())
+
+        override fun getPricingsForRoute(routeId: String): Flow<List<RoutePricing>> = flow
+        override suspend fun getPricingsListForRoute(routeId: String): List<RoutePricing> = pricings
+        override suspend fun savePricing(pricing: RoutePricing) {
+            pricings.add(pricing)
+            flow.value = pricings.toList()
+        }
+        override suspend fun savePricings(pricings: List<RoutePricing>) {
+            this.pricings.addAll(pricings)
+            flow.value = this.pricings.toList()
+        }
+        override suspend fun getPricingBetween(
+            routeId: String,
+            originTerminalId: String,
+            destinationTerminalId: String
+        ): RoutePricing? = pricings.find { it.routeId == routeId && it.originTerminalId == originTerminalId && it.destinationTerminalId == destinationTerminalId }
+        override suspend fun generateAndSaveDefaultPricings(route: BusRoute): List<RoutePricing> = emptyList()
+    }
+
+    private class FakeRouteScheduleRepository : RouteScheduleRepository {
+        private val schedules = mutableListOf<RouteSchedule>()
+        private val flow = MutableStateFlow<List<RouteSchedule>>(emptyList())
+
+        override fun getSchedulesForRoute(routeId: String): Flow<List<RouteSchedule>> = flow
+        override fun getAllSchedules(): Flow<List<RouteSchedule>> = flow
+        override suspend fun getSchedulesListForRoute(routeId: String): List<RouteSchedule> = schedules
+        override suspend fun getScheduleById(id: String): RouteSchedule? = schedules.find { it.id == id }
+        override suspend fun addSchedule(schedule: RouteSchedule): Result<Unit> {
+            schedules.add(schedule)
+            flow.value = schedules.toList()
+            return Result.success(Unit)
+        }
+        override suspend fun updateSchedule(schedule: RouteSchedule): Result<Unit> = Result.success(Unit)
+        override suspend fun assignBusToSchedule(scheduleId: String, busId: String): Boolean = true
+        override suspend fun unassignBusFromSchedule(scheduleId: String) {}
+        override suspend fun deleteSchedule(scheduleId: String) {}
+        override suspend fun checkConflict(
+            routeId: String,
+            direction: RouteDirection,
+            hour: Int,
+            minute: Int,
+            excludeScheduleId: String?
+        ): Boolean = false
     }
 
     private fun createDummyBus(busCode: String): Bus {

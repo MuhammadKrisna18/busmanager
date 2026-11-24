@@ -2,14 +2,22 @@ package com.example.busmanager.presentation.simulation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.busmanager.domain.company.model.Money
+import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
+import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.model.Bus
+import com.example.busmanager.domain.fleet.usecase.BusOperationStatus
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
+import com.example.busmanager.domain.fleet.usecase.ValidateBusOperationUseCase
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
+import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
+import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import com.example.busmanager.domain.simulation.usecase.DispatchBusUseCase
 import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
@@ -21,6 +29,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 class SimulationMapViewModel(
     private val getSimulationTimeUseCase: GetSimulationTimeUseCase,
@@ -30,16 +39,25 @@ class SimulationMapViewModel(
     private val getAvailableTerminalsUseCase: GetAvailableTerminalsUseCase,
     private val routeRepository: RouteRepository,
     private val getActiveTripsUseCase: GetActiveTripsUseCase,
-    private val dispatchBusUseCase: DispatchBusUseCase
+    private val dispatchBusUseCase: DispatchBusUseCase,
+    private val validateBusOperationUseCase: ValidateBusOperationUseCase? = null,
+    private val routeScheduleRepository: RouteScheduleRepository? = null,
+    private val routePricingRepository: RoutePricingRepository? = null,
+    private val companyRepository: CompanyRepository? = null,
+    private val driverRepository: DriverRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SimulationMapUiState())
     val uiState: StateFlow<SimulationMapUiState> = _uiState.asStateFlow()
 
+    private val dispatchedSchedulesInCurrentHour = mutableSetOf<String>()
+    private var lastObservedHour = -1
+
     init {
         observeSimulationEngine()
         observeCompanyAndFleet()
         observeActiveTrips()
+        observeDriversAndSchedules()
         loadMapData()
     }
 
@@ -54,6 +72,10 @@ class SimulationMapViewModel(
                         currentTime = time,
                         isPlaying = playing
                     )
+                }
+
+                if (playing) {
+                    handleScheduledDepartures(time)
                 }
             }.collect {}
         }
@@ -73,6 +95,7 @@ class SimulationMapViewModel(
                         ownedBuses = fleet
                     )
                 }
+                updateFleetOperationStatuses(fleet)
             }.collect {}
         }
     }
@@ -91,6 +114,21 @@ class SimulationMapViewModel(
         }
     }
 
+    private fun observeDriversAndSchedules() {
+        viewModelScope.launch {
+            driverRepository?.getAllDrivers()?.collect { driverList ->
+                _uiState.update { it.copy(drivers = driverList) }
+                updateFleetOperationStatuses(_uiState.value.ownedBuses)
+            }
+        }
+
+        viewModelScope.launch {
+            routeScheduleRepository?.getAllSchedules()?.collect { scheduleList ->
+                _uiState.update { it.copy(schedules = scheduleList) }
+            }
+        }
+    }
+
     private fun loadMapData() {
         viewModelScope.launch {
             val terminals = getAvailableTerminalsUseCase()
@@ -104,6 +142,79 @@ class SimulationMapViewModel(
                     routes = routes
                 )
             }
+        }
+    }
+
+    private suspend fun updateFleetOperationStatuses(buses: List<Bus>) {
+        if (validateBusOperationUseCase == null) return
+        val statusMap = mutableMapOf<String, BusOperationStatus>()
+        buses.forEach { bus ->
+            statusMap[bus.id] = validateBusOperationUseCase.invoke(bus)
+        }
+        _uiState.update { it.copy(busOperationStatuses = statusMap) }
+    }
+
+    private suspend fun handleScheduledDepartures(time: GameCalendar) {
+        if (time.hour != lastObservedHour) {
+            dispatchedSchedulesInCurrentHour.clear()
+            lastObservedHour = time.hour
+        }
+
+        val schedules = _uiState.value.schedules
+        val buses = _uiState.value.ownedBuses
+        val activeTrips = _uiState.value.activeTrips
+        val routes = _uiState.value.routes
+
+        for (schedule in schedules) {
+            val busId = schedule.assignedBusId ?: continue
+            val scheduleKey = "${schedule.id}-${time.day}-${time.hour}"
+            if (dispatchedSchedulesInCurrentHour.contains(scheduleKey)) continue
+
+            val bus = buses.find { it.id == busId } ?: continue
+            val isAlreadyOnTrip = activeTrips.any { it.busId == bus.id }
+            if (isAlreadyOnTrip) continue
+
+            val status = validateBusOperationUseCase?.invoke(bus)
+            if (status != null && !status.canOperate) continue
+
+            val isTimeMatching = schedule.departureHour == time.hour && abs(schedule.departureMinute - time.minute) <= 15
+            if (isTimeMatching) {
+                val route = routes.find { it.id == schedule.routeId } ?: continue
+                dispatchedSchedulesInCurrentHour.add(scheduleKey)
+                executeDispatchAndRevenue(bus, route, schedule.direction, time)
+            }
+        }
+    }
+
+    private fun executeDispatchAndRevenue(
+        bus: Bus,
+        route: BusRoute,
+        direction: RouteDirection,
+        currentTime: GameCalendar
+    ) {
+        dispatchBusUseCase(
+            bus = bus,
+            route = route,
+            direction = direction,
+            currentTime = currentTime
+        )
+
+        viewModelScope.launch {
+            val pricings = routePricingRepository?.getPricingsListForRoute(route.id) ?: emptyList()
+            val avgTicketPrice = if (pricings.isNotEmpty()) {
+                pricings.map { it.price.amount }.average().toLong().coerceAtLeast(50_000L)
+            } else {
+                75_000L
+            }
+            val passengers = (bus.body.passengerCapacity * 0.85).toInt().coerceAtLeast(1)
+            val ticketEarnings = Money.rupiah(avgTicketPrice * passengers)
+            companyRepository?.addBalance(ticketEarnings)
+
+            val fuelCost = (route.totalDistanceKm * 0.35 * 6800.0).toLong()
+            val toll = route.totalTollFee.amount
+            val retribution = 10_000L
+            val operationalCost = Money.rupiah(fuelCost + toll + retribution)
+            companyRepository?.deductBalance(operationalCost)
         }
     }
 
@@ -168,7 +279,7 @@ class SimulationMapViewModel(
     }
 
     fun dispatchBus(bus: Bus, route: BusRoute) {
-        dispatchBusUseCase(
+        executeDispatchAndRevenue(
             bus = bus,
             route = route,
             direction = RouteDirection.ORIGIN_TO_DESTINATION,

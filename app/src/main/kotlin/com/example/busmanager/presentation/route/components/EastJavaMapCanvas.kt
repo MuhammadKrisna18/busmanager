@@ -280,10 +280,20 @@ fun EastJavaMapCanvas(
                 }
             }
 
+            val tripOffsets = remember(activeTrips, canvasWidth, canvasHeight) {
+                BusMarkerAntiOverlapCalculator.calculateOffsets(
+                    items = activeTrips,
+                    coordinateSelector = { it.currentCoordinate },
+                    canvasWidth = canvasWidth,
+                    canvasHeight = canvasHeight
+                )
+            }
+
             activeTrips.forEach { trip ->
                 val isTracked = trip.id == trackedTripId
-                val xPx = trip.currentCoordinate.x * canvasWidth
-                val yPx = trip.currentCoordinate.y * canvasHeight
+                val offset = tripOffsets[trip] ?: DisplayMarkerOffset()
+                val xPx = (trip.currentCoordinate.x * canvasWidth) + offset.dxPx
+                val yPx = (trip.currentCoordinate.y * canvasHeight) + offset.dyPx
 
                 Box(
                     modifier = Modifier
@@ -534,9 +544,18 @@ private fun DrawScope.drawBackgroundSegment(
     if (segment.pathType == RoutePathType.TOLL) {
         drawPath(
             path = path,
-            color = Color(0xFFD6E4F0),
+            color = Color(0x33F59E0B),
             style = Stroke(
-                width = 2.5f,
+                width = 5.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+        drawPath(
+            path = path,
+            color = Color(0xFFF59E0B),
+            style = Stroke(
+                width = 2.8f,
                 cap = StrokeCap.Round,
                 join = StrokeJoin.Round
             )
@@ -544,9 +563,18 @@ private fun DrawScope.drawBackgroundSegment(
     } else {
         drawPath(
             path = path,
-            color = Color(0xFFCBD5E1),
+            color = Color(0x220284C7),
             style = Stroke(
-                width = 1.8f,
+                width = 4.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+        drawPath(
+            path = path,
+            color = Color(0xFF0284C7),
+            style = Stroke(
+                width = 2.0f,
                 cap = StrokeCap.Round,
                 join = StrokeJoin.Round,
                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 6f))
@@ -572,25 +600,63 @@ private fun DrawScope.drawOpenedRouteSegment(
         }
     }
 
-    drawPath(
-        path = path,
-        color = routeColor.copy(alpha = 0.28f),
-        style = Stroke(
-            width = 8.5f,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
+    if (segment.pathType == RoutePathType.TOLL) {
+        drawPath(
+            path = path,
+            color = Color(0x55F59E0B),
+            style = Stroke(
+                width = 12f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
         )
-    )
-
-    drawPath(
-        path = path,
-        color = routeColor,
-        style = Stroke(
-            width = 4.5f,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
+        drawPath(
+            path = path,
+            color = Color(0xFFD97706),
+            style = Stroke(
+                width = 6.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
         )
-    )
+        drawPath(
+            path = path,
+            color = Color(0xFFFEF08A),
+            style = Stroke(
+                width = 2.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+    } else {
+        drawPath(
+            path = path,
+            color = Color(0x440284C7),
+            style = Stroke(
+                width = 11f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+        drawPath(
+            path = path,
+            color = Color(0xFF0284C7),
+            style = Stroke(
+                width = 5.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+        drawPath(
+            path = path,
+            color = Color(0xFF67E8F9),
+            style = Stroke(
+                width = 2.0f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+    }
 }
 
 private fun DrawScope.drawGoogleMapsTrackedSegment(
@@ -609,33 +675,61 @@ private fun DrawScope.drawGoogleMapsTrackedSegment(
         }
     }
 
-    drawPath(
-        path = path,
-        color = Color(0x442563EB),
-        style = Stroke(
-            width = 14f,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
+    if (segment.pathType == RoutePathType.TOLL) {
+        drawPath(
+            path = path,
+            color = Color(0x66F59E0B),
+            style = Stroke(
+                width = 16f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
         )
-    )
-
-    drawPath(
-        path = path,
-        color = Color(0xFF1D4ED8),
-        style = Stroke(
-            width = 7.0f,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
+        drawPath(
+            path = path,
+            color = Color(0xFFB45309),
+            style = Stroke(
+                width = 8.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
         )
-    )
-
-    drawPath(
-        path = path,
-        color = Color(0xFF93C5FD),
-        style = Stroke(
-            width = 2.5f,
-            cap = StrokeCap.Round,
-            join = StrokeJoin.Round
+        drawPath(
+            path = path,
+            color = Color(0xFFFDE047),
+            style = Stroke(
+                width = 3.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
         )
-    )
+    } else {
+        drawPath(
+            path = path,
+            color = Color(0x552563EB),
+            style = Stroke(
+                width = 16f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+        drawPath(
+            path = path,
+            color = Color(0xFF1D4ED8),
+            style = Stroke(
+                width = 8.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+        drawPath(
+            path = path,
+            color = Color(0xFF93C5FD),
+            style = Stroke(
+                width = 3.5f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round
+            )
+        )
+    }
 }

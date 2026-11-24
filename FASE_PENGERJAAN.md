@@ -100,10 +100,10 @@ Dokumen ini memuat susunan pengerjaan terperinci untuk Season 9 yang dipecah men
 
 ---
 
-### 🔹 Fase 3 [Visual Peta & Jalur]: Perombakan Garis Rute (Tol & Non-Tol) & Algoritma Anti-Overlap Marker
-- [ ] Memperbarui rendering garis lintasan rute di `EastJavaMapCanvas`: Jalur Tol menggunakan warna Emas/Oranye Kontras, Jalur Arteri/Non-Tol menggunakan warna Biru Elektrik/Toska.
-- [ ] Mengimplementasikan algoritma penyesuaian posisi visual (anti-overlap / dynamic offset) untuk armada-armada yang sedang berada di terminal atau segmen jalan yang sama agar tidak saling menutupi.
-- [ ] Verifikasi tampilan garis jalur dan marker di peta simulasi, lalu Git Commit Fase 3.
+### 🔹 Fase 3 [Visual Peta & Jalur]: Perombakan Garis Rute (Tol & Non-Tol) & Algoritma Anti-Overlap Marker [SELESAI]
+- [x] Memperbarui rendering garis lintasan rute di `EastJavaMapCanvas`: Jalur Tol menggunakan warna Emas/Oranye Kontras, Jalur Arteri/Non-Tol menggunakan warna Biru Elektrik/Toska.
+- [x] Mengimplementasikan algoritma penyesuaian posisi visual (anti-overlap / dynamic offset) untuk armada-armada yang sedang berada di terminal atau segmen jalan yang sama agar tidak saling menutupi.
+- [x] Verifikasi tampilan garis jalur dan marker di peta simulasi, lalu Git Commit Fase 3.
 
 ---
 

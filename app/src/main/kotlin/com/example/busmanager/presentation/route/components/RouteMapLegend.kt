@@ -55,11 +55,11 @@ fun RouteMapLegend(
                         .width(18.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(AppDimens.radiusPill))
-                        .background(PrimaryBlue)
+                        .background(Color(0xFFF59E0B))
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Tol",
+                    text = "Tol (Emas)",
                     color = TextDark,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold
@@ -72,11 +72,11 @@ fun RouteMapLegend(
                         .width(18.dp)
                         .height(3.dp)
                         .clip(RoundedCornerShape(AppDimens.radiusPill))
-                        .background(SkyBlue)
+                        .background(Color(0xFF0284C7))
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Non-Tol",
+                    text = "Non-Tol (Biru)",
                     color = TextDark,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold

@@ -60,7 +60,7 @@ Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau
 ## 🌟 Fitur Manajemen & Operasional Lainnya
 
 ### Garasi Armada & Inspeksi Kesiapan 3 Syarat
-- Status armada lengkap: sasis, bodi, kelas layanan, kondisi mesin, sopir penugasan, dan trayek dinas.
+- Status armada lengkap: sasis, bodi, kelas layanan, sopir penugasan, dan rute dinas aktif real-time.
 - Validasi visual instan 3 syarat: Trayek, Sopir, dan Tarif.
 
 ### Penjadwalan Pulang-Pergi (A-B & B-A) & Validasi Jeda 1 Jam
@@ -73,6 +73,17 @@ Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau
 
 ### Wizard Pembuatan Trayek Kustom 4-Slide
 - Rangkai rute antarkota Jawa Timur, titik singgah transit, seleksi jalan tol vs arteri, matriks tarif otomatis Rp 50.000 per hop, dan penugasan armada/sopir.
+
+---
+
+## 🛠️ Roadmap Penyempurnaan & Pembersihan Fitur (In Progress)
+
+Daftar tahapan perbaikan dan penyederhanaan fitur yang sedang berjalan (merujuk pada `FASE_PENGERJAAN.md`):
+- **Fase 1 [Medium]**: Pembersihan Informasi Redundan & Penyederhanaan Showroom (Hapus info suspensi, HP, torsi sasis, tipe & bagasi bodi, biaya kelas, serta kondisi mesin).
+- **Fase 2 [Easy-Medium]**: Penyatuan Input Tarif Tiket PP (1 kolom input harga untuk rute bolak-balik A-B & B-A) di Wizard Trayek.
+- **Fase 3 [Medium]**: Sinkronisasi Penugasan Sopir (mencegah sopir ganda) & Penyelarasan Teks Skema Upah (Bagi Hasil 30% per Rit) di Wizard Trayek.
+- **Fase 4 [Hard]**: Penyesuaian Kapasitas Kursi Realistis (Sleeper 21–24 kursi, Eksekutif 28–32 kursi) & Standardisasi Format Nama Armada (`[Sasis] - [Bodi]`).
+- **Fase 5 [Medium]**: QA Terpadu, Pembersihan Kode (Clean Code + Zero Comments) & Tag Rilis Versi Baru (v2.1.0).
 
 ---
 

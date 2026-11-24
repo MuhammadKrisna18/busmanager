@@ -141,7 +141,7 @@ Dokumen perencanaan fitur lanjutan Season 2 mencakup personalisasi armada bertah
 
 ---
 
-### 🟣 Fase 4 [Hard]: Peta Multi-Rute Berwarna Unik & Mode "Track Bus" Realistis ala Google Maps
+### 🟣 Fase 4 [Hard]: Peta Multi-Rute Berwarna Unik & Mode "Track Bus" Realistis ala Google Maps [SELESAI ✅]
 - **Tujuan**: Membuat visualisasi peta jaringan jalan Jawa Timur menjadi hidup dengan warna berbeda untuk setiap rute yang dibuka, serta menghadirkan pengalaman pelacakan armada bergaya Google Maps.
 - **Deliverables**:
   1. **Garis Rute Aktif Berwarna-Warni (Diskusi 2)**:

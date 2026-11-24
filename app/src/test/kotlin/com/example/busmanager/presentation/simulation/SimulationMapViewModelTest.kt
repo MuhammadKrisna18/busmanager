@@ -650,6 +650,37 @@ class SimulationMapViewModelTest {
     }
 
     @Test
+    fun openedRoutes_computedFromSchedulesBusesAndTrips() = runTest(testDispatcher) {
+        val route1 = routeRepo.getAllPredefinedRoutes()[0]
+        val route2 = routeRepo.getAllPredefinedRoutes()[1]
+        val sby = terminalRepo.getTerminalById("term_purabaya")!!
+
+        val trip = ActiveBusTrip(
+            id = "trip-route-1",
+            busId = "bus-1",
+            busCode = "TN-01",
+            route = route1,
+            departureTime = GameCalendar.initial(),
+            estimatedArrivalMinutes = 120,
+            currentCoordinate = sby.coordinate,
+            passengerCount = 30,
+            ticketEarnings = Money.rupiah(1_500_000L)
+        )
+
+        simulationTripRepo.dispatchBus(
+            bus = createDummyBus("TN-01").copy(id = "bus-1", routeId = route2.id),
+            route = route1,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            currentTime = GameCalendar.initial()
+        )
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertTrue(state.openedRouteIds.contains(route1.id))
+        assertTrue(state.openedRoutes.any { it.id == route1.id })
+    }
+
+    @Test
     fun observePricings_populatesRoutePricingsMap() = runTest(testDispatcher) {
         val pricingRepo = FakeRoutePricingRepository()
         val pricing = RoutePricing(

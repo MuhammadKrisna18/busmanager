@@ -101,6 +101,7 @@ fun SimulationMapScreen(
                     terminals = state.terminals,
                     allSegments = state.allSegments,
                     modifier = Modifier.fillMaxSize(),
+                    openedRoutes = state.openedRoutes,
                     selectedRoute = state.selectedRoute,
                     selectedOrigin = state.selectedTerminal,
                     transitTerminals = state.selectedRoute?.transitTerminals ?: emptyList(),

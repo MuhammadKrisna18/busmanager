@@ -53,4 +53,10 @@ data class SimulationMapUiState(
 
     val hasActiveFleet: Boolean
         get() = activeBusCount > 0
+
+    val openedRouteIds: Set<String>
+        get() = (schedules.map { it.routeId } + ownedBuses.mapNotNull { it.routeId } + activeTrips.map { it.route.id }).toSet()
+
+    val openedRoutes: List<BusRoute>
+        get() = routes.filter { openedRouteIds.contains(it.id) }
 }

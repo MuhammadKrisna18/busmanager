@@ -3,16 +3,28 @@ package com.example.busmanager.presentation.route.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
@@ -21,8 +33,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.MapCoordinate
 import com.example.busmanager.domain.route.model.RoutePathType
@@ -43,6 +57,7 @@ fun EastJavaMapCanvas(
     modifier: Modifier = Modifier
         .fillMaxWidth()
         .height(290.dp),
+    openedRoutes: List<BusRoute> = emptyList(),
     selectedRoute: BusRoute? = null,
     selectedOrigin: Terminal? = null,
     selectedDestination: Terminal? = null,
@@ -60,28 +75,47 @@ fun EastJavaMapCanvas(
     ) {
         val canvasWidth = constraints.maxWidth.toFloat()
         val canvasHeight = constraints.maxHeight.toFloat()
+        val trackedTrip = activeTrips.find { it.id == trackedTripId }
+        val activeNavigationRoute = trackedTrip?.route ?: selectedRoute
+        val activeNavigationSegmentIds = activeNavigationRoute?.segments?.map { it.id }?.toSet() ?: emptySet()
+
+        val openedSegmentColorMap = mutableMapOf<String, Color>()
+        openedRoutes.forEach { route ->
+            val color = RouteColorPalette.getColorForRoute(route.id)
+            route.segments.forEach { seg ->
+                if (!openedSegmentColorMap.containsKey(seg.id)) {
+                    openedSegmentColorMap[seg.id] = color
+                }
+            }
+        }
 
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawEastJavaLandmass()
             drawMaduraIsland()
 
-            val selectedSegmentIds = selectedRoute?.segments?.map { it.id }?.toSet() ?: emptySet()
-
             allSegments.forEach { segment ->
-                if (!selectedSegmentIds.contains(segment.id)) {
-                    drawRoadSegment(
-                        segment = segment,
-                        isSelected = false,
-                        canvasWidth = canvasWidth,
-                        canvasHeight = canvasHeight
-                    )
+                if (!activeNavigationSegmentIds.contains(segment.id)) {
+                    val openedColor = openedSegmentColorMap[segment.id]
+                    if (openedColor != null) {
+                        drawOpenedRouteSegment(
+                            segment = segment,
+                            routeColor = openedColor,
+                            canvasWidth = canvasWidth,
+                            canvasHeight = canvasHeight
+                        )
+                    } else {
+                        drawBackgroundSegment(
+                            segment = segment,
+                            canvasWidth = canvasWidth,
+                            canvasHeight = canvasHeight
+                        )
+                    }
                 }
             }
 
-            selectedRoute?.segments?.forEach { segment ->
-                drawRoadSegment(
+            activeNavigationRoute?.segments?.forEach { segment ->
+                drawGoogleMapsTrackedSegment(
                     segment = segment,
-                    isSelected = true,
                     canvasWidth = canvasWidth,
                     canvasHeight = canvasHeight
                 )
@@ -114,8 +148,10 @@ fun EastJavaMapCanvas(
 
         activeTrips.forEach { trip ->
             val isTracked = trip.id == trackedTripId
-            val xPx = (trip.currentCoordinate.x * canvasWidth) - (if (isTracked) 24.dp.value else 20.dp.value)
-            val yPx = (trip.currentCoordinate.y * canvasHeight) - (if (isTracked) 28.dp.value else 24.dp.value)
+            val markerOffsetX = if (isTracked) 45.dp.value else 20.dp.value
+            val markerOffsetY = if (isTracked) 58.dp.value else 24.dp.value
+            val xPx = (trip.currentCoordinate.x * canvasWidth) - markerOffsetX
+            val yPx = (trip.currentCoordinate.y * canvasHeight) - markerOffsetY
 
             Box(
                 modifier = Modifier.offset {
@@ -126,6 +162,75 @@ fun EastJavaMapCanvas(
                     trip = trip,
                     isTracking = isTracked,
                     onClick = { onTripClick(trip) }
+                )
+            }
+        }
+
+        if (trackedTrip != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(AppDimens.paddingSmall)
+                    .shadow(4.dp, RoundedCornerShape(AppDimens.radiusPill))
+                    .clip(RoundedCornerShape(AppDimens.radiusPill))
+                    .background(Color(0xFF1E293B))
+                    .padding(horizontal = 10.dp, vertical = 5.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF22C55E))
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "Melacak ${trackedTrip.busCode} • Sisa ${trackedTrip.remainingMinutes} mnt",
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(AppDimens.paddingSmall),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .shadow(3.dp, CircleShape)
+                    .clip(CircleShape)
+                    .background(Color.White)
+                    .clickable {
+                        val firstTrip = activeTrips.firstOrNull()
+                        if (firstTrip != null) onTripClick(firstTrip)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "🧭", fontSize = 14.sp)
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .shadow(3.dp, CircleShape)
+                    .clip(CircleShape)
+                    .background(if (trackedTrip != null) Color(0xFF2563EB) else Color.White)
+                    .clickable {
+                        val target = trackedTrip ?: activeTrips.firstOrNull()
+                        if (target != null) onTripClick(target)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "🎯",
+                    fontSize = 14.sp
                 )
             }
         }
@@ -187,9 +292,8 @@ private fun DrawScope.drawMaduraIsland() {
     )
 }
 
-private fun DrawScope.drawRoadSegment(
+private fun DrawScope.drawBackgroundSegment(
     segment: RouteSegment,
-    isSelected: Boolean,
     canvasWidth: Float,
     canvasHeight: Float
 ) {
@@ -204,48 +308,111 @@ private fun DrawScope.drawRoadSegment(
         }
     }
 
-    if (isSelected) {
+    if (segment.pathType == RoutePathType.TOLL) {
         drawPath(
             path = path,
-            color = if (segment.pathType == RoutePathType.TOLL) Color(0x660F52BA) else Color(0x6638BDF8),
+            color = Color(0xFFD6E4F0),
             style = Stroke(
-                width = 10f,
-                cap = StrokeCap.Round,
-                join = StrokeJoin.Round
-            )
-        )
-
-        drawPath(
-            path = path,
-            color = if (segment.pathType == RoutePathType.TOLL) PrimaryBlue else SkyBlue,
-            style = Stroke(
-                width = 5.5f,
+                width = 2.5f,
                 cap = StrokeCap.Round,
                 join = StrokeJoin.Round
             )
         )
     } else {
-        if (segment.pathType == RoutePathType.TOLL) {
-            drawPath(
-                path = path,
-                color = Color(0xFFB9D7F9),
-                style = Stroke(
-                    width = 2.8f,
-                    cap = StrokeCap.Round,
-                    join = StrokeJoin.Round
-                )
+        drawPath(
+            path = path,
+            color = Color(0xFFCBD5E1),
+            style = Stroke(
+                width = 1.8f,
+                cap = StrokeCap.Round,
+                join = StrokeJoin.Round,
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 6f))
             )
-        } else {
-            drawPath(
-                path = path,
-                color = Color(0xFFCBD5E1),
-                style = Stroke(
-                    width = 2.0f,
-                    cap = StrokeCap.Round,
-                    join = StrokeJoin.Round,
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f))
-                )
-            )
+        )
+    }
+}
+
+private fun DrawScope.drawOpenedRouteSegment(
+    segment: RouteSegment,
+    routeColor: Color,
+    canvasWidth: Float,
+    canvasHeight: Float
+) {
+    if (segment.waypoints.size < 2) return
+
+    val path = Path().apply {
+        val first = segment.waypoints.first()
+        moveTo(first.x * canvasWidth, first.y * canvasHeight)
+        for (i in 1 until segment.waypoints.size) {
+            val wp = segment.waypoints[i]
+            lineTo(wp.x * canvasWidth, wp.y * canvasHeight)
         }
     }
+
+    drawPath(
+        path = path,
+        color = routeColor.copy(alpha = 0.28f),
+        style = Stroke(
+            width = 8.5f,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
+    )
+
+    drawPath(
+        path = path,
+        color = routeColor,
+        style = Stroke(
+            width = 4.5f,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
+    )
+}
+
+private fun DrawScope.drawGoogleMapsTrackedSegment(
+    segment: RouteSegment,
+    canvasWidth: Float,
+    canvasHeight: Float
+) {
+    if (segment.waypoints.size < 2) return
+
+    val path = Path().apply {
+        val first = segment.waypoints.first()
+        moveTo(first.x * canvasWidth, first.y * canvasHeight)
+        for (i in 1 until segment.waypoints.size) {
+            val wp = segment.waypoints[i]
+            lineTo(wp.x * canvasWidth, wp.y * canvasHeight)
+        }
+    }
+
+    drawPath(
+        path = path,
+        color = Color(0x442563EB),
+        style = Stroke(
+            width = 14f,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
+    )
+
+    drawPath(
+        path = path,
+        color = Color(0xFF1D4ED8),
+        style = Stroke(
+            width = 7.0f,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
+    )
+
+    drawPath(
+        path = path,
+        color = Color(0xFF93C5FD),
+        style = Stroke(
+            width = 2.5f,
+            cap = StrokeCap.Round,
+            join = StrokeJoin.Round
+        )
+    )
 }

@@ -10,6 +10,8 @@ class RouteCatalogRepositoryImpl(
     private val dataSource: RouteDataSource = RouteDataSource()
 ) : RouteRepository {
 
+    private val customRoutes = mutableListOf<BusRoute>()
+
     override fun getAllSegments(): List<RouteSegment> {
         return dataSource.getAllSegments()
     }
@@ -28,8 +30,21 @@ class RouteCatalogRepositoryImpl(
         return dataSource.getPredefinedRoutes()
     }
 
+    override fun getAllRoutes(): List<BusRoute> {
+        return dataSource.getPredefinedRoutes() + customRoutes
+    }
+
     override fun getRouteById(id: String): BusRoute? {
-        return dataSource.getPredefinedRoutes().find { it.id == id }
+        return customRoutes.find { it.id == id } ?: dataSource.getPredefinedRoutes().find { it.id == id }
+    }
+
+    override fun saveRoute(route: BusRoute) {
+        val existingIndex = customRoutes.indexOfFirst { it.id == route.id }
+        if (existingIndex >= 0) {
+            customRoutes[existingIndex] = route
+        } else {
+            customRoutes.add(route)
+        }
     }
 
     override fun findRoutes(
@@ -37,11 +52,18 @@ class RouteCatalogRepositoryImpl(
         destinationTerminalId: String,
         preferredPathType: RoutePathType?
     ): List<BusRoute> {
-        return dataSource.getPredefinedRoutes().filter { route ->
+        return getAllRoutes().filter { route ->
             val matchOrigin = route.originTerminal.id == originTerminalId
             val matchDestination = route.destinationTerminal.id == destinationTerminalId
             val matchPathType = preferredPathType == null || route.pathType == preferredPathType
             matchOrigin && matchDestination && matchPathType
         }
+    }
+
+    override fun getConnectedTerminalIds(terminalId: String): List<String> {
+        return dataSource.getAllSegments()
+            .filter { it.fromTerminalId == terminalId }
+            .map { it.toTerminalId }
+            .distinct()
     }
 }

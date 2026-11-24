@@ -9,10 +9,13 @@ interface RouteRepository {
     fun getSegmentById(id: String): RouteSegment?
     fun getSegmentsBetween(fromTerminalId: String, toTerminalId: String): List<RouteSegment>
     fun getAllPredefinedRoutes(): List<BusRoute>
+    fun getAllRoutes(): List<BusRoute>
     fun getRouteById(id: String): BusRoute?
+    fun saveRoute(route: BusRoute)
     fun findRoutes(
         originTerminalId: String,
         destinationTerminalId: String,
         preferredPathType: RoutePathType? = null
     ): List<BusRoute>
+    fun getConnectedTerminalIds(terminalId: String): List<String>
 }

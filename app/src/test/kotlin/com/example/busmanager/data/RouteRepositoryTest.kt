@@ -1,6 +1,7 @@
 package com.example.busmanager.data
 
 import com.example.busmanager.data.repository.RouteCatalogRepositoryImpl
+import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -72,5 +73,36 @@ class RouteRepositoryTest {
         )
         assertEquals(1, tollRoutes.size)
         assertEquals(RoutePathType.TOLL, tollRoutes.first().pathType)
+    }
+
+    @Test
+    fun getConnectedTerminalIds_fromPurabaya_shouldReturnBayuanggaAndArjosari() {
+        val connectedIds = repository.getConnectedTerminalIds("term_purabaya")
+        assertTrue(connectedIds.contains("term_arjosari"))
+        assertTrue(connectedIds.contains("term_bayuangga"))
+        assertEquals(2, connectedIds.size)
+    }
+
+    @Test
+    fun saveRoute_and_getAllRoutes_shouldIncludeCustomRoute() {
+        val baseRoute = repository.getAllPredefinedRoutes().first()
+        val customRoute = BusRoute(
+            id = "custom_test_route",
+            name = "Rute Khusus Test",
+            originTerminal = baseRoute.originTerminal,
+            destinationTerminal = baseRoute.destinationTerminal,
+            pathType = baseRoute.pathType,
+            segments = baseRoute.segments,
+            transitTerminals = baseRoute.transitTerminals
+        )
+
+        val beforeCount = repository.getAllRoutes().size
+        repository.saveRoute(customRoute)
+        val afterCount = repository.getAllRoutes().size
+
+        assertEquals(beforeCount + 1, afterCount)
+        val fetched = repository.getRouteById("custom_test_route")
+        assertNotNull(fetched)
+        assertEquals("Rute Khusus Test", fetched?.name)
     }
 }

@@ -37,14 +37,18 @@ import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.repository.TerminalRepository
 import com.example.busmanager.domain.route.usecase.AddRouteScheduleUseCase
 import com.example.busmanager.domain.route.usecase.AssignBusToScheduleUseCase
+import com.example.busmanager.domain.route.usecase.BuildCustomRouteUseCase
 import com.example.busmanager.domain.route.usecase.CalculateRouteCostUseCase
 import com.example.busmanager.domain.route.usecase.DeleteRouteScheduleUseCase
+import com.example.busmanager.domain.route.usecase.FindAvailablePathsUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableRoutesUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
+import com.example.busmanager.domain.route.usecase.GetConnectedTerminalsUseCase
 import com.example.busmanager.domain.route.usecase.GetRoutePricingsUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteSchedulesUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteTransitStopsUseCase
 import com.example.busmanager.domain.route.usecase.InitializeDefaultRoutePricingsUseCase
+import com.example.busmanager.domain.route.usecase.SaveCustomRouteUseCase
 import com.example.busmanager.domain.route.usecase.SaveRoutePricingUseCase
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
@@ -100,6 +104,10 @@ class AppContainer(context: Context) {
     val getAvailableRoutesUseCase = GetAvailableRoutesUseCase(routeRepository)
     val getRouteTransitStopsUseCase = GetRouteTransitStopsUseCase(routeRepository)
     val calculateRouteCostUseCase = CalculateRouteCostUseCase()
+    val getConnectedTerminalsUseCase = GetConnectedTerminalsUseCase(terminalRepository, routeRepository)
+    val findAvailablePathsUseCase = FindAvailablePathsUseCase(terminalRepository, routeRepository)
+    val buildCustomRouteUseCase = BuildCustomRouteUseCase(routeRepository)
+    val saveCustomRouteUseCase = SaveCustomRouteUseCase(routeRepository)
 
     val getRoutePricingsUseCase = GetRoutePricingsUseCase(routePricingRepository)
     val saveRoutePricingUseCase = SaveRoutePricingUseCase(routePricingRepository)

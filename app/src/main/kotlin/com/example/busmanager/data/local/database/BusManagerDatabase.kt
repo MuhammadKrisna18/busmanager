@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.busmanager.data.local.dao.CompanyDao
 import com.example.busmanager.data.local.dao.DriverDao
 import com.example.busmanager.data.local.dao.FinancialTransactionDao
+import com.example.busmanager.data.local.dao.TerminalPassengerRecordDao
 import com.example.busmanager.data.local.dao.OwnedBusDao
 import com.example.busmanager.data.local.dao.RoutePricingDao
 import com.example.busmanager.data.local.dao.RouteScheduleDao
@@ -16,6 +17,7 @@ import com.example.busmanager.data.local.entity.FinancialTransactionEntity
 import com.example.busmanager.data.local.entity.OwnedBusEntity
 import com.example.busmanager.data.local.entity.RoutePricingEntity
 import com.example.busmanager.data.local.entity.RouteScheduleEntity
+import com.example.busmanager.data.local.entity.TerminalPassengerRecordEntity
 
 @Database(
     entities = [
@@ -24,9 +26,10 @@ import com.example.busmanager.data.local.entity.RouteScheduleEntity
         DriverEntity::class,
         RoutePricingEntity::class,
         RouteScheduleEntity::class,
-        FinancialTransactionEntity::class
+        FinancialTransactionEntity::class,
+        TerminalPassengerRecordEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class BusManagerDatabase : RoomDatabase() {
@@ -37,6 +40,7 @@ abstract class BusManagerDatabase : RoomDatabase() {
     abstract fun routePricingDao(): RoutePricingDao
     abstract fun routeScheduleDao(): RouteScheduleDao
     abstract fun financialTransactionDao(): FinancialTransactionDao
+    abstract fun terminalPassengerRecordDao(): TerminalPassengerRecordDao
 
     companion object {
         private const val DATABASE_NAME = "bus_manager.db"

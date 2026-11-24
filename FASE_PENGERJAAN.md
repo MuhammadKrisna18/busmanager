@@ -155,14 +155,16 @@ Dokumen perencanaan fitur lanjutan Season 2 mencakup personalisasi armada bertah
 
 ---
 
-### 🔴 Fase 5 [Hard]: Log & Layar Laporan Terminal Harian + Detail Breakdown per Armada
+### 🔴 Fase 5 [Hard]: Log & Layar Laporan Terminal Harian + Detail Breakdown per Armada [SELESAI ✅]
 - **Tujuan**: Memberikan visibilitas kinerja tiap terminal per tanggal untuk melihat arus penumpang naik dan turun secara detail.
 - **Deliverables**:
-  1. **Model & Tabel Database `TerminalPassengerRecord` (Room DB)**:
-     - Mencatat event terminal: tanggal game, terminal ID/nama, bus ID/kode, rute ID, jumlah naik (`boardedCount`), dan jumlah turun (`alightedCount`).
+  1. **Model & Tabel Database `TerminalPassengerRecord` (Room DB v5)**:
+     - Mencatat event terminal: tanggal game, terminal ID/nama, bus ID/kode, rute ID/nama, jumlah naik (`boardedCount`), dan jumlah turun (`alightedCount`).
   2. **Layar Laporan Terminal (`TerminalReportScreen`)**:
      - Pemilihan terminal (Dropdown / chip selector kota).
-     - Filter Tanggal/Hari game.
+     - Filter Tanggal/Hari game dengan kontrol navigasi hari cepat (`Hari Sebelumnya` / `Hari Berikutnya`).
      - Kartu Ringkasan: Total Penumpang Naik & Total Penumpang Turun di terminal tersebut pada hari yang dipilih.
-     - **Tombol & Modal Detail per Armada**: Menampilkan daftar bus yang singgah di terminal tersebut beserta rincian jumlah penumpang naik dan turun per armada.
-  3. **Pengujian & Git Commit Fase 5 (Season 2)**.
+     - **Tombol & Modal Detail per Armada**: Menampilkan daftar bus yang singgah di terminal tersebut beserta rincian jumlah trip, total penumpang naik, dan total penumpang turun per armada.
+  3. **Pembersihan Dead Code & Verifikasi Zero Comments**.
+  4. **Pengujian Penuh (Seluruh Unit Tests Passing)**.
+  5. **Bump Versi ke v2.0.0 (VersionCode 7), Integrasi Menu Laporan Terminal di Dashboard, dan Rilis Season 2**.

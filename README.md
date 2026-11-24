@@ -1,4 +1,4 @@
-# TransNusantara - Bus Manager
+# TransNusantara - Bus Manager (v2.0.0)
 
 Aplikasi game simulasi manajemen Perusahaan Otobus (PO Bus) Antar Kota Dalam Provinsi (AKDP) Jawa Timur berbasis Android Native modern yang dibangun menggunakan **Kotlin** dan **Jetpack Compose**.
 
@@ -15,65 +15,64 @@ Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau
 
 ---
 
-## 🌟 Fitur Utama (Update v1.5.0)
+## 🚀 Fitur Baru Season 2 (Update Major v2.0.0)
 
-### 1. Garasi Armada & Inspeksi Kesiapan 3 Syarat (New v1.5.0)
-- **Status Lengkap Armada**: Memantau daftar seluruh bus yang dimiliki lengkap dengan informasi sasis, bodi, kelas layanan, kondisi mesin, sopir yang bertugas, serta rute aktif atau status standby.
-- **Pemeriksaan 3 Syarat Kesiapan Operasi**:
-  - Validasi visual instan untuk **Trayek**, **Sopir**, dan **Tarif**.
-  - Indikator status dinamis: *Siap Beroperasi* vs *Belum Siap Operasi*.
-- **Aksi Cepat Navigasi**: Tombol cepat untuk menambah armada baru via Showroom atau membuka trayek baru via Wizard Trayek.
+### 1. Perakitan Bus Modular 4-Langkah (Custom Bus Builder)
+- **Langkah 1 (Pilih Sasis)**: Hino (AK8, RK8, RN285, RM280), Mercedes-Benz (OH 1526, OH 1626, O 500 RS 1836, OC 500 RF 2542 Tronton), dan Scania (K360IB, K410IB Opticruise) lengkap dengan horsepower, kapasitas muatan, dan harga sasis.
+- **Langkah 2 (Pilih Bodi Karoseri)**: Adiputro (Jetbus 3+ & Jetbus 5), Laksana (Legacy SR2 & SR3 Suites Class/Sleeper), dan Tentrem (Avante H8 & H9 Grand Captain) yang terintegrasi secara modular.
+- **Langkah 3 (Pilih Kelas Layanan & Interior)**: Ekonomi, Bisnis AC, VIP, Eksekutif, Super Eksekutif, hingga Sleeper Suite (menentukan kapasitas kursi, kenyamanan, dan batas tarif).
+- **Langkah 4 (Review & Penamaan Armada)**: Menentukan plat nomor/kode armada (misal: TN-01), ringkasan harga total sasis + bodi, dan konfirmasi transaksi pemotongan kas.
 
-### 2. Penjadwalan Pulang-Pergi (A-B & B-A) & Validasi Jeda 1 Jam (New v1.5.0)
-- **Dukungan Round-Trip Otomatis**: Opsi mengaktifkan jadwal dinas bolak-balik (Asal ➔ Tujuan dan Tujuan ➔ Asal) dalam satu langkah pembuatan trayek.
-- **Kalkulasi Estimasi Waktu Tiba**: Sistem menghitung estimasi waktu tempuh berdasarkan jarak kilometer dan kecepatan rata-rata rute.
-- **Validasi Jeda Minimum 1 Jam**: Memastikan armada dan kru memiliki jeda istirahat minimal 1 jam setelah tiba di terminal tujuan sebelum dapat diberangkatkan kembali untuk rute kepulangan (B ➔ A).
+### 2. Smooth Minute-by-Minute Real-Time Clock
+- Jam simulasi berjalan halus menit demi menit layaknya jam normal (`12:00 -> 12:01 -> 12:02 -> ...`).
+- Kecepatan simulasi fleksibel:
+  - **1x**: 1 menit game per 1 detik dunia nyata.
+  - **3x**: 3 menit game per 1 detik dunia nyata.
+  - **5x**: 5 menit game per 1 detik dunia nyata.
 
-### 3. Kontrol Waktu Dinamis Lapangan (New v1.5.0)
-- **Kontrol Play & Jeda (Pause)**: Pengendali jam operasional simulasi (WIB) yang responsif.
-- **Pilihan Kecepatan Ticker Waktu Real-Time**:
-  - **1x (Normal)**: 1 menit game per 1 detik dunia nyata.
-  - **3x (Cepat)**: 3 menit game per 1 detik dunia nyata.
-  - **5x (Sangat Cepat)**: 5 menit game per 1 detik dunia nyata.
-- **Pemberangkatan Terjadwal Otomatis**: Armada otomatis bergerak berdinas ketika waktu simulasi menyentuh jadwal keberangkatan bus.
+### 3. Skema Bagi Hasil Sopir 30% (Anti-Boncos) & Modal Awal 50M
+- Gaji sopir dihitung otomatis sebesar **30% dari omzet tiket bus** yang dihasilkannya saat berdinas (perjalanan PP / rute).
+- Perusahaan mengantongi **70% laba kotor tiket**.
+- Kas perusahaan tidak lagi terpotong flat saat armada menganggur di garasi, menjamin arus kas PO bus tetap sehat dan selalu menguntungkan.
+- Modal kas awal perusahaan disetel sebesar **Rp 50.000.000.000 (50 Miliar)** untuk keleluasaan pengembangan rute dan ekspansi armada.
 
-### 4. Sistem Keuangan Dinamis & Layar Buku Kas (FinanceScreen) (New v1.5.0)
-- **Model Transaksi Keuangan (Room DB v4)**: Pencatatan mutasi kas masuk dan keluar secara mendetail.
-  - **Uang Masuk**: Akumulasi tiket penumpang saat armada berdinas berdasarkan kapasitas dan tarif rute.
-  - **Uang Keluar**: Gaji harian pengemudi aktif yang dipotong otomatis setiap pergantian hari game (00:00 WIB).
-- **Kartu Ringkasan Finansial**: Total Kas Perusahaan, Total Pemasukan, Total Pengeluaran Gaji, dan Laba Bersih (*Net Profit*).
-- **Filter Fleksibel 3 Lapis**:
-  - Filter Tipe Transaksi: Semua, Pemasukan (`+Rp`), atau Pengeluaran (`-Rp`).
-  - Filter per Armada Bus: Semua Armada atau spesifik unit bus.
-  - Filter per Rute: Semua Rute atau spesifik koridor trayek.
+### 4. Kedinamisan Pasar Penumpang & Naik-Turun Acak di Terminal Transit
+- Okupansi penumpang di terminal awal bersifat dinamis dan acak (40% - 95%) berdasarkan kelas layanan dan reputasi perusahaan.
+- Saat bus singgah di terminal transit, terjadi simulasi naik-turun acak realistis: sebagian penumpang turun dan penumpang baru naik mengisi kursi yang kosong.
+- Dilengkapi proteksi kapasitas mutlak: penumpang yang naik tidak akan pernah melebihi sisa kursi kosong armada (`passengerCount <= capacity`).
 
-### 5. Panel Interaktif Bus & Pelacakan Kamera Lapangan ("Track Bus") (New v1.5.0)
-- **Panel Armada Sedang Jalan**:
-  - Menampilkan bus yang aktif berdinas di jalan raya Jawa Timur.
-  - Informasi mendalam: Total Kursi, Sisa Kursi Kosong, Okupansi Penumpang, Nama Trayek, Posisi Progres (%), dan Tarif Tiket per Penumpang.
-- **Fitur "🎯 Track Bus"**:
-  - Sekali klik, kamera lapangan langsung mengunci dan menyorot posisi bus di peta Jawa Timur.
-  - Indikator visual marker bergerak dengan animasi halo sorot emas/merah dan badge pelacakan khusus.
-  - Kartu pemantauan live di bagian bawah layar dengan progress bar waktu tempuh dan tombol lepas pelacakan.
+### 5. Peta Multi-Rute Berwarna Unik & Mode "Track Bus" ala Google Maps
+- **Garis Rute Permanen Berwarna-Warni**: Setiap koridor trayek yang sudah dibuka digambar permanen di peta Jawa Timur dengan warna garis unik (misal: Surabaya-Probolinggo, Surabaya-Jember, Surabaya-Malang).
+- **Mode Track Bus Realistis**:
+  - Kamera peta mengunci dan menyorot posisi bus di lapangan.
+  - Jalur rute spesifik yang dilewati armada menyala tebal (*highlighted polyline navigation*).
+  - **Floating ETA Callout Bubble**: Balon info melayang di dekat bus menampilkan kota tujuan, tarif tiket, dan estimasi sisa waktu tempuh (ETA) persis seperti antarmuka navigasi Google Maps.
 
-### 6. Panel Interaktif Trayek & Koridor Operasi (New v1.5.0)
-- **Informasi Lengkap Koridor A ➔ B**: Kota asal, kota tujuan, jenis jalan (Jalur Tol Cepat vs Arteri Non-Tol), jarak kilometer, dan estimasi durasi.
-- **Tarif Tiket Rute**: Menampilkan besaran tarif tiket penumpang yang berlaku pada rute tersebut.
-- **Daftar Armada Pengisi Trayek**: Memperlihatkan secara transparan bus mana saja yang ditugaskan di trayek tersebut beserta status operasionalnya (*Sedang Jalan* atau *Standby*).
+### 6. Layar Laporan Terminal Harian & Rincian Armada (`TerminalReportScreen`)
+- **Tabel Log Room Database v5 (`terminal_passenger_records`)**: Menyimpan riwayat setiap aktivitas naik-turun penumpang di seluruh terminal Jawa Timur.
+- **Filter Berdasarkan Terminal & Tanggal**: Pilihan terminal kota dan navigasi hari game (`Hari Sebelumnya` / `Hari Berikutnya`).
+- **Kartu Ringkasan Kinerja Terminal**: Total penumpang yang naik dan total penumpang yang turun pada hari yang dipilih.
+- **Modal Dialog "🔍 Rincian Naik/Turun per Armada"**: Menampilkan rincian performa setiap armada yang singgah di terminal tersebut, mencakup jumlah trip, total penumpang naik, dan total penumpang turun.
+- Terintegrasi langsung di menu dashboard utama (**Laporan Terminal**).
 
-### 7. Wizard Atur Trayek 4-Slide & Custom Route Builder
-- **Slide 1 (Pilih Asal & Tujuan)**: Pemain bebas memilih Terminal Awal (Titik A) dan Terminal Akhir (Titik B) di peta Jawa Timur.
-- **Slide 2 (Rangkai Jalur & Titik Singgah Bebas)**: Graf jaringan jalan Jawa Timur yang kontinu, halte transit, dan seleksi jenis jalan (Tol vs Non-Tol).
-- **Slide 3 (Matriks Tarif Tiket Dinamis)**: Perhitungan tiket otomatis Rp 50.000 per hop dan dialog modal edit tarif fleksibel.
-- **Slide 4 (Pilih Bus, Sopir, & Jam Berangkat)**: Integrasi bus, sopir, dan penjadwalan anti-bentrok.
+---
 
-### 8. Showroom & Perakitan Bus (Custom Bus Builder)
-- **Pilihan Sasis Terpercaya**: Hino (AK8, RK8, RN285, RM280), Mercedes-Benz (OH 1526, OH 1626, O 500 RS 1836, OC 500 RF 2542 Tronton), Scania (K360IB, K410IB Opticruise).
-- **Varian Karoseri Legendaris**: Adiputro (Jetbus 3+ & Jetbus 5), Laksana (Legacy SR2 & SR3 Suites Class/Sleeper), Tentrem (Avante H8 & H9 Grand Captain).
-- **Kelas Layanan**: Ekonomi, Bisnis AC, VIP, Eksekutif, Super Eksekutif, hingga Sleeper Suite.
+## 🌟 Fitur Manajemen & Operasional Lainnya
 
-### 9. Manajemen Kru & Sopir (Driver Management)
-- Rekrutmen sopir berlisensi SIM B1 / B2 Umum, level keahlian (*skill*), kondisi stamina, sistem gaji harian, dan mutasi tugas armada.
+### Garasi Armada & Inspeksi Kesiapan 3 Syarat
+- Status armada lengkap: sasis, bodi, kelas layanan, kondisi mesin, sopir penugasan, dan trayek dinas.
+- Validasi visual instan 3 syarat: Trayek, Sopir, dan Tarif.
+
+### Penjadwalan Pulang-Pergi (A-B & B-A) & Validasi Jeda 1 Jam
+- Dukungan jadwal round-trip otomatis bolak-balik dalam satu klik.
+- Validasi jeda istirahat armada dan kru minimal 1 jam sebelum keberangkatan kepulangan.
+
+### Sistem Keuangan & Layar Buku Kas (`FinanceScreen`)
+- Pencatatan mutasi kas masuk (tiket penumpang) dan uang keluar (komisi sopir) secara transparan.
+- Filter transaksi berdasarkan tipe, armada bus, dan rute trayek.
+
+### Wizard Pembuatan Trayek Kustom 4-Slide
+- Rangkai rute antarkota Jawa Timur, titik singgah transit, seleksi jalan tol vs arteri, matriks tarif otomatis Rp 50.000 per hop, dan penugasan armada/sopir.
 
 ---
 
@@ -83,10 +82,11 @@ Armada bus akan berdinas secara otomatis mengikuti jadwal jam keberangkatan atau
 - **UI Toolkit**: Jetpack Compose (Material 3)
 - **Komponen Arsitektur**:
   - Clean Architecture + Domain-Driven Design (DDD)
+  - Single Responsibility & SOLID Principles
   - Navigation Compose & Navigation3
-  - Room Database v4 (Entity: Bus, Company, Driver, RoutePricing, RouteSchedule, FinancialTransaction)
-  - Kotlin Coroutines & Flow (Reactive StateFlow UI State)
-- **Versi Rilis**: v1.5.0 (Build VersionCode: 6)
+  - Room Database v5 (`buses`, `company`, `drivers`, `route_pricings`, `route_schedules`, `financial_transactions`, `terminal_passenger_records`)
+  - Kotlin Coroutines & Reactive StateFlow UI State
+- **Versi Rilis**: v2.0.0 (Build VersionCode: 7)
 - **Min SDK**: API 24 (Android 7.0 Nougat)
 - **Target SDK**: API 36 (Android 16)
 - **Java Compatibility**: JDK 17
@@ -106,4 +106,10 @@ Berkas APK release siap instal berada di:
 ```bash
 ./gradlew testDebugUnitTest
 ```
-Seluruh 205+ unit test memverifikasi use case finansial, showroom bus, manajemen supir, validasi jadwal round-trip, graf jaringan jalan, custom route builder, kalkulasi matriks tarif, dan dispatcher operasional dengan live camera tracking.
+Seluruh unit tests memverifikasi:
+- Custom Bus Builder modular (sasis, karoseri, kelas, penamaan).
+- Smooth minute clock & simulation ticker.
+- Komisi sopir bagi hasil 30% & pencatatan keuangan.
+- Kedinamisan penumpang transit & kapasitas bus.
+- Palet warna multi-rute & Google Maps track bus.
+- Log laporan terminal & agregasi breakdown armada.

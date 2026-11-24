@@ -16,6 +16,7 @@ import com.example.busmanager.data.repository.ShowroomCatalogRepositoryImpl
 import com.example.busmanager.data.repository.SimulationTimeRepositoryImpl
 import com.example.busmanager.data.repository.SimulationTripRepositoryImpl
 import com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl
+import com.example.busmanager.data.repository.TerminalPassengerRepositoryImpl
 import com.example.busmanager.domain.company.repository.CompanyRepository
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
@@ -39,6 +40,7 @@ import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.repository.TerminalRepository
+import com.example.busmanager.domain.terminal.repository.TerminalPassengerRepository
 import com.example.busmanager.domain.route.usecase.AddRouteScheduleUseCase
 import com.example.busmanager.domain.route.usecase.AssignBusToScheduleUseCase
 import com.example.busmanager.domain.route.usecase.BuildCustomRouteUseCase
@@ -95,6 +97,9 @@ class AppContainer(context: Context) {
     )
     val financialTransactionRepository: FinancialTransactionRepository = FinancialTransactionRepositoryImpl(
         database.financialTransactionDao()
+    )
+    val terminalPassengerRepository: TerminalPassengerRepository = TerminalPassengerRepositoryImpl(
+        database.terminalPassengerRecordDao()
     )
 
     val startNewGameUseCase = StartNewGameUseCase(companyRepository)

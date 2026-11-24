@@ -21,6 +21,8 @@ import com.example.busmanager.presentation.showroom.ShowroomViewModel
 import com.example.busmanager.presentation.simulation.SimulationMapScreen
 import com.example.busmanager.presentation.simulation.SimulationMapViewModel
 import com.example.busmanager.presentation.splash.SplashScreen
+import com.example.busmanager.presentation.terminal.TerminalReportScreen
+import com.example.busmanager.presentation.terminal.TerminalReportViewModel
 
 @Composable
 fun MainNavigation(appContainer: AppContainer) {
@@ -68,6 +70,9 @@ fun MainNavigation(appContainer: AppContainer) {
                     },
                     onNavigateToFinance = {
                         backStack.add(FinanceRoute)
+                    },
+                    onNavigateToTerminalReport = {
+                        backStack.add(TerminalReportRoute)
                     }
                 )
             }
@@ -88,7 +93,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         companyRepository = appContainer.companyRepository,
                         driverRepository = appContainer.driverRepository,
                         setSimulationSpeedUseCase = appContainer.setSimulationSpeedUseCase,
-                        recordFinancialTransactionUseCase = appContainer.recordFinancialTransactionUseCase
+                        recordFinancialTransactionUseCase = appContainer.recordFinancialTransactionUseCase,
+                        terminalPassengerRepository = appContainer.terminalPassengerRepository
                     )
                 }
                 SimulationMapScreen(
@@ -199,6 +205,21 @@ fun MainNavigation(appContainer: AppContainer) {
                     )
                 }
                 FinanceScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = {
+                        backStack.removeLastOrNull()
+                    }
+                )
+            }
+            entry<TerminalReportRoute> {
+                val viewModel: TerminalReportViewModel = viewModel {
+                    TerminalReportViewModel(
+                        terminalRepository = appContainer.terminalRepository,
+                        terminalPassengerRepository = appContainer.terminalPassengerRepository,
+                        simulationTimeRepository = appContainer.simulationTimeRepository
+                    )
+                }
+                TerminalReportScreen(
                     viewModel = viewModel,
                     onNavigateBack = {
                         backStack.removeLastOrNull()

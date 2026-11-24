@@ -29,6 +29,8 @@ import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
 import com.example.busmanager.domain.simulation.usecase.SetSimulationSpeedUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
+import com.example.busmanager.domain.terminal.model.TerminalPassengerRecord
+import com.example.busmanager.domain.terminal.repository.TerminalPassengerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,7 +53,8 @@ class SimulationMapViewModel(
     private val companyRepository: CompanyRepository? = null,
     private val driverRepository: DriverRepository? = null,
     private val setSimulationSpeedUseCase: SetSimulationSpeedUseCase? = null,
-    private val recordFinancialTransactionUseCase: RecordFinancialTransactionUseCase? = null
+    private val recordFinancialTransactionUseCase: RecordFinancialTransactionUseCase? = null,
+    private val terminalPassengerRepository: TerminalPassengerRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SimulationMapUiState())
@@ -289,6 +292,30 @@ class SimulationMapViewModel(
                     companyRepository?.deductBalance(driverWage)
                 }
             }
+
+            val originTerminal = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                route.originTerminal
+            } else {
+                route.destinationTerminal
+            }
+            terminalPassengerRepository?.recordPassengerExchange(
+                TerminalPassengerRecord(
+                    id = "rec-term-${bus.id}-${System.nanoTime()}",
+                    terminalId = originTerminal.id,
+                    terminalName = originTerminal.name,
+                    busId = bus.id,
+                    busCode = bus.busCode,
+                    routeId = route.id,
+                    routeName = route.name,
+                    day = currentTime.day,
+                    month = currentTime.month,
+                    year = currentTime.year,
+                    dateFormatted = dateText,
+                    timeFormatted = timeText,
+                    boardedCount = passengers,
+                    alightedCount = 0
+                )
+            )
         }
     }
 

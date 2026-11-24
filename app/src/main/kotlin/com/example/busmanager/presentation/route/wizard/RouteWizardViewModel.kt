@@ -22,6 +22,7 @@ import com.example.busmanager.domain.simulation.model.RouteDirection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -49,26 +50,42 @@ class RouteWizardViewModel(
         _uiState.update { it.copy(allTerminals = terminals) }
 
         viewModelScope.launch {
-            fleetRepository.getOwnedBuses().collect { buses ->
+            combine(
+                fleetRepository.getOwnedBuses(),
+                driverRepository.getHiredDrivers()
+            ) { buses, drivers ->
+                Pair(buses, drivers)
+            }.collect { (buses, drivers) ->
                 _uiState.update { state ->
-                    val available = buses.filter { !it.isOperating }
-                    val currentSelected = state.selectedBus?.let { sel -> available.find { it.id == sel.id } } ?: available.firstOrNull()
-                    state.copy(
-                        availableBuses = available,
-                        selectedBus = currentSelected
-                    )
-                }
-            }
-        }
+                    val availableBuses = buses.filter { !it.isOperating }
+                    val selectedBus = state.selectedBus?.let { sel -> availableBuses.find { it.id == sel.id } } ?: availableBuses.firstOrNull()
 
-        viewModelScope.launch {
-            driverRepository.getHiredDrivers().collect { drivers ->
-                _uiState.update { state ->
-                    val available = drivers.filter { it.isHired }
-                    val currentSelected = state.selectedDriver?.let { sel -> available.find { it.id == sel.id } } ?: available.firstOrNull()
+                    val hiredDrivers = drivers.filter { it.isHired }
+
+                    val assignmentMap = mutableMapOf<String, String>()
+                    hiredDrivers.forEach { driver ->
+                        val bus = buses.find { it.driverId == driver.id || it.id == driver.assignedBusId }
+                        if (bus != null) {
+                            assignmentMap[driver.id] = bus.busCode
+                        }
+                    }
+
+                    val selectedDriver = state.selectedDriver?.let { sel ->
+                        val assignedBusCode = assignmentMap[sel.id]
+                        if (assignedBusCode == null || (selectedBus != null && assignedBusCode == selectedBus.busCode)) {
+                            hiredDrivers.find { it.id == sel.id }
+                        } else null
+                    } ?: hiredDrivers.firstOrNull { driver ->
+                        val assignedBusCode = assignmentMap[driver.id]
+                        assignedBusCode == null || (selectedBus != null && assignedBusCode == selectedBus.busCode)
+                    }
+
                     state.copy(
-                        availableDrivers = available,
-                        selectedDriver = currentSelected
+                        availableBuses = availableBuses,
+                        selectedBus = selectedBus,
+                        availableDrivers = hiredDrivers,
+                        selectedDriver = selectedDriver,
+                        driverAssignedBusCodes = assignmentMap
                     )
                 }
             }
@@ -263,10 +280,26 @@ class RouteWizardViewModel(
     }
 
     fun selectBus(bus: Bus) {
-        _uiState.update { it.copy(selectedBus = bus) }
+        _uiState.update { current ->
+            val assignedBusCode = current.driverAssignedBusCodes[current.selectedDriver?.id]
+            val isCurrentDriverConflicted = assignedBusCode != null && assignedBusCode != bus.busCode
+            val updatedDriver = if (isCurrentDriverConflicted) {
+                current.availableDrivers.firstOrNull { d ->
+                    val code = current.driverAssignedBusCodes[d.id]
+                    code == null || code == bus.busCode
+                }
+            } else {
+                current.selectedDriver
+            }
+            current.copy(selectedBus = bus, selectedDriver = updatedDriver)
+        }
     }
 
     fun selectDriver(driver: Driver) {
+        val assignedBusCode = _uiState.value.driverAssignedBusCodes[driver.id]
+        val currentBus = _uiState.value.selectedBus
+        val isAssignedToOtherBus = assignedBusCode != null && (currentBus == null || assignedBusCode != currentBus.busCode)
+        if (isAssignedToOtherBus) return
         _uiState.update { it.copy(selectedDriver = driver) }
     }
 

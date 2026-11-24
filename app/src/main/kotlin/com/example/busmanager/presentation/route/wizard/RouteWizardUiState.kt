@@ -34,6 +34,7 @@ data class RouteWizardUiState(
     val selectedBus: Bus? = null,
     val availableDrivers: List<Driver> = emptyList(),
     val selectedDriver: Driver? = null,
+    val driverAssignedBusCodes: Map<String, String> = emptyMap(),
     val departureHour: Int = 7,
     val departureMinute: Int = 0,
     val isRoundTrip: Boolean = true,
@@ -107,6 +108,14 @@ data class RouteWizardUiState(
     val canProceedFromStep3: Boolean
         get() = pricings.isNotEmpty()
 
+    val isSelectedDriverAvailable: Boolean
+        get() {
+            val driver = selectedDriver ?: return false
+            val bus = selectedBus ?: return false
+            val assignedCode = driverAssignedBusCodes[driver.id]
+            return assignedCode == null || assignedCode == bus.busCode
+        }
+
     val canLaunchFromStep4: Boolean
-        get() = selectedBus != null && selectedDriver != null && !hasConflict && !isSaving
+        get() = selectedBus != null && selectedDriver != null && isSelectedDriverAvailable && !hasConflict && !isSaving
 }

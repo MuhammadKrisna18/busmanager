@@ -38,14 +38,14 @@ Dokumen ini memuat daftar rencana tahapan perbaikan, penyederhanaan informasi, d
 
 ---
 
-### 🟠 Fase 3 [Medium]: Sinkronisasi Penugasan Sopir & Penyelarasan Skema Upah di Wizard Trayek
+### ✅ Fase 3 [Medium]: Sinkronisasi Penugasan Sopir & Penyelarasan Skema Upah di Wizard Trayek - SELESAI
 - **Tujuan**: Mencegah penugasan sopir ganda ke beberapa armada dan menyelaraskan label upah pengemudi ke skema bagi hasil 30%.
 - **Deliverables**:
   1. **Proteksi Ketersediaan Sopir**:
-     - Sopir yang sudah bertugas di bus lain diberi badge `Bertugas di MK-XX` dan dinonaktifkan/difilter dari daftar pengemudi yang siap dinas di Langkah 4 Wizard.
+     - Sopir yang sudah bertugas di bus lain diberi badge `Bertugas di MK-XX`, tidak dapat dipilih untuk bus lain, dan pemilihan otomatis dialihkan ke pengemudi yang siap dinas. (Selesai)
   2. **Penyelarasan Teks Skema Upah**:
-     - Mengubah keterangan upah di kartu pilihan pengemudi dari `Upah: Rp.../hari` menjadi `Bagi Hasil: 30% per Rit Dinas`.
-  3. **Pengujian & Git Commit Fase 3**.
+     - Mengubah keterangan upah di kartu pilihan pengemudi menjadi `Bagi Hasil: 30% per Rit Dinas • Status: Siap Dinas` (atau `Sedang Bertugas`). (Selesai)
+  3. **Pengujian & Git Commit Fase 3**. (Selesai)
 
 ---
 

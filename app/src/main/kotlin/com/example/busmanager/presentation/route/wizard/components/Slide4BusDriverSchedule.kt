@@ -211,19 +211,32 @@ fun Slide4BusDriverSchedule(
             }
         } else {
             items(uiState.availableDrivers) { driver ->
+                val assignedBusCode = uiState.driverAssignedBusCodes[driver.id]
+                val isAssignedToOtherBus = assignedBusCode != null && (uiState.selectedBus == null || assignedBusCode != uiState.selectedBus.busCode)
                 val isSelected = uiState.selectedDriver?.id == driver.id
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .clickable { onSelectDriver(driver) },
+                        .clickable(enabled = !isAssignedToOtherBus) { onSelectDriver(driver) },
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isSelected) IceBlue else SurfaceWhite
+                        containerColor = when {
+                            isAssignedToOtherBus -> Color(0xFFF8FAFC)
+                            isSelected -> IceBlue
+                            else -> SurfaceWhite
+                        }
                     ),
                     border = CardDefaults.outlinedCardBorder().copy(
-                        brush = SolidColor(if (isSelected) PrimaryBlue else CardBorder)
+                        brush = SolidColor(
+                            when {
+                                isAssignedToOtherBus -> CardBorder
+                                isSelected -> PrimaryBlue
+                                else -> CardBorder
+                            }
+                        )
                     )
                 ) {
                     Row(
@@ -233,15 +246,38 @@ fun Slide4BusDriverSchedule(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = driver.name,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isAssignedToOtherBus) TextMuted else TextDark
+                                )
+                                if (isAssignedToOtherBus) {
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(99.dp))
+                                            .background(Color(0xFFFEE2E2))
+                                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = "Bertugas di $assignedBusCode",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFDC2626)
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = driver.name,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextDark
-                            )
-                            Text(
-                                text = "Upah: ${driver.wagePerDay.formatRupiah()}/hari • Status: Siap Dinas",
+                                text = if (isAssignedToOtherBus) {
+                                    "Bagi Hasil: 30% per Rit Dinas • Sedang Bertugas"
+                                } else {
+                                    "Bagi Hasil: 30% per Rit Dinas • Status: Siap Dinas"
+                                },
                                 fontSize = 11.sp,
                                 color = TextMuted
                             )

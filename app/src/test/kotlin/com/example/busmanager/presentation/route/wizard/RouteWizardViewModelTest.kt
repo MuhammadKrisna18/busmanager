@@ -417,6 +417,55 @@ class RouteWizardViewModelTest {
         assertTrue(fakeScheduleRepo.getAllList().isEmpty())
     }
 
+    @Test
+    fun driverAssignment_blocksSelectionOfDriverAssignedToAnotherBus() = runTest {
+        advanceUntilIdle()
+        val bus1 = Bus(
+            id = "bus-1",
+            busCode = "MK001",
+            chassis = ChassisDataSource().getChassisList().first(),
+            body = KaroseriBodyDataSource().getKaroseriBodyList().first(),
+            driverId = "driver-1"
+        )
+        val bus2 = Bus(
+            id = "bus-2",
+            busCode = "MK002",
+            chassis = ChassisDataSource().getChassisList().first(),
+            body = KaroseriBodyDataSource().getKaroseriBodyList().first()
+        )
+        val busyDriver = Driver(
+            id = "driver-1",
+            name = "Pak Slamet",
+            wagePerDay = Money.rupiah(200_000L),
+            assignedBusId = "bus-1",
+            isHired = true
+        )
+        val freeDriver = Driver(
+            id = "driver-2",
+            name = "Pak Budi",
+            wagePerDay = Money.rupiah(200_000L),
+            assignedBusId = null,
+            isHired = true
+        )
+
+        fakeFleetRepo.setBuses(listOf(bus1, bus2))
+        fakeDriverRepo.setDrivers(listOf(busyDriver, freeDriver))
+        advanceUntilIdle()
+
+        viewModel.selectBus(bus2)
+        assertEquals("MK001", viewModel.uiState.value.driverAssignedBusCodes[busyDriver.id])
+        assertNull(viewModel.uiState.value.driverAssignedBusCodes[freeDriver.id])
+
+        assertEquals(freeDriver.id, viewModel.uiState.value.selectedDriver?.id)
+
+        viewModel.selectDriver(busyDriver)
+        assertEquals(freeDriver.id, viewModel.uiState.value.selectedDriver?.id)
+
+        viewModel.selectDriver(freeDriver)
+        assertEquals(freeDriver.id, viewModel.uiState.value.selectedDriver?.id)
+        assertTrue(viewModel.uiState.value.isSelectedDriverAvailable)
+    }
+
     private class FakeRoutePricingRepository : RoutePricingRepository {
         private val list = mutableListOf<RoutePricing>()
         private val flow = MutableStateFlow<List<RoutePricing>>(emptyList())

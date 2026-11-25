@@ -12,7 +12,7 @@ class BuildCustomRouteUseCase(
     operator fun invoke(
         terminals: List<Terminal>,
         preferredSegmentPathTypes: Map<Pair<String, String>, RoutePathType> = emptyMap(),
-        activeTransitTerminalIds: Set<String> = emptySet(),
+        activeTransitTerminalIds: Set<String>? = null,
         isExpress: Boolean = false,
         customName: String? = null
     ): Result<BusRoute> {
@@ -42,10 +42,10 @@ class BuildCustomRouteUseCase(
         val intermediateTerminals = terminals.subList(1, terminals.size - 1)
         val transitTerminals = if (isExpress) {
             emptyList()
+        } else if (activeTransitTerminalIds != null) {
+            intermediateTerminals.filter { it.id in activeTransitTerminalIds }
         } else {
-            intermediateTerminals.filter {
-                activeTransitTerminalIds.isEmpty() || it.id in activeTransitTerminalIds
-            }
+            intermediateTerminals
         }
 
         val routePathType = if (segments.any { it.pathType == RoutePathType.TOLL }) {

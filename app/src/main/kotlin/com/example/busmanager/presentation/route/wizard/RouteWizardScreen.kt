@@ -125,7 +125,9 @@ fun RouteWizardScreen(
                             onSetSegmentPathType = { from, to, type ->
                                 viewModel.setSegmentPathType(from, to, type)
                             },
-                            onSetIsExpress = { viewModel.setIsExpress(it) }
+                            onSetIsExpress = { viewModel.setIsExpress(it) },
+                            onSelectAllTransit = { viewModel.selectAllTransitStops() },
+                            onClearAllTransit = { viewModel.clearAllTransitStops() }
                         )
                     }
                     RouteWizardStep.PRICING_MATRIX -> {

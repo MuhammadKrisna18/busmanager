@@ -244,7 +244,7 @@ class RouteWizardViewModel(
             val updated = state.copy(
                 selectedPathNodes = path,
                 selectedPathIndex = index,
-                activeTransitIds = intermediateTerminals
+                activeTransitIds = if (state.isExpress) emptySet() else intermediateTerminals
             )
             rebuildRouteInternal(updated)
         }
@@ -252,12 +252,33 @@ class RouteWizardViewModel(
 
     fun toggleTransitStop(terminalId: String) {
         _uiState.update { state ->
-            val updatedTransit = if (terminalId in state.activeTransitIds) {
+            val updatedTransit = if (terminalId in state.activeTransitIds && !state.isExpress) {
                 state.activeTransitIds - terminalId
             } else {
                 state.activeTransitIds + terminalId
             }
-            val updated = state.copy(activeTransitIds = updatedTransit)
+            val updated = state.copy(activeTransitIds = updatedTransit, isExpress = updatedTransit.isEmpty())
+            rebuildRouteInternal(updated)
+        }
+    }
+
+    fun selectAllTransitStops() {
+        _uiState.update { state ->
+            if (state.selectedPathIndex !in state.availablePaths.indices) return@update state
+            val path = state.availablePaths[state.selectedPathIndex]
+            val intermediate = if (path.size > 2) {
+                path.subList(1, path.size - 1).map { it.id }.toSet()
+            } else {
+                emptySet()
+            }
+            val updated = state.copy(activeTransitIds = intermediate, isExpress = false)
+            rebuildRouteInternal(updated)
+        }
+    }
+
+    fun clearAllTransitStops() {
+        _uiState.update { state ->
+            val updated = state.copy(activeTransitIds = emptySet(), isExpress = true)
             rebuildRouteInternal(updated)
         }
     }

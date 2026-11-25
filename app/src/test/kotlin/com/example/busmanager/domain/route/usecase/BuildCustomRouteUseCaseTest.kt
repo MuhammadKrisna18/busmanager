@@ -165,4 +165,40 @@ class BuildCustomRouteUseCaseTest {
         assertTrue(tollRoute.totalTollFee.amount > 0L)
         assertEquals(0L, nonTollRoute.totalTollFee.amount)
     }
+
+    @Test
+    fun invoke_emptyTransitTerminalSet_clearsTransitTerminals() {
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val bayuangga = terminalRepository.getTerminalById("term_bayuangga")!!
+        val tawangalun = terminalRepository.getTerminalById("term_tawangalun")!!
+
+        val result = useCase(
+            terminals = listOf(purabaya, bayuangga, tawangalun),
+            activeTransitTerminalIds = emptySet()
+        )
+
+        assertTrue(result.isSuccess)
+        val route = result.getOrNull()
+        assertNotNull(route)
+        assertTrue(route!!.transitTerminals.isEmpty())
+        assertEquals("Surabaya - Jember", route.name)
+    }
+
+    @Test
+    fun invoke_defaultNullTransitTerminalSet_includesAllIntermediateTerminals() {
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val bayuangga = terminalRepository.getTerminalById("term_bayuangga")!!
+        val tawangalun = terminalRepository.getTerminalById("term_tawangalun")!!
+
+        val result = useCase(
+            terminals = listOf(purabaya, bayuangga, tawangalun)
+        )
+
+        assertTrue(result.isSuccess)
+        val route = result.getOrNull()
+        assertNotNull(route)
+        assertEquals(1, route!!.transitTerminals.size)
+        assertEquals(bayuangga.id, route.transitTerminals.first().id)
+        assertEquals("Surabaya - Jember (Via Probolinggo)", route.name)
+    }
 }

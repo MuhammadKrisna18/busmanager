@@ -236,8 +236,6 @@ fun HomeScreen(
                 onOpenRouteInfo = onNavigateToRouteInfo,
                 modifier = Modifier.weight(1f)
             )
-
-            LiveInfoBanner()
         }
     }
 }
@@ -853,28 +851,6 @@ private fun MenuCard(
 }
 
 @Composable
-private fun LiveInfoBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(AppDimens.radiusSmall))
-            .background(AccentBlue)
-            .padding(horizontal = AppDimens.paddingMedium, vertical = 10.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "📢", fontSize = 14.sp)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = "Selamat datang di TransNusantara! Beli armada pertamamu di Showroom Bus.",
-                color = PrimaryBlueDark,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
-    }
-}
-
-@Composable
 private fun RouteInfoDialog(
     routeOperationalList: List<RouteOperationalInfo>,
     onDismiss: () -> Unit
@@ -1311,7 +1287,8 @@ private fun ActiveRoutesSummarySection(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AppDimens.radiusMedium),
         colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation)
+        elevation = CardDefaults.cardElevation(defaultElevation = AppDimens.cardElevation),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
@@ -1320,11 +1297,19 @@ private fun ActiveRoutesSummarySection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "🛣️", fontSize = 16.sp)
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(Color(0xFFD1FAE5)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "🛣️", fontSize = 14.sp)
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Trayek Aktif Beroperasi",
-                        fontSize = 14.sp,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextDark
                     )
@@ -1332,14 +1317,14 @@ private fun ActiveRoutesSummarySection(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(AppDimens.radiusPill))
-                            .background(if (activeRoutes.isNotEmpty()) SuccessGreenLight else Color(0xFFF1F5F9))
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                            .background(if (activeRoutes.isNotEmpty()) Color(0xFFDCFCE7) else Color(0xFFF1F5F9))
+                            .padding(horizontal = 7.dp, vertical = 2.dp)
                     ) {
                         Text(
                             text = "${activeRoutes.size} Trayek",
                             fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (activeRoutes.isNotEmpty()) SuccessGreen else TextMuted
+                            fontWeight = FontWeight.ExtraBold,
+                            color = if (activeRoutes.isNotEmpty()) Color(0xFF15803D) else TextMuted
                         )
                     }
                 }
@@ -1361,6 +1346,7 @@ private fun ActiveRoutesSummarySection(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color(0xFFF8FAFC))
+                        .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(8.dp))
                         .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -1371,7 +1357,7 @@ private fun ActiveRoutesSummarySection(
                         color = TextMuted
                     )
                     Text(
-                        text = "Tugaskan di Garasi",
+                        text = "Tugaskan di Garasi ➔",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlueDark,
@@ -1390,8 +1376,9 @@ private fun ActiveRoutesSummarySection(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(Color(0xFFF8FAFC))
+                                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(8.dp))
                                 .clickable(onClick = onOpenRouteInfo)
-                                .padding(8.dp),
+                                .padding(horizontal = 10.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -1408,23 +1395,31 @@ private fun ActiveRoutesSummarySection(
                                         modifier = Modifier
                                             .clip(RoundedCornerShape(4.dp))
                                             .background(if (item.route.pathType == com.example.busmanager.domain.route.model.RoutePathType.TOLL) PrimaryBlue else Color(0xFF64748B))
-                                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                                            .padding(horizontal = 5.dp, vertical = 1.dp)
                                     ) {
                                         Text(text = corridor, fontSize = 9.sp, color = Color.White, fontWeight = FontWeight.Bold)
                                     }
                                 }
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "Armada: $busCodes • $schedText",
-                                    fontSize = 11.sp,
+                                    fontSize = 10.sp,
                                     color = TextMuted
                                 )
                             }
-                            Text(
-                                text = "● Aktif",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = SuccessGreen
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(AppDimens.radiusPill))
+                                    .background(Color(0xFFDCFCE7))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "● Aktif",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF15803D)
+                                )
+                            }
                         }
                     }
                 }

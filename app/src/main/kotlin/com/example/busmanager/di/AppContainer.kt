@@ -19,6 +19,8 @@ import com.example.busmanager.data.repository.SimulationTripRepositoryImpl
 import com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl
 import com.example.busmanager.data.repository.TerminalPassengerRepositoryImpl
 import com.example.busmanager.domain.company.repository.CompanyRepository
+import com.example.busmanager.domain.company.usecase.CalculateCompanyReputationUseCase
+import com.example.busmanager.domain.company.usecase.CalculateCompanyTierUseCase
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
 import com.example.busmanager.domain.company.usecase.ResetGameUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
@@ -213,4 +215,7 @@ class AppContainer(context: Context) {
     )
 
     val appUpdateManager = AppUpdateManager()
+
+    val calculateCompanyReputationUseCase = CalculateCompanyReputationUseCase()
+    val calculateCompanyTierUseCase = CalculateCompanyTierUseCase()
 }

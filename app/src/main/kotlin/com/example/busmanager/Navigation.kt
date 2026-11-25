@@ -59,7 +59,10 @@ fun MainNavigation(appContainer: AppContainer) {
                         getRouteOperationalStatusUseCase = appContainer.getRouteOperationalStatusUseCase,
                         processOfflineProgressionUseCase = appContainer.processOfflineProgressionUseCase,
                         reconcileBusOperatingStateUseCase = appContainer.reconcileBusOperatingStateUseCase,
-                        getSimulationTimeUseCase = appContainer.getSimulationTimeUseCase
+                        getSimulationTimeUseCase = appContainer.getSimulationTimeUseCase,
+                        passengerQueueManager = appContainer.simulationTripRepository.passengerQueueManager,
+                        calculateCompanyReputationUseCase = appContainer.calculateCompanyReputationUseCase,
+                        calculateCompanyTierUseCase = appContainer.calculateCompanyTierUseCase
                     )
                 }
                 HomeScreen(

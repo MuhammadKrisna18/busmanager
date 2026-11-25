@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.busmanager.core.update.AppUpdateManager
 import com.example.busmanager.core.update.UpdateInfo
+import com.example.busmanager.domain.company.usecase.CalculateCompanyReputationUseCase
+import com.example.busmanager.domain.company.usecase.CalculateCompanyTierUseCase
 import com.example.busmanager.domain.company.usecase.GetCompanyUseCase
 import com.example.busmanager.domain.company.usecase.ResetGameUseCase
 import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
@@ -12,6 +14,7 @@ import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.ReconcileBusOperatingStateUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
+import com.example.busmanager.domain.simulation.model.PassengerQueueManager
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
 import com.example.busmanager.domain.simulation.usecase.ProcessOfflineProgressionUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +35,10 @@ class HomeScreenViewModel(
     private val getRouteOperationalStatusUseCase: GetRouteOperationalStatusUseCase? = null,
     private val processOfflineProgressionUseCase: ProcessOfflineProgressionUseCase? = null,
     private val reconcileBusOperatingStateUseCase: ReconcileBusOperatingStateUseCase? = null,
-    private val getSimulationTimeUseCase: GetSimulationTimeUseCase? = null
+    private val getSimulationTimeUseCase: GetSimulationTimeUseCase? = null,
+    private val passengerQueueManager: PassengerQueueManager? = null,
+    private val calculateCompanyReputationUseCase: CalculateCompanyReputationUseCase = CalculateCompanyReputationUseCase(),
+    private val calculateCompanyTierUseCase: CalculateCompanyTierUseCase = CalculateCompanyTierUseCase()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeScreenUiState())
@@ -59,18 +65,31 @@ class HomeScreenViewModel(
             reconcileBusOperatingStateUseCase?.invoke()
             val driversFlow = getHiredDriversUseCase?.invoke() ?: flowOf(emptyList())
             val operationalFlow = getRouteOperationalStatusUseCase?.invoke() ?: flowOf(emptyList())
+            val queuesFlow = passengerQueueManager?.queues ?: flowOf(emptyMap())
             combine(
                 getCompanyUseCase(),
                 getOwnedFleetUseCase(),
                 driversFlow,
-                operationalFlow
-            ) { company, buses, drivers, operationalRoutes ->
+                operationalFlow,
+                queuesFlow
+            ) { company, buses, drivers, operationalRoutes, queues ->
+                val totalBoarded = queues.values.sumOf { it.totalBoardedPassengers }
+                val totalLost = queues.values.sumOf { it.totalLostPassengers }
+                val reputation = calculateCompanyReputationUseCase(totalBoarded, totalLost)
+                val activeRouteCount = operationalRoutes.count { it.isActive }
+                val tier = calculateCompanyTierUseCase(
+                    busCount = buses.size,
+                    routeCount = activeRouteCount,
+                    boardedCount = totalBoarded
+                )
                 _uiState.update { current ->
                     current.copy(
                         company = company,
                         ownedBuses = buses,
                         hiredDriverCount = drivers.size,
                         routeOperationalList = operationalRoutes,
+                        reputation = reputation,
+                        tier = tier,
                         isLoading = false
                     )
                 }

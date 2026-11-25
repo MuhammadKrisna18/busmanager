@@ -2,6 +2,8 @@ package com.example.busmanager.presentation.dashboard
 
 import com.example.busmanager.core.update.UpdateInfo
 import com.example.busmanager.domain.company.model.Company
+import com.example.busmanager.domain.company.model.CompanyReputation
+import com.example.busmanager.domain.company.model.CompanyTier
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.RouteOperationalInfo
 import com.example.busmanager.domain.simulation.model.GameCalendar
@@ -18,7 +20,9 @@ data class HomeScreenUiState(
     val downloadProgress: Float? = null,
     val routeOperationalList: List<RouteOperationalInfo> = emptyList(),
     val showRouteInfoModal: Boolean = false,
-    val offlineProgressionResult: OfflineProgressionResult? = null
+    val offlineProgressionResult: OfflineProgressionResult? = null,
+    val reputation: CompanyReputation = CompanyReputation(),
+    val tier: CompanyTier = CompanyTier.PERINTIS
 ) {
     val formattedDateTime: String
         get() = gameCalendar.formatDateTime()

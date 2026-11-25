@@ -53,7 +53,6 @@ import com.example.busmanager.domain.route.usecase.DeleteRouteScheduleUseCase
 import com.example.busmanager.domain.route.usecase.FindAvailablePathsUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableRoutesUseCase
 import com.example.busmanager.domain.route.usecase.GetAvailableTerminalsUseCase
-import com.example.busmanager.domain.route.usecase.GetConnectedTerminalsUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
 import com.example.busmanager.domain.route.usecase.GetRoutePricingsUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteSchedulesUseCase
@@ -159,7 +158,6 @@ class AppContainer(context: Context) {
     val getAvailableRoutesUseCase = GetAvailableRoutesUseCase(routeRepository)
     val getRouteTransitStopsUseCase = GetRouteTransitStopsUseCase(routeRepository)
     val calculateRouteCostUseCase = CalculateRouteCostUseCase()
-    val getConnectedTerminalsUseCase = GetConnectedTerminalsUseCase(terminalRepository, routeRepository)
     val findAvailablePathsUseCase = FindAvailablePathsUseCase(terminalRepository, routeRepository)
     val buildCustomRouteUseCase = BuildCustomRouteUseCase(routeRepository)
     val saveCustomRouteUseCase = SaveCustomRouteUseCase(routeRepository)

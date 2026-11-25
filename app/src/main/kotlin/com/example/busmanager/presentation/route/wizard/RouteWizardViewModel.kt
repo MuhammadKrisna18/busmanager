@@ -407,16 +407,10 @@ class RouteWizardViewModel(
         if (bus.isOperating || bus.hasRoute || bus.hasDriver) return
         _uiState.update { current ->
             val updated = current.copy(selectedBus = bus, errorMessage = null)
-            if (bus.currentTerminalId != null) {
+            if (current.selectedOrigin == null && bus.currentTerminalId != null) {
                 val originTerm = current.allTerminals.find { it.id == bus.currentTerminalId }
-                if (originTerm != null && current.selectedOrigin?.id != originTerm.id) {
-                    val dest = if (current.selectedDestination?.id == originTerm.id) null else current.selectedDestination
-                    val withOrigin = updated.copy(selectedOrigin = originTerm, selectedDestination = dest)
-                    if (dest != null) {
-                        calculatePathsForTerminals(originTerm, dest, withOrigin)
-                    } else {
-                        withOrigin.copy(availablePaths = emptyList(), builtRoute = null, pricings = emptyList())
-                    }
+                if (originTerm != null) {
+                    updated.copy(selectedOrigin = originTerm)
                 } else {
                     updated
                 }

@@ -487,38 +487,59 @@ fun Slide4BusDriverSchedule(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            Text(
-                text = "Waktu Pemberhentian di Terminal Ampiran / Transit",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = TextDark
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Waktu berhenti bus untuk naik-turun penumpang di tiap terminal transit (Maksimal 15 Menit)",
-                fontSize = 11.sp,
-                color = TextMuted
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                listOf(0, 5, 10, 15).forEach { mins ->
-                    val label = if (mins == 0) "0 Mnt (Kilat)" else "$mins Mnt"
-                    FilterChip(
-                        selected = uiState.transitDwellMinutes == mins,
-                        onClick = { onSetTransitDwellMinutes(mins) },
-                        label = { Text(label) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = IceBlue,
-                            selectedLabelColor = PrimaryBlueDark
+            if (uiState.builtRoute?.transitTerminals.isNullOrEmpty()) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = CardDefaults.cardColors(containerColor = IceBlue)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "⚡", fontSize = 16.sp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Rute Langsung Non-Stop: Bus melaju langsung ke tujuan tanpa berhenti di halte perantara.",
+                            fontSize = 11.sp,
+                            color = PrimaryBlueDark
                         )
-                    )
+                    }
                 }
+                Spacer(modifier = Modifier.height(14.dp))
+            } else {
+                Text(
+                    text = "Waktu Pemberhentian di Terminal Ampiran / Transit",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextDark
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Waktu berhenti bus untuk naik-turun penumpang di tiap terminal transit (Maksimal 15 Menit)",
+                    fontSize = 11.sp,
+                    color = TextMuted
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf(0, 5, 10, 15).forEach { mins ->
+                        val label = if (mins == 0) "0 Mnt (Kilat)" else "$mins Mnt"
+                        FilterChip(
+                            selected = uiState.transitDwellMinutes == mins,
+                            onClick = { onSetTransitDwellMinutes(mins) },
+                            label = { Text(label) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = IceBlue,
+                                selectedLabelColor = PrimaryBlueDark
+                            )
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(14.dp))
             }
-
-            Spacer(modifier = Modifier.height(14.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -546,8 +567,13 @@ fun Slide4BusDriverSchedule(
                         fontSize = 12.sp,
                         color = TextDark
                     )
+                    val transitSummary = if (uiState.builtRoute?.transitTerminals.isNullOrEmpty()) {
+                        "• Pola Rute: Rute langsung non-stop tanpa transit"
+                    } else {
+                        "• Singgah Transit: ${uiState.transitDwellMinutes} Menit di ${uiState.builtRoute.transitTerminals.size} terminal ampiran"
+                    }
                     Text(
-                        text = "• Singgah Transit: ${uiState.transitDwellMinutes} Menit di tiap terminal ampiran",
+                        text = transitSummary,
                         fontSize = 12.sp,
                         color = TextDark
                     )

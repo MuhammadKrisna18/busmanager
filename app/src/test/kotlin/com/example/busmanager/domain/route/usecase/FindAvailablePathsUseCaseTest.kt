@@ -49,4 +49,26 @@ class FindAvailablePathsUseCaseTest {
 
         assertTrue(paths.all { it.first().id == "term_purabaya" && it.last().id == "term_sritanjung" })
     }
+
+    @Test
+    fun invoke_jemberToNgawi_findsValidPath() {
+        val paths = useCase("term_tawangalun", "term_kertonegoro")
+        assertTrue(paths.isNotEmpty())
+        val shortest = paths.first()
+        assertEquals("term_tawangalun", shortest.first().id)
+        assertEquals("term_kertonegoro", shortest.last().id)
+    }
+
+    @Test
+    fun invoke_allTerminalPairs_areConnected() {
+        val terminals = terminalRepository.getAllTerminals()
+        for (origin in terminals) {
+            for (dest in terminals) {
+                if (origin.id != dest.id) {
+                    val paths = useCase(origin.id, dest.id)
+                    assertTrue("Disconnected: ${origin.city} -> ${dest.city}", paths.isNotEmpty())
+                }
+            }
+        }
+    }
 }

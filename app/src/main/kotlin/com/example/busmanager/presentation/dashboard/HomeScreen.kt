@@ -37,7 +37,10 @@ import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.window.Dialog
+import com.example.busmanager.domain.company.model.CompanyReputation
+import com.example.busmanager.domain.company.model.CompanyTier
 import com.example.busmanager.domain.route.model.RouteOperationalInfo
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.simulation.model.OfflineProgressionResult
@@ -182,6 +185,8 @@ fun HomeScreen(
                 companyName = state.company?.name ?: "PO TransNusantara",
                 dateTimeText = state.formattedDateTime,
                 balanceFormatted = state.company?.balance?.formatRupiah() ?: "Rp 1.500.000.000",
+                reputation = state.reputation,
+                tier = state.tier,
                 onResetClick = { showResetConfirmDialog = true }
             )
 
@@ -235,8 +240,12 @@ private fun CompanyHeader(
     companyName: String,
     dateTimeText: String,
     balanceFormatted: String,
+    reputation: CompanyReputation,
+    tier: CompanyTier,
     onResetClick: () -> Unit = {}
 ) {
+    val initialLetters = if (companyName.isNotBlank()) companyName.take(2).uppercase() else "PO"
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(AppDimens.radiusMedium),
@@ -251,21 +260,72 @@ private fun CompanyHeader(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(
-                        text = companyName,
-                        color = TextDark,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = dateTimeText,
-                        color = TextMuted,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(PrimaryBlue, AccentBlue)
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = initialLetters,
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(10.dp))
+
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
+                        Text(
+                            text = companyName,
+                            color = TextDark,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Black,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFFEEF2FF))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "Lv.${tier.level} • ${tier.title}",
+                                    color = Color(0xFF4F46E5),
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Text(
+                                text = dateTimeText,
+                                color = TextMuted,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
 
                 Box(
                     modifier = Modifier
@@ -282,42 +342,104 @@ private fun CompanyHeader(
                 }
             }
 
-            Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xFFFFFBEB))
+                    .border(1.dp, Color(0xFFFDE68A), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
+                    Text(
+                        text = "⭐ ${reputation.formattedStars}",
+                        color = Color(0xFFB45309),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Black
+                    )
+
+                    Text(
+                        text = reputation.statusTitle,
+                        color = Color(0xFF92400E),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(6.dp))
+
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0xFFFEF3C7))
+                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = "👥 ${reputation.totalBoardedPassengers} pnp",
+                        color = Color(0xFF78350F),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(AppDimens.radiusSmall))
-                    .background(IceBlue)
-                    .padding(horizontal = AppDimens.paddingMedium, vertical = 12.dp),
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(
+                                Color(0xFFECFDF5),
+                                Color(0xFFF0FDF4)
+                            )
+                        )
+                    )
+                    .border(1.dp, Color(0xFFA7F3D0), RoundedCornerShape(AppDimens.radiusSmall))
+                    .padding(horizontal = AppDimens.paddingMedium, vertical = 10.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Saldo Kas Perusahaan",
-                        color = TextMuted,
+                        text = "Saldo Kas PO",
+                        color = Color(0xFF047857),
                         fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.SemiBold
                     )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = balanceFormatted,
-                        color = PrimaryBlueDark,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Black
+                        color = Color(0xFF065F46),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
-                        .background(SuccessGreen.copy(alpha = 0.15f)),
+                        .background(Color(0xFFD1FAE5)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "💰",
-                        fontSize = 18.sp
+                        fontSize = 20.sp
                     )
                 }
             }

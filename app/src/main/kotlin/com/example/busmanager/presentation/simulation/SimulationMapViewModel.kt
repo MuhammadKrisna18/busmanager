@@ -431,6 +431,7 @@ class SimulationMapViewModel(
         val currentTotalMinutes = time.day * 1440L + time.hour * 60L + time.minute
         val currentDayMinutes = time.hour * 60 + time.minute
         val dispatchedBusIds = mutableSetOf<String>()
+        val dispatchedRouteDirections = mutableSetOf<Pair<String, RouteDirection>>()
 
         for (schedule in schedules) {
             val busId = schedule.assignedBusId ?: continue
@@ -457,6 +458,18 @@ class SimulationMapViewModel(
                 continue
             }
 
+            val routeDirKey = Pair(route.id, schedule.direction)
+            if (dispatchedRouteDirections.contains(routeDirKey)) {
+                continue
+            }
+
+            val routeTripsInSameDirection = activeTrips.filter {
+                it.route.id == route.id && it.direction == schedule.direction && !it.isCompleted
+            }
+            if (routeTripsInSameDirection.any { it.elapsedMinutes < 60 }) {
+                continue
+            }
+
             val shouldDepart = if (schedule.nextDepartureEpochMinutes > 0L) {
                 currentTotalMinutes >= schedule.nextDepartureEpochMinutes
             } else {
@@ -466,6 +479,7 @@ class SimulationMapViewModel(
 
             if (shouldDepart) {
                 dispatchedBusIds.add(bus.id)
+                dispatchedRouteDirections.add(routeDirKey)
                 executeDispatchAndRevenue(bus, route, schedule.direction, time)
             }
         }
@@ -686,6 +700,13 @@ class SimulationMapViewModel(
             RouteDirection.DESTINATION_TO_ORIGIN
         } else {
             RouteDirection.ORIGIN_TO_DESTINATION
+        }
+        val activeTrips = _uiState.value.activeTrips
+        val sameRouteTrips = activeTrips.filter {
+            it.route.id == route.id && it.direction == direction && !it.isCompleted
+        }
+        if (sameRouteTrips.any { it.elapsedMinutes < 60 }) {
+            return
         }
         executeDispatchAndRevenue(
             bus = bus,

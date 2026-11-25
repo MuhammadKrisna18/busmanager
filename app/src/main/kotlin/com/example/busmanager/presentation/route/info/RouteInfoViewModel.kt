@@ -122,7 +122,7 @@ class RouteInfoViewModel(
                 val existingOutbound = schedules.filter { it.direction == RouteDirection.ORIGIN_TO_DESTINATION }
                 val lastOutboundMinutes = existingOutbound.maxOfOrNull { it.departureHour * 60 + it.departureMinute }
                 val startMinutes = if (lastOutboundMinutes != null) {
-                    val candidate = lastOutboundMinutes + 30
+                    val candidate = lastOutboundMinutes + 60
                     if (candidate <= 23 * 60 + 59) candidate else 4 * 60
                 } else {
                     6 * 60

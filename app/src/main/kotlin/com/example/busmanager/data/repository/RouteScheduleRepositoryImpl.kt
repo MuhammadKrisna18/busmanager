@@ -108,12 +108,19 @@ class RouteScheduleRepositoryImpl(
         minute: Int,
         excludeScheduleId: String?
     ): Boolean {
-        val existing = scheduleDao.findConflictingSchedule(routeId, direction.name, hour, minute) ?: return false
-        return if (excludeScheduleId != null) {
-            existing.id != excludeScheduleId
-        } else {
-            true
+        val schedules = scheduleDao.getSchedulesByRoute(routeId)
+        val targetTotalMinutes = hour * 60 + minute
+        for (sched in schedules) {
+            if (sched.direction != direction.name) continue
+            if (excludeScheduleId != null && sched.id == excludeScheduleId) continue
+            val schedTotalMinutes = sched.departureHour * 60 + sched.departureMinute
+            val diff = kotlin.math.abs(targetTotalMinutes - schedTotalMinutes)
+            val circularDiff = kotlin.math.min(diff, 1440 - diff)
+            if (circularDiff < 60) {
+                return true
+            }
         }
+        return false
     }
 
     override suspend fun deleteAllSchedules() {

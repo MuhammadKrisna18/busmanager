@@ -33,7 +33,7 @@ class ValidateScheduleConflictUseCase(
         departureHour: Int,
         departureMinute: Int,
         excludeScheduleId: String? = null,
-        minHeadwayBufferMinutes: Int = 30
+        minHeadwayBufferMinutes: Int = 60
     ): ScheduleConflictResult {
         val targetOriginId = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
             route.originTerminal.id
@@ -101,7 +101,7 @@ class ValidateScheduleConflictUseCase(
                     val errorReason = if (circularDiff == 0) {
                         "Bentrok jadwal: Sudah ada keberangkatan dari $originCity ke $destCity ($corridorName) pada pukul $timeFormatted di trayek '${schedRoute.name}'."
                     } else {
-                        "Jeda keberangkatan terlalu dekat: Sudah ada keberangkatan dari $originCity ke $destCity ($corridorName) pada pukul $timeFormatted di trayek '${schedRoute.name}' (selisih $circularDiff menit). Minimal jeda antar armada adalah $minHeadwayBufferMinutes menit."
+                        "Jeda keberangkatan terlalu dekat: Sudah ada keberangkatan dari $originCity ke $destCity ($corridorName) pada pukul $timeFormatted di trayek '${schedRoute.name}' (selisih $circularDiff menit). Minimal jeda antar armada adalah $minHeadwayBufferMinutes menit (1 jam)."
                     }
 
                     return ScheduleConflictResult.Conflict(

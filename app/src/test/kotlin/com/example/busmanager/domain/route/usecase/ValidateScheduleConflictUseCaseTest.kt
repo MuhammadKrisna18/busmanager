@@ -185,31 +185,7 @@ class ValidateScheduleConflictUseCaseTest {
     }
 
     @Test
-    fun validate_under30MinutesDifference_returnsConflict() = runBlocking {
-        fakeScheduleRepository.addSchedule(
-            RouteSchedule(
-                id = "sched-existing-7",
-                routeId = routeSbyMlgToll.id,
-                departureHour = 7,
-                departureMinute = 0,
-                direction = RouteDirection.ORIGIN_TO_DESTINATION
-            )
-        )
-
-        val result = useCase(
-            route = routeSbyMlgToll,
-            direction = RouteDirection.ORIGIN_TO_DESTINATION,
-            departureHour = 7,
-            departureMinute = 15
-        )
-        assertTrue(result is ScheduleConflictResult.Conflict)
-        val conflict = result as ScheduleConflictResult.Conflict
-        assertEquals(15, conflict.timeDifferenceMinutes)
-        assertTrue(conflict.errorMessage.contains("Jeda keberangkatan terlalu dekat"))
-    }
-
-    @Test
-    fun validate_exactly30MinutesDifference_returnsValid() = runBlocking {
+    fun validate_under60MinutesDifference_returnsConflict() = runBlocking {
         fakeScheduleRepository.addSchedule(
             RouteSchedule(
                 id = "sched-existing-7",
@@ -226,11 +202,14 @@ class ValidateScheduleConflictUseCaseTest {
             departureHour = 7,
             departureMinute = 30
         )
-        assertTrue(result is ScheduleConflictResult.Valid)
+        assertTrue(result is ScheduleConflictResult.Conflict)
+        val conflict = result as ScheduleConflictResult.Conflict
+        assertEquals(30, conflict.timeDifferenceMinutes)
+        assertTrue(conflict.errorMessage.contains("Jeda keberangkatan terlalu dekat"))
     }
 
     @Test
-    fun validate_multipleOf10MinutesDifference_returnsValid() = runBlocking {
+    fun validate_exactly60MinutesDifference_returnsValid() = runBlocking {
         fakeScheduleRepository.addSchedule(
             RouteSchedule(
                 id = "sched-existing-7",
@@ -244,20 +223,41 @@ class ValidateScheduleConflictUseCaseTest {
         val result = useCase(
             route = routeSbyMlgToll,
             direction = RouteDirection.ORIGIN_TO_DESTINATION,
-            departureHour = 7,
-            departureMinute = 40
+            departureHour = 8,
+            departureMinute = 0
         )
         assertTrue(result is ScheduleConflictResult.Valid)
     }
 
     @Test
-    fun validate_midnightWrapAroundUnder30Minutes_returnsConflict() = runBlocking {
+    fun validate_multipleOf10MinutesDifferenceOver60_returnsValid() = runBlocking {
+        fakeScheduleRepository.addSchedule(
+            RouteSchedule(
+                id = "sched-existing-7",
+                routeId = routeSbyMlgToll.id,
+                departureHour = 7,
+                departureMinute = 0,
+                direction = RouteDirection.ORIGIN_TO_DESTINATION
+            )
+        )
+
+        val result = useCase(
+            route = routeSbyMlgToll,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            departureHour = 8,
+            departureMinute = 10
+        )
+        assertTrue(result is ScheduleConflictResult.Valid)
+    }
+
+    @Test
+    fun validate_midnightWrapAroundUnder60Minutes_returnsConflict() = runBlocking {
         fakeScheduleRepository.addSchedule(
             RouteSchedule(
                 id = "sched-late-night",
                 routeId = routeSbyMlgToll.id,
                 departureHour = 23,
-                departureMinute = 50,
+                departureMinute = 30,
                 direction = RouteDirection.ORIGIN_TO_DESTINATION
             )
         )
@@ -270,17 +270,17 @@ class ValidateScheduleConflictUseCaseTest {
         )
         assertTrue(result is ScheduleConflictResult.Conflict)
         val conflict = result as ScheduleConflictResult.Conflict
-        assertEquals(20, conflict.timeDifferenceMinutes)
+        assertEquals(40, conflict.timeDifferenceMinutes)
     }
 
     @Test
-    fun validate_midnightWrapAroundOver30Minutes_returnsValid() = runBlocking {
+    fun validate_midnightWrapAroundOver60Minutes_returnsValid() = runBlocking {
         fakeScheduleRepository.addSchedule(
             RouteSchedule(
                 id = "sched-late-night",
                 routeId = routeSbyMlgToll.id,
                 departureHour = 23,
-                departureMinute = 40,
+                departureMinute = 20,
                 direction = RouteDirection.ORIGIN_TO_DESTINATION
             )
         )
@@ -289,7 +289,7 @@ class ValidateScheduleConflictUseCaseTest {
             route = routeSbyMlgToll,
             direction = RouteDirection.ORIGIN_TO_DESTINATION,
             departureHour = 0,
-            departureMinute = 20
+            departureMinute = 30
         )
         assertTrue(result is ScheduleConflictResult.Valid)
     }

@@ -30,10 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.busmanager.domain.route.model.MapCoordinate
-import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
-import com.example.busmanager.presentation.route.components.MapSegmentToggle
 import com.example.busmanager.presentation.route.components.MapTerminalToggle
 import com.example.busmanager.presentation.route.wizard.RouteWizardUiState
 import com.example.busmanager.ui.theme.CardBorder
@@ -51,7 +48,6 @@ fun Slide2PathAndStops(
     uiState: RouteWizardUiState,
     onSelectPath: (Int) -> Unit,
     onToggleTransitStop: (String) -> Unit,
-    onSetSegmentPathType: (String, String, RoutePathType) -> Unit,
     onSetIsExpress: (Boolean) -> Unit = {},
     onSelectAllTransit: () -> Unit = {},
     onClearAllTransit: () -> Unit = {},
@@ -61,28 +57,6 @@ fun Slide2PathAndStops(
         uiState.availablePaths.getOrNull(uiState.selectedPathIndex) ?: emptyList()
     }
     val route = uiState.builtRoute
-
-    val segmentToggles = remember(currentPath, uiState.segmentPathTypes, route) {
-        if (currentPath.size < 2) emptyList() else {
-            (0 until currentPath.size - 1).map { i ->
-                val from = currentPath[i]
-                val to = currentPath[i + 1]
-                val midX = (from.coordinate.x + to.coordinate.x) / 2f
-                val midY = (from.coordinate.y + to.coordinate.y) / 2f
-                val midLat = (from.coordinate.latitude + to.coordinate.latitude) / 2.0
-                val midLng = (from.coordinate.longitude + to.coordinate.longitude) / 2.0
-                val segType = route?.segments?.getOrNull(i)?.pathType
-                    ?: uiState.segmentPathTypes[Pair(from.id, to.id)]
-                    ?: RoutePathType.TOLL
-                MapSegmentToggle(
-                    fromTerminalId = from.id,
-                    toTerminalId = to.id,
-                    midCoordinate = MapCoordinate(midX, midY, midLat, midLng),
-                    currentPathType = segType
-                )
-            }
-        }
-    }
 
     val terminalToggles = remember(currentPath, uiState.activeTransitIds, uiState.isExpress) {
         if (currentPath.size <= 2) emptyList() else {
@@ -111,7 +85,7 @@ fun Slide2PathAndStops(
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Pilih koridor jalan, tentukan jenis ruas (Tol/Arteri), dan atur terminal singgah secara bebas",
+                text = "Pilih koridor jalan dan atur terminal singgah (ampiran) secara bebas",
                 fontSize = 12.sp,
                 color = TextMuted
             )
@@ -159,7 +133,7 @@ fun Slide2PathAndStops(
                                 val intermediateCities = if (path.size > 2) {
                                     path.subList(1, path.size - 1).joinToString(" → ") { it.city }
                                 } else {
-                                    "Langsung Tol / Jalur Utama (Tanpa Kota Singgah)"
+                                    "Langsung Jalur Utama (Tanpa Kota Singgah)"
                                 }
 
                                 Box(
@@ -264,15 +238,7 @@ fun Slide2PathAndStops(
                     selectedOrigin = route?.originTerminal ?: uiState.selectedOrigin,
                     selectedDestination = route?.destinationTerminal ?: uiState.selectedDestination,
                     transitTerminals = route?.transitTerminals ?: emptyList(),
-                    segmentToggles = segmentToggles,
                     terminalToggles = terminalToggles,
-                    onSegmentToggleClick = { fromId, toId ->
-                        val currentType = uiState.segmentPathTypes[Pair(fromId, toId)] ?: route?.segments?.find {
-                            it.fromTerminalId == fromId && it.toTerminalId == toId
-                        }?.pathType ?: RoutePathType.TOLL
-                        val newType = if (currentType == RoutePathType.TOLL) RoutePathType.NON_TOLL else RoutePathType.TOLL
-                        onSetSegmentPathType(fromId, toId, newType)
-                    },
                     onTerminalToggleClick = { termId ->
                         onToggleTransitStop(termId)
                     },
@@ -326,7 +292,7 @@ fun Slide2PathAndStops(
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(SurfaceWhite)
-                                .padding(horizontal = 6.dp, vertical = 8.dp),
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceAround,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -335,7 +301,7 @@ fun Slide2PathAndStops(
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "${route.totalDistanceKm.toInt()} km",
-                                    fontSize = 12.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PrimaryBlueDark
                                 )
@@ -346,20 +312,9 @@ fun Slide2PathAndStops(
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = durationStr,
-                                    fontSize = 12.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PrimaryBlueDark
-                                )
-                            }
-                            Box(modifier = Modifier.width(1.dp).height(24.dp).background(CardBorder))
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(text = "Biaya Tol", fontSize = 10.sp, color = TextMuted)
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = if (route.totalTollFee.amount > 0) route.totalTollFee.formatRupiah() else "Rp 0",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (route.totalTollFee.amount > 0) Color(0xFFD97706) else SuccessGreen
                                 )
                             }
                             Box(modifier = Modifier.width(1.dp).height(24.dp).background(CardBorder))
@@ -367,8 +322,8 @@ fun Slide2PathAndStops(
                                 Text(text = "Pola Singgah", fontSize = 10.sp, color = TextMuted)
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = if (transitCount == 0) "Non-Stop" else "$transitCount Halte",
-                                    fontSize = 12.sp,
+                                    text = if (transitCount == 0) "Non-Stop" else "$transitCount Halte Singgah",
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = if (transitCount == 0) PrimaryBlue else PrimaryBlueDark
                                 )
@@ -485,14 +440,14 @@ fun Slide2PathAndStops(
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = "Rincian Titik & Ruas Jalan",
+                text = "Rincian Titik Terminal",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Centang terminal untuk singgah, dan pilih Tol/Arteri untuk tiap ruas jalan:",
+                text = "Centang terminal untuk singgah, atau biarkan tidak tercentang untuk dilewati langsung:",
                 fontSize = 11.sp,
                 color = TextMuted
             )
@@ -592,43 +547,18 @@ fun Slide2PathAndStops(
             }
 
             if (index < currentPath.size - 1) {
-                val nextTerminal = currentPath[index + 1]
-                val currentSegmentType = uiState.segmentPathTypes[Pair(terminal.id, nextTerminal.id)]
-                    ?: route?.segments?.getOrNull(index)?.pathType
-                    ?: RoutePathType.TOLL
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                        .padding(start = 28.dp, top = 2.dp, bottom = 2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .width(2.dp)
-                            .height(28.dp)
-                            .background(CardBorder)
+                            .height(18.dp)
+                            .background(PrimaryBlue.copy(alpha = 0.35f))
                     )
-
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(Color(0xFFF1F5F9))
-                            .padding(2.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        SegmentTypeBadge(
-                            label = "Tol Cepat",
-                            isSelected = currentSegmentType == RoutePathType.TOLL,
-                            onClick = { onSetSegmentPathType(terminal.id, nextTerminal.id, RoutePathType.TOLL) }
-                        )
-                        SegmentTypeBadge(
-                            label = "Arteri (Gratis)",
-                            isSelected = currentSegmentType == RoutePathType.NON_TOLL,
-                            onClick = { onSetSegmentPathType(terminal.id, nextTerminal.id, RoutePathType.NON_TOLL) }
-                        )
-                    }
                 }
             }
         }
@@ -636,29 +566,5 @@ fun Slide2PathAndStops(
         item {
             Spacer(modifier = Modifier.height(24.dp))
         }
-    }
-}
-
-@Composable
-private fun SegmentTypeBadge(
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(if (isSelected) PrimaryBlue else Color.Transparent)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            fontSize = 11.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) Color.White else TextMuted
-        )
     }
 }

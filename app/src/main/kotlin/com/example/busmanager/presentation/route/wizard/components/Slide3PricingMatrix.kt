@@ -83,12 +83,10 @@ fun Slide3PricingMatrix(
     } ?: roundTripPricings.firstOrNull()
 
     val mainTicketPrice = mainPricing?.price ?: Money.rupiah(50_000)
-    val tollFee = uiState.builtRoute?.totalTollFee ?: Money.ZERO
 
     val projection = RouteRevenueProjection(
         seatCapacity = assumedCapacity,
-        ticketPrice = mainTicketPrice,
-        tollFee = tollFee
+        ticketPrice = mainTicketPrice
     )
 
     LazyColumn(
@@ -148,8 +146,7 @@ fun Slide3PricingMatrix(
             RevenueProjectionCard(
                 projection = projection,
                 originCity = uiState.selectedOrigin?.city ?: "Asal",
-                destinationCity = uiState.selectedDestination?.city ?: "Tujuan",
-                hasToll = tollFee.amount > 0L
+                destinationCity = uiState.selectedDestination?.city ?: "Tujuan"
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -266,8 +263,7 @@ fun Slide3PricingMatrix(
 private fun RevenueProjectionCard(
     projection: RouteRevenueProjection,
     originCity: String,
-    destinationCity: String,
-    hasToll: Boolean
+    destinationCity: String
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -343,15 +339,6 @@ private fun RevenueProjectionCard(
                     color = Color(0xFFDC2626),
                     subtext = "PP: - ${projection.driverWageRoundTrip.formatRupiah()}"
                 )
-
-                if (hasToll) {
-                    ProjectionDetailRow(
-                        label = "Biaya Tol Jalur Cepat:",
-                        amount = "- ${projection.tollFee.formatRupiah()}",
-                        color = Color(0xFFD97706),
-                        subtext = "PP: - ${projection.tollFeeRoundTrip.formatRupiah()}"
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))

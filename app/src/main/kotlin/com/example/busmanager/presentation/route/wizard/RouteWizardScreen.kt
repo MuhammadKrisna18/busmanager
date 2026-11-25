@@ -122,9 +122,6 @@ fun RouteWizardScreen(
                             uiState = uiState,
                             onSelectPath = { viewModel.selectPath(it) },
                             onToggleTransitStop = { viewModel.toggleTransitStop(it) },
-                            onSetSegmentPathType = { from, to, type ->
-                                viewModel.setSegmentPathType(from, to, type)
-                            },
                             onSetIsExpress = { viewModel.setIsExpress(it) },
                             onSelectAllTransit = { viewModel.selectAllTransitStops() },
                             onClearAllTransit = { viewModel.clearAllTransitStops() }

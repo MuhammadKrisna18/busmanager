@@ -67,7 +67,9 @@ fun Slide3PricingMatrix(
         } else {
             pricing.originTerminalId == uiState.selectedOrigin?.id
         }
-    }.distinctBy { Pair(it.originTerminalId, it.destinationTerminalId) }
+    }.distinctBy {
+        minOf(it.originTerminalId, it.destinationTerminalId) to maxOf(it.originTerminalId, it.destinationTerminalId)
+    }
 
     val assumedCapacity = uiState.selectedBus?.body?.passengerCapacity
         ?: uiState.availableBuses.firstOrNull()?.body?.passengerCapacity

@@ -325,6 +325,7 @@ class ShowroomViewModel(
                 selectedBusClass = BusClass.EKSEKUTIF,
                 customBusCode = defaultCode,
                 purchaseSuccessBus = null,
+                purchaseSuccessBuses = emptyList(),
                 errorMessage = null
             )
         }

@@ -8,14 +8,13 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun IsometricBus25D(
     headingAngle: Float,
-    statusColor: Color,
+    statusColor: Color = Color.Transparent,
     isTracking: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -24,28 +23,6 @@ fun IsometricBus25D(
     ) {
         val cx = size.width / 2f
         val cy = size.height / 2f
-
-        drawCircle(
-            color = statusColor.copy(alpha = 0.22f),
-            radius = cx - 1f,
-            center = Offset(cx, cy)
-        )
-
-        drawCircle(
-            color = statusColor,
-            radius = cx - 2.5f,
-            center = Offset(cx, cy),
-            style = Stroke(width = if (isTracking) 2.6f else 2.0f)
-        )
-
-        if (isTracking) {
-            drawCircle(
-                color = Color(0x442563EB),
-                radius = cx + 2f,
-                center = Offset(cx, cy),
-                style = Stroke(width = 1.8f)
-            )
-        }
 
         withTransform({
             rotate(degrees = headingAngle, pivot = Offset(cx, cy))

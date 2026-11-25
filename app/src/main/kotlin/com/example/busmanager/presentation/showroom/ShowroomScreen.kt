@@ -80,7 +80,10 @@ fun ShowroomScreen(
 
     Scaffold(
         topBar = {
-            ShowroomTopBar(onNavigateBack = onNavigateBack)
+            ShowroomTopBar(onNavigateBack = {
+                viewModel.dismissSuccessNotice()
+                onNavigateBack()
+            })
         },
         bottomBar = {
             if (!uiState.isLoading && uiState.mode == ShowroomMode.CUSTOM_ASSEMBLY) {

@@ -181,10 +181,20 @@ class RoutePlannerViewModel(
             val pricing = _uiState.value.pricings.find { it.id == pricingId } ?: return@launch
             val updated = pricing.copy(price = Money.rupiah(newPriceAmount))
             saveRoutePricingUseCase?.invoke(updated)
+
+            val reversePricing = _uiState.value.pricings.find {
+                it.routeId == pricing.routeId &&
+                    it.originTerminalId == pricing.destinationTerminalId &&
+                    it.destinationTerminalId == pricing.originTerminalId
+            }
+            if (reversePricing != null) {
+                saveRoutePricingUseCase?.invoke(reversePricing.copy(price = updated.price))
+            }
+
             _uiState.update {
                 it.copy(
                     editingPricing = null,
-                    successMessage = "Tarif ${updated.originCity} - ${updated.destinationCity} berhasil diubah ke ${updated.price.formatRupiah()}"
+                    successMessage = "Tarif ${updated.originCity} ⇄ ${updated.destinationCity} berhasil diubah ke ${updated.price.formatRupiah()}"
                 )
             }
         }

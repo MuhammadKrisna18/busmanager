@@ -386,8 +386,11 @@ private fun PricingSectionCard(
                     color = TextMuted
                 )
             } else {
+                val uniquePricings = pricings.distinctBy {
+                    minOf(it.originTerminalId, it.destinationTerminalId) to maxOf(it.originTerminalId, it.destinationTerminalId)
+                }
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    pricings.forEach { pricing ->
+                    uniquePricings.forEach { pricing ->
                         PricingItemRow(
                             pricing = pricing,
                             onEditClick = { onEditPricing(pricing) }
@@ -416,7 +419,7 @@ private fun PricingItemRow(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "${pricing.originCity} ➔ ${pricing.destinationCity}",
+                text = "${pricing.originCity} ⇄ ${pricing.destinationCity}",
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
                 color = TextDark

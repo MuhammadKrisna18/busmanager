@@ -56,7 +56,7 @@ class DriverRepositoryImpl(
         val driverEntity = driverDao.getDriverById(driverId) ?: return
         val busId = driverEntity.assignedBusId
 
-        driverDao.updateDriver(driverEntity.copy(assignedBusId = null))
+        driverDao.updateDriver(driverEntity.copy(assignedBusId = null, isPendingRelease = false))
 
         if (busId != null) {
             val busEntity = busDao.getBusById(busId)
@@ -66,10 +66,15 @@ class DriverRepositoryImpl(
         }
     }
 
+    override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {
+        val driverEntity = driverDao.getDriverById(driverId) ?: return
+        driverDao.updateDriver(driverEntity.copy(isPendingRelease = isPending))
+    }
+
     override suspend fun fireDriver(driverId: String) {
         unassignDriver(driverId)
         val driverEntity = driverDao.getDriverById(driverId) ?: return
-        driverDao.updateDriver(driverEntity.copy(isHired = false, assignedBusId = null))
+        driverDao.updateDriver(driverEntity.copy(isHired = false, assignedBusId = null, isPendingRelease = false))
     }
 
     override suspend fun seedCandidateDriversIfEmpty() {

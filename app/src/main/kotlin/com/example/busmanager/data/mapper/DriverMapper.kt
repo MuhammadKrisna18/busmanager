@@ -9,7 +9,8 @@ fun DriverEntity.toDomain(): Driver = Driver(
     name = name,
     wagePerDay = Money.rupiah(wagePerDayAmount),
     assignedBusId = assignedBusId,
-    isHired = isHired
+    isHired = isHired,
+    isPendingRelease = isPendingRelease
 )
 
 fun Driver.toEntity(): DriverEntity = DriverEntity(
@@ -17,5 +18,6 @@ fun Driver.toEntity(): DriverEntity = DriverEntity(
     name = name,
     wagePerDayAmount = wagePerDay.amount,
     assignedBusId = assignedBusId,
-    isHired = isHired
+    isHired = isHired,
+    isPendingRelease = isPendingRelease
 )

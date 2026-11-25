@@ -92,10 +92,50 @@ class DriverManagementViewModel(
         }
     }
 
+    fun openUnassignConfirmation(driver: Driver) {
+        _uiState.update { it.copy(driverToUnassign = driver) }
+    }
+
+    fun closeUnassignConfirmation() {
+        _uiState.update { it.copy(driverToUnassign = null) }
+    }
+
+    fun confirmUnassignDriver() {
+        val driver = _uiState.value.driverToUnassign ?: return
+        executeUnassign(driver)
+        _uiState.update { it.copy(driverToUnassign = null) }
+    }
+
     fun unassignDriver(driverId: String) {
+        val driver = _uiState.value.hiredDrivers.find { it.id == driverId }
+        if (driver != null) {
+            executeUnassign(driver)
+        } else {
+            viewModelScope.launch {
+                driverRepository.unassignDriver(driverId)
+                _uiState.update { it.copy(message = "Tugas sopir berhasil dilepas") }
+            }
+        }
+    }
+
+    private fun executeUnassign(driver: Driver) {
         viewModelScope.launch {
-            driverRepository.unassignDriver(driverId)
-            _uiState.update { it.copy(message = "Tugas sopir berhasil dilepas") }
+            val assignedBus = _uiState.value.ownedBuses.find { it.id == driver.assignedBusId }
+            if (assignedBus != null && assignedBus.isOperating) {
+                driverRepository.setPendingRelease(driver.id, true)
+                _uiState.update {
+                    it.copy(
+                        message = "Sopir ${driver.name} sedang dinas. Tugas akan dilepas otomatis saat armada tiba di terminal."
+                    )
+                }
+            } else {
+                driverRepository.unassignDriver(driver.id)
+                _uiState.update {
+                    it.copy(
+                        message = "Tugas sopir berhasil dilepas"
+                    )
+                }
+            }
         }
     }
 
@@ -110,12 +150,23 @@ class DriverManagementViewModel(
     fun confirmFireDriver() {
         val driver = _uiState.value.driverToFire ?: return
         viewModelScope.launch {
-            driverRepository.fireDriver(driver.id)
-            _uiState.update {
-                it.copy(
-                    driverToFire = null,
-                    message = "${driver.name} telah diberhentikan (PHK)"
-                )
+            val assignedBus = _uiState.value.ownedBuses.find { it.id == driver.assignedBusId }
+            if (assignedBus != null && assignedBus.isOperating) {
+                driverRepository.setPendingRelease(driver.id, true)
+                _uiState.update {
+                    it.copy(
+                        driverToFire = null,
+                        message = "Sopir ${driver.name} sedang dinas. PHK akan diproses saat armada tiba di terminal."
+                    )
+                }
+            } else {
+                driverRepository.fireDriver(driver.id)
+                _uiState.update {
+                    it.copy(
+                        driverToFire = null,
+                        message = "${driver.name} telah diberhentikan (PHK)"
+                    )
+                }
             }
         }
     }

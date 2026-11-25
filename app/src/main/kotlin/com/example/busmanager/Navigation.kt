@@ -257,7 +257,10 @@ fun MainNavigation(appContainer: AppContainer) {
                 val viewModel: RouteInfoViewModel = viewModel {
                     RouteInfoViewModel(
                         getRouteOperationalStatusUseCase = appContainer.getRouteOperationalStatusUseCase,
-                        routePricingRepository = appContainer.routePricingRepository
+                        routePricingRepository = appContainer.routePricingRepository,
+                        fleetRepository = appContainer.fleetRepository,
+                        driverRepository = appContainer.driverRepository,
+                        routeScheduleRepository = appContainer.routeScheduleRepository
                     )
                 }
                 RouteInfoScreen(

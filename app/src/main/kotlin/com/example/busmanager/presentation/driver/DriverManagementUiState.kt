@@ -12,6 +12,7 @@ data class DriverManagementUiState(
     val selectedTab: DriverTab = DriverTab.HIRED,
     val selectedDriverForAssignment: Driver? = null,
     val driverToFire: Driver? = null,
+    val driverToUnassign: Driver? = null,
     val isLoading: Boolean = true,
     val message: String? = null
 ) {

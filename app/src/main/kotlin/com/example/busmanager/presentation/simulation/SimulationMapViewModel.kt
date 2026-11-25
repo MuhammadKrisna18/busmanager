@@ -285,6 +285,13 @@ class SimulationMapViewModel(
                 }
 
                 dispatchBusUseCase.completeTrip(trip.id)
+                bus?.driverId?.let { driverId ->
+                    val repo = driverRepository ?: return@let
+                    val driver = repo.getDriverById(driverId)
+                    if (driver?.isPendingRelease == true) {
+                        repo.unassignDriver(driverId)
+                    }
+                }
             }
         }
     }
@@ -297,6 +304,16 @@ class SimulationMapViewModel(
             val timeText = currentTime.formatTime()
 
             for (trip in trips) {
+                if (trip.isDwellingAtTransit) {
+                    val assignedBus = _uiState.value.ownedBuses.find { it.id == trip.busId }
+                    assignedBus?.driverId?.let { driverId ->
+                        val repo = driverRepository ?: return@let
+                        val driver = repo.getDriverById(driverId)
+                        if (driver?.isPendingRelease == true) {
+                            repo.unassignDriver(driverId)
+                        }
+                    }
+                }
                 for (exchange in trip.transitExchanges) {
                     val exchangeKey = "${trip.id}-${exchange.terminalId}-${exchange.stopIndex}"
                     if (!recordedTransitExchangeKeys.contains(exchangeKey)) {

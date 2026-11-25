@@ -10,5 +10,6 @@ data class DriverEntity(
     val name: String,
     val wagePerDayAmount: Long,
     val assignedBusId: String? = null,
-    val isHired: Boolean = false
+    val isHired: Boolean = false,
+    val isPendingRelease: Boolean = false
 )

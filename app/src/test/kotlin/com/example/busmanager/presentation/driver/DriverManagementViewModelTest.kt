@@ -154,6 +154,35 @@ class DriverManagementViewModelTest {
     }
 
     @Test
+    fun unassignDriverWhenBusOperatingMarksPendingRelease() = runTest {
+        val bus = Bus(
+            id = "bus-op-1",
+            busCode = "TN-99",
+            chassis = chassisRepo.getAllChassis().first().first(),
+            body = karoseriRepo.getAllBodies().first().first(),
+            isOperating = true,
+            driverId = "driver-1"
+        )
+        fakeFleetRepo.addBus(bus)
+        viewModel.assignDriverToBus("driver-1", "bus-op-1")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val driver = viewModel.uiState.value.hiredDrivers.first { it.id == "driver-1" }
+        viewModel.openUnassignConfirmation(driver)
+        assertEquals(driver, viewModel.uiState.value.driverToUnassign)
+
+        viewModel.confirmUnassignDriver()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertNull(state.driverToUnassign)
+        val updatedDriver = state.hiredDrivers.first { it.id == "driver-1" }
+        assertTrue(updatedDriver.isPendingRelease)
+        assertEquals("bus-op-1", updatedDriver.assignedBusId)
+        assertTrue(state.message!!.contains("sedang dinas"))
+    }
+
+    @Test
     fun openAndConfirmFireDriverRemovesFromHiredList() = runTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
@@ -230,7 +259,13 @@ class DriverManagementViewModelTest {
 
         override suspend fun unassignDriver(driverId: String) {
             val d = drivers[driverId] ?: return
-            drivers[driverId] = d.copy(assignedBusId = null)
+            drivers[driverId] = d.copy(assignedBusId = null, isPendingRelease = false)
+            refresh()
+        }
+
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {
+            val d = drivers[driverId] ?: return
+            drivers[driverId] = d.copy(isPendingRelease = isPending)
             refresh()
         }
 

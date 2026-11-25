@@ -128,7 +128,11 @@ fun DriverManagementScreen(
                         drivers = state.hiredDrivers,
                         buses = state.ownedBuses,
                         onAssignClick = { viewModel.openAssignDialog(it) },
-                        onUnassignClick = { viewModel.unassignDriver(it) },
+                        onUnassignClick = { driverId ->
+                            state.hiredDrivers.find { it.id == driverId }?.let {
+                                viewModel.openUnassignConfirmation(it)
+                            } ?: viewModel.unassignDriver(driverId)
+                        },
                         onFireClick = { viewModel.openFireConfirmation(it) },
                         modifier = Modifier.weight(1f)
                     )
@@ -152,6 +156,17 @@ fun DriverManagementScreen(
                 onAssignConfirm = { busId ->
                     viewModel.assignDriverToBus(state.selectedDriverForAssignment!!.id, busId)
                 }
+            )
+        }
+
+        if (state.driverToUnassign != null) {
+            val unassignDriver = state.driverToUnassign!!
+            val assignedBus = state.ownedBuses.find { it.id == unassignDriver.assignedBusId }
+            UnassignDriverDialog(
+                driver = unassignDriver,
+                assignedBus = assignedBus,
+                onDismiss = { viewModel.closeUnassignConfirmation() },
+                onConfirm = { viewModel.confirmUnassignDriver() }
             )
         }
 
@@ -501,16 +516,33 @@ private fun HiredDriverCard(
                     )
                 }
 
+                if (driver.isPendingRelease) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(Color(0xFFFEF3C7))
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "⏳ Menunggu Tiba di Terminal",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFD97706)
+                        )
+                    }
+                }
+
                 if (assignedBus != null) {
                     OutlinedButton(
                         onClick = onUnassignClick,
+                        enabled = !driver.isPendingRelease,
                         shape = RoundedCornerShape(AppDimens.radiusPill),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                     ) {
                         Text(
-                            text = "Lepas",
+                            text = if (driver.isPendingRelease) "Menunggu Tiba" else "Lepas",
                             fontSize = 12.sp,
-                            color = TextMuted
+                            color = if (driver.isPendingRelease) TextMuted else Color(0xFFD97706)
                         )
                     }
                 }
@@ -754,6 +786,50 @@ private fun BusSelectionItem(
             }
         }
     }
+}
+
+@Composable
+private fun UnassignDriverDialog(
+    driver: Driver,
+    assignedBus: Bus?,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    val isOperating = assignedBus?.isOperating == true
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Lepas Tugas Pengemudi",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        },
+        text = {
+            Text(
+                text = if (isOperating) {
+                    "Pengemudi ${driver.name} saat ini sedang bertugas di jalan raya bersama armada ${assignedBus?.busCode ?: "bus"}. Tugas pengemudi akan otomatis dilepas setelah armada tiba di terminal/titik singgah berikutnya."
+                } else {
+                    "Apakah Anda yakin ingin melepas tugas pengemudi ${driver.name} dari armada ${assignedBus?.busCode ?: "bus"}?"
+                },
+                fontSize = 14.sp,
+                color = TextDark
+            )
+        },
+        confirmButton = {
+            Button(
+                onClick = onConfirm,
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+            ) {
+                Text(text = if (isOperating) "Mengerti & Jadwalkan Lepas" else "Ya, Lepas", color = Color.White)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "Batal")
+            }
+        }
+    )
 }
 
 @Composable

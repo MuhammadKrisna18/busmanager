@@ -7,7 +7,8 @@ data class Driver(
     val name: String,
     val wagePerDay: Money,
     val assignedBusId: String? = null,
-    val isHired: Boolean = false
+    val isHired: Boolean = false,
+    val isPendingRelease: Boolean = false
 ) {
     init {
         require(name.isNotBlank()) { "Driver name cannot be blank" }

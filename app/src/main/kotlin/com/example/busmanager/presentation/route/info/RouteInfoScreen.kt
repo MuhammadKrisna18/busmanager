@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -31,6 +33,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,6 +44,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.domain.driver.model.Driver
+import com.example.busmanager.domain.fleet.model.Bus
+import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
@@ -55,6 +61,7 @@ import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextMuted
+import com.example.busmanager.ui.theme.WarningAmber
 import com.example.busmanager.ui.theme.WarningAmberLight
 
 @Composable
@@ -101,6 +108,34 @@ fun RouteInfoScreen(
                 contentPadding = PaddingValues(top = AppDimens.paddingSmall, bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall)
             ) {
+                if (uiState.message != null) {
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.clearMessage() },
+                            shape = RoundedCornerShape(AppDimens.radiusSmall),
+                            colors = CardDefaults.cardColors(containerColor = SuccessGreenLight)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = uiState.message!!,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = SuccessGreen
+                                )
+                                Text(text = "✕", fontSize = 12.sp, color = SuccessGreen)
+                            }
+                        }
+                    }
+                }
+
                 item {
                     RouteFilterRow(
                         selectedFilter = uiState.selectedFilter,
@@ -142,10 +177,35 @@ fun RouteInfoScreen(
                     items(uiState.filteredRoutes, key = { it.operationalInfo.route.id }) { item ->
                         RouteDetailCard(
                             item = item,
-                            onTogglePricings = { viewModel.togglePricingsExpanded(item.operationalInfo.route.id) }
+                            onTogglePricings = { viewModel.togglePricingsExpanded(item.operationalInfo.route.id) },
+                            onAssignBusClick = { viewModel.openAssignBusDialog(it) },
+                            onAssignDriverClick = { route, bus -> viewModel.openAssignDriverDialog(route, bus) }
                         )
                     }
                 }
+            }
+
+            if (uiState.selectedRouteForBusAssign != null) {
+                AssignBusModal(
+                    route = uiState.selectedRouteForBusAssign!!,
+                    availableBuses = uiState.availableBuses,
+                    onDismiss = { viewModel.closeAssignBusDialog() },
+                    onBusSelected = { busId ->
+                        viewModel.assignBusToRoute(busId, uiState.selectedRouteForBusAssign!!.id)
+                    }
+                )
+            }
+
+            if (uiState.selectedRouteForDriverAssign != null) {
+                AssignDriverModal(
+                    route = uiState.selectedRouteForDriverAssign!!,
+                    targetBus = uiState.targetBusForDriverAssign,
+                    availableDrivers = uiState.availableDrivers,
+                    onDismiss = { viewModel.closeAssignDriverDialog() },
+                    onDriverSelected = { driverId, busId ->
+                        viewModel.assignDriverToBus(driverId, busId)
+                    }
+                )
             }
         }
     }
@@ -263,7 +323,9 @@ private fun RouteFilterRow(
 @Composable
 private fun RouteDetailCard(
     item: RouteDetailItem,
-    onTogglePricings: () -> Unit
+    onTogglePricings: () -> Unit,
+    onAssignBusClick: (BusRoute) -> Unit,
+    onAssignDriverClick: (BusRoute, Bus?) -> Unit
 ) {
     val info = item.operationalInfo
     val route = info.route
@@ -433,6 +495,43 @@ private fun RouteDetailCard(
                         }
                     }
                 }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = { onAssignBusClick(route) },
+                        shape = RoundedCornerShape(AppDimens.radiusPill),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "🚌 Input Bus",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryBlue
+                        )
+                    }
+
+                    val busNeedsDriver = info.assignedBuses.firstOrNull { it.driverId == null } ?: info.assignedBuses.firstOrNull()
+                    OutlinedButton(
+                        onClick = { onAssignDriverClick(route, busNeedsDriver) },
+                        shape = RoundedCornerShape(AppDimens.radiusPill),
+                        modifier = Modifier.weight(1f),
+                        enabled = info.assignedBuses.isNotEmpty(),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "👨‍✈️ Input Driver",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (info.assignedBuses.isNotEmpty()) PrimaryBlue else TextMuted
+                        )
+                    }
+                }
             }
 
             if (info.departureSchedules.isNotEmpty()) {
@@ -461,7 +560,10 @@ private fun RouteDetailCard(
                 }
             }
 
-            if (item.pricings.isNotEmpty()) {
+            val uniquePricings = item.pricings.distinctBy {
+                minOf(it.originTerminalId, it.destinationTerminalId) to maxOf(it.originTerminalId, it.destinationTerminalId)
+            }
+            if (uniquePricings.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(
                     modifier = Modifier
@@ -472,7 +574,7 @@ private fun RouteDetailCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "🏷️ Daftar Tarif Tiket (${item.pricings.size} Relasi)",
+                        text = "🏷️ Daftar Tarif Tiket (${uniquePricings.size} Relasi)",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlue
@@ -494,14 +596,14 @@ private fun RouteDetailCard(
                             .padding(8.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        item.pricings.forEach { pricing ->
+                        uniquePricings.forEach { pricing ->
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "${pricing.originCity} ➔ ${pricing.destinationCity}",
+                                    text = "${pricing.originCity} ⇄ ${pricing.destinationCity}",
                                     fontSize = 10.sp,
                                     color = TextDark
                                 )
@@ -518,6 +620,207 @@ private fun RouteDetailCard(
             }
         }
     }
+}
+
+@Composable
+private fun AssignBusModal(
+    route: BusRoute,
+    availableBuses: List<Bus>,
+    onDismiss: () -> Unit,
+    onBusSelected: (String) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Tugaskan Armada Bus",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextDark
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Trayek: ${route.originTerminal.city} ➔ ${route.destinationTerminal.city}",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = PrimaryBlueDark
+                )
+                if (availableBuses.isEmpty()) {
+                    Text(
+                        text = "Tidak ada armada bus yang menganggur di garasi. Silakan beli armada baru di Showroom atau lepas penugasan bus dari trayek lain.",
+                        fontSize = 12.sp,
+                        color = TextMuted
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 280.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        items(availableBuses) { bus ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onBusSelected(bus.id) },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(containerColor = IceBlue)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "${bus.busCode} • ${bus.fullName}",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextDark
+                                        )
+                                        Text(
+                                            text = "Kelas ${bus.body.busClass.displayName} • ${bus.body.passengerCapacity} Kursi",
+                                            fontSize = 10.sp,
+                                            color = TextMuted
+                                        )
+                                    }
+                                    Button(
+                                        onClick = { onBusSelected(bus.id) },
+                                        shape = RoundedCornerShape(AppDimens.radiusPill),
+                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                                    ) {
+                                        Text("Pilih", fontSize = 11.sp, color = Color.White)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Tutup")
+            }
+        }
+    )
+}
+
+@Composable
+private fun AssignDriverModal(
+    route: BusRoute,
+    targetBus: Bus?,
+    availableDrivers: List<Driver>,
+    onDismiss: () -> Unit,
+    onDriverSelected: (String, String) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Tugaskan Pengemudi (Sopir)",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextDark
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = if (targetBus != null) {
+                        "Target Armada: ${targetBus.busCode} (${targetBus.fullName})"
+                    } else {
+                        "Trayek: ${route.originTerminal.city} ➔ ${route.destinationTerminal.city}"
+                    },
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = PrimaryBlueDark
+                )
+                if (targetBus == null) {
+                    Text(
+                        text = "Belum ada armada bus yang ditugaskan ke trayek ini. Silakan input bus terlebih dahulu sebelum menugaskan driver.",
+                        fontSize = 12.sp,
+                        color = WarningAmber
+                    )
+                } else if (availableDrivers.isEmpty()) {
+                    Text(
+                        text = "Tidak ada pengemudi yang menganggur. Silakan rekrut pengemudi baru di menu Manajemen Kru.",
+                        fontSize = 12.sp,
+                        color = TextMuted
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 280.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        items(availableDrivers) { driver ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onDriverSelected(driver.id, targetBus.id) },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(containerColor = IceBlue)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "👨‍✈️ ${driver.name}",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = TextDark
+                                        )
+                                        Text(
+                                            text = "Gaji: ${driver.wagePerDay.formatRupiah()} / hari",
+                                            fontSize = 10.sp,
+                                            color = TextMuted
+                                        )
+                                    }
+                                    Button(
+                                        onClick = { onDriverSelected(driver.id, targetBus.id) },
+                                        shape = RoundedCornerShape(AppDimens.radiusPill),
+                                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                                    ) {
+                                        Text("Pilih", fontSize = 11.sp, color = Color.White)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Tutup")
+            }
+        }
+    )
 }
 
 @Composable

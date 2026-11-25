@@ -1,5 +1,6 @@
 package com.example.busmanager.domain.simulation.usecase
 
+import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
@@ -16,7 +17,8 @@ class DispatchBusUseCase(
         direction: RouteDirection = RouteDirection.ORIGIN_TO_DESTINATION,
         currentTime: GameCalendar = GameCalendar.initial(),
         headwayMinutes: Int = 60,
-        transitDwellMinutes: Int = 10
+        transitDwellMinutes: Int = 10,
+        ticketPricePerPassenger: Money? = null
     ): ActiveBusTrip {
         return simulationTripRepository.dispatchBus(
             bus = bus,
@@ -24,7 +26,8 @@ class DispatchBusUseCase(
             direction = direction,
             currentTime = currentTime,
             headwayMinutes = headwayMinutes,
-            transitDwellMinutes = transitDwellMinutes
+            transitDwellMinutes = transitDwellMinutes,
+            ticketPricePerPassenger = ticketPricePerPassenger
         )
     }
 

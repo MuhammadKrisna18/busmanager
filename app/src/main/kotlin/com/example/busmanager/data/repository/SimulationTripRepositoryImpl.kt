@@ -36,14 +36,19 @@ class SimulationTripRepositoryImpl(
         direction: RouteDirection,
         currentTime: GameCalendar,
         headwayMinutes: Int,
-        transitDwellMinutes: Int
+        transitDwellMinutes: Int,
+        ticketPricePerPassenger: Money?
     ): ActiveBusTrip {
         val capacity = bus.body.passengerCapacity
         val passengerCount = passengerDemandGenerator.generateInitialLoad(capacity)
 
-        val farePerKm = 650L
-        val earningsAmount = (farePerKm * route.totalDistanceKm.toLong() * passengerCount)
-        val ticketEarnings = Money.rupiah(earningsAmount)
+        val ticketEarnings = if (ticketPricePerPassenger != null && ticketPricePerPassenger.amount > 0L) {
+            Money.rupiah(ticketPricePerPassenger.amount * passengerCount)
+        } else {
+            val farePerKm = 650L
+            val earningsAmount = (farePerKm * route.totalDistanceKm.toLong() * passengerCount)
+            Money.rupiah(earningsAmount)
+        }
 
         val dwellTotal = route.transitTerminals.size * transitDwellMinutes
         val totalEstimatedArrivalMinutes = (route.totalEstimatedDurationMinutes + dwellTotal).coerceAtLeast(30)
@@ -75,7 +80,8 @@ class SimulationTripRepositoryImpl(
             isDwellingAtTransit = false,
             dwellingTerminalName = null,
             headwayMinutes = headwayMinutes,
-            transitDwellMinutes = transitDwellMinutes
+            transitDwellMinutes = transitDwellMinutes,
+            ticketPricePerPassenger = ticketPricePerPassenger
         )
 
         _activeTrips.update { current ->
@@ -167,7 +173,12 @@ class SimulationTripRepositoryImpl(
                                 totalAlighted += alighted
 
                                 val remainingDistance = segmentsForDirection.drop(i + 1).sumOf { it.distanceKm }
-                                val transitTicketAmount = (650L * remainingDistance.toLong() * boarded).coerceAtLeast(0L)
+                                val transitTicketAmount = if (trip.ticketPricePerPassenger != null && trip.route.totalDistanceKm > 0) {
+                                    val frac = (remainingDistance / trip.route.totalDistanceKm).coerceIn(0.1, 1.0)
+                                    (trip.ticketPricePerPassenger.amount * frac * boarded).toLong().coerceAtLeast(0L)
+                                } else {
+                                    (650L * remainingDistance.toLong() * boarded).coerceAtLeast(0L)
+                                }
                                 currentEarnings += Money.rupiah(transitTicketAmount)
 
                                 if (transitTerm != null) {

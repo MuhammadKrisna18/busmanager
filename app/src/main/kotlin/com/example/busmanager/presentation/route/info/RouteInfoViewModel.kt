@@ -9,6 +9,8 @@ import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
+import com.example.busmanager.domain.route.usecase.DeleteRouteResult
+import com.example.busmanager.domain.route.usecase.DeleteRouteUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +26,8 @@ class RouteInfoViewModel(
     private val routePricingRepository: RoutePricingRepository,
     private val fleetRepository: FleetRepository? = null,
     private val driverRepository: DriverRepository? = null,
-    private val routeScheduleRepository: RouteScheduleRepository? = null
+    private val routeScheduleRepository: RouteScheduleRepository? = null,
+    private val deleteRouteUseCase: DeleteRouteUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RouteInfoUiState())
@@ -207,6 +210,50 @@ class RouteInfoViewModel(
 
     fun clearMessage() {
         _uiState.update { it.copy(message = null) }
+    }
+
+    fun clearErrorMessage() {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
+
+    fun requestDeleteRoute(route: BusRoute) {
+        _uiState.update { it.copy(routeToDelete = route) }
+    }
+
+    fun dismissDeleteRouteDialog() {
+        _uiState.update { it.copy(routeToDelete = null) }
+    }
+
+    fun confirmDeleteRoute(routeId: String) {
+        viewModelScope.launch {
+            val useCase = deleteRouteUseCase ?: return@launch
+            when (val result = useCase(routeId)) {
+                is DeleteRouteResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            routeToDelete = null,
+                            message = "Trayek ${result.routeName} berhasil ditutup"
+                        )
+                    }
+                }
+                is DeleteRouteResult.RouteHasActiveTrips -> {
+                    _uiState.update {
+                        it.copy(
+                            routeToDelete = null,
+                            errorMessage = "Tidak dapat menutup trayek: ${result.activeCount} armada sedang berjalan di rute ini"
+                        )
+                    }
+                }
+                is DeleteRouteResult.RouteNotFound -> {
+                    _uiState.update {
+                        it.copy(
+                            routeToDelete = null,
+                            errorMessage = "Trayek tidak ditemukan"
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun filterItems(items: List<RouteDetailItem>, filter: RouteInfoFilter): List<RouteDetailItem> {

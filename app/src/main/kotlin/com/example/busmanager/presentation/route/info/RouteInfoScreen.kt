@@ -179,10 +179,72 @@ fun RouteInfoScreen(
                             item = item,
                             onTogglePricings = { viewModel.togglePricingsExpanded(item.operationalInfo.route.id) },
                             onAssignBusClick = { viewModel.openAssignBusDialog(it) },
-                            onAssignDriverClick = { route, bus -> viewModel.openAssignDriverDialog(route, bus) }
+                            onAssignDriverClick = { route, bus -> viewModel.openAssignDriverDialog(route, bus) },
+                            onDeleteRouteClick = { viewModel.requestDeleteRoute(it) }
                         )
                     }
                 }
+            }
+
+            if (uiState.routeToDelete != null) {
+                val route = uiState.routeToDelete!!
+                AlertDialog(
+                    onDismissRequest = { viewModel.dismissDeleteRouteDialog() },
+                    title = {
+                        Text(
+                            text = "Konfirmasi Tutup Trayek",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = TextDark
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = "Apakah Anda yakin ingin menutup dan menghapus trayek \"${route.name}\"?\n\nSeluruh jadwal operasional dan penugasan armada pada trayek ini akan dibatalkan.",
+                            fontSize = 13.sp,
+                            color = TextMuted
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = { viewModel.confirmDeleteRoute(route.id) },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626))
+                        ) {
+                            Text("Tutup Trayek", color = Color.White, fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        OutlinedButton(onClick = { viewModel.dismissDeleteRouteDialog() }) {
+                            Text("Batal")
+                        }
+                    }
+                )
+            }
+
+            if (uiState.errorMessage != null) {
+                AlertDialog(
+                    onDismissRequest = { viewModel.clearErrorMessage() },
+                    title = {
+                        Text(
+                            text = "Peringatan",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color(0xFFDC2626)
+                        )
+                    },
+                    text = {
+                        Text(
+                            text = uiState.errorMessage!!,
+                            fontSize = 13.sp,
+                            color = TextDark
+                        )
+                    },
+                    confirmButton = {
+                        Button(onClick = { viewModel.clearErrorMessage() }) {
+                            Text("Mengerti")
+                        }
+                    }
+                )
             }
 
             if (uiState.selectedRouteForBusAssign != null) {
@@ -325,7 +387,8 @@ private fun RouteDetailCard(
     item: RouteDetailItem,
     onTogglePricings: () -> Unit,
     onAssignBusClick: (BusRoute) -> Unit,
-    onAssignDriverClick: (BusRoute, Bus?) -> Unit
+    onAssignDriverClick: (BusRoute, Bus?) -> Unit,
+    onDeleteRouteClick: (BusRoute) -> Unit
 ) {
     val info = item.operationalInfo
     val route = info.route
@@ -529,6 +592,20 @@ private fun RouteDetailCard(
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (info.assignedBuses.isNotEmpty()) PrimaryBlue else TextMuted
+                        )
+                    }
+
+                    OutlinedButton(
+                        onClick = { onDeleteRouteClick(route) },
+                        shape = RoundedCornerShape(AppDimens.radiusPill),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFCA5A5))
+                    ) {
+                        Text(
+                            text = "🗑️ Tutup",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFDC2626)
                         )
                     }
                 }

@@ -27,7 +27,8 @@ data class ActiveBusTrip(
     val dwellingTerminalName: String? = null,
     val headwayMinutes: Int = 60,
     val transitDwellMinutes: Int = 10,
-    val transitExchanges: List<TransitExchangeInfo> = emptyList()
+    val transitExchanges: List<TransitExchangeInfo> = emptyList(),
+    val ticketPricePerPassenger: Money? = null
 ) {
     val remainingMinutes: Int
         get() = (estimatedArrivalMinutes - elapsedMinutes).coerceAtLeast(0)

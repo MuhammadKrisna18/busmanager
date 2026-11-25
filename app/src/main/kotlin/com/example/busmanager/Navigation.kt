@@ -260,7 +260,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         routePricingRepository = appContainer.routePricingRepository,
                         fleetRepository = appContainer.fleetRepository,
                         driverRepository = appContainer.driverRepository,
-                        routeScheduleRepository = appContainer.routeScheduleRepository
+                        routeScheduleRepository = appContainer.routeScheduleRepository,
+                        deleteRouteUseCase = appContainer.deleteRouteUseCase
                     )
                 }
                 RouteInfoScreen(

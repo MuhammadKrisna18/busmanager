@@ -31,5 +31,7 @@ data class RouteInfoUiState(
     val operatingRouteCount: Int = 0,
     val standbyRouteCount: Int = 0,
     val isLoading: Boolean = true,
-    val message: String? = null
+    val message: String? = null,
+    val errorMessage: String? = null,
+    val routeToDelete: BusRoute? = null
 )

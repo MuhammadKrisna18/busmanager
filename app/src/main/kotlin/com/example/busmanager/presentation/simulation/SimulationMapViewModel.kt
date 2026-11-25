@@ -475,14 +475,6 @@ class SimulationMapViewModel(
         }
         val headway = schedule?.headwayMinutes ?: 60
         val dwell = schedule?.transitDwellMinutes ?: 10
-        val trip = dispatchBusUseCase(
-            bus = bus,
-            route = route,
-            direction = direction,
-            currentTime = currentTime,
-            headwayMinutes = headway,
-            transitDwellMinutes = dwell
-        )
 
         val depTerminal = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
             route.originTerminal
@@ -498,15 +490,27 @@ class SimulationMapViewModel(
         }
 
         viewModelScope.launch {
-            fleetRepository?.updateBus(updatedBus)
             val pricings = routePricingRepository?.getPricingsListForRoute(route.id) ?: emptyList()
             val avgTicketPrice = if (pricings.isNotEmpty()) {
-                pricings.map { it.price.amount }.average().toLong().coerceAtLeast(50_000L)
+                val avg = pricings.map { it.price.amount }.average().toLong()
+                Money.rupiah(avg.coerceAtLeast(30_000L))
             } else {
-                75_000L
+                Money.rupiah((650L * route.totalDistanceKm).toLong())
             }
+
+            val trip = dispatchBusUseCase(
+                bus = bus,
+                route = route,
+                direction = direction,
+                currentTime = currentTime,
+                headwayMinutes = headway,
+                transitDwellMinutes = dwell,
+                ticketPricePerPassenger = avgTicketPrice
+            )
+
+            fleetRepository?.updateBus(updatedBus)
             val passengers = trip.passengerCount
-            val ticketEarnings = Money.rupiah(avgTicketPrice * passengers)
+            val ticketEarnings = trip.ticketEarnings
 
             val dateText = "${currentTime.dayOfWeekName()}, ${currentTime.formatDate()}"
             val timeText = currentTime.formatTime()

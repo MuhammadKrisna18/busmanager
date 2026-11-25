@@ -1,5 +1,6 @@
 package com.example.busmanager.domain.simulation.repository
 
+import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
@@ -23,7 +24,8 @@ interface SimulationTripRepository {
         direction: RouteDirection,
         currentTime: GameCalendar,
         headwayMinutes: Int,
-        transitDwellMinutes: Int
+        transitDwellMinutes: Int,
+        ticketPricePerPassenger: Money? = null
     ): ActiveBusTrip {
         return dispatchBus(bus, route, direction, currentTime)
     }

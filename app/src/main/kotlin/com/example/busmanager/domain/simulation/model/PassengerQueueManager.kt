@@ -52,14 +52,7 @@ class PassengerQueueManager(
     fun advanceTime(minutes: Int, currentTime: GameCalendar, activeRoutes: List<BusRoute>) {
         if (minutes <= 0) return
 
-        val hourMultiplier = when (currentTime.hour) {
-            in 6..9 -> 1.5f
-            in 16..19 -> 1.4f
-            in 10..15 -> 1.0f
-            in 20..23 -> 0.6f
-            else -> 0.2f
-        }
-
+        val arrivalMultiplier = random.nextDouble(0.2, 2.2).toFloat()
         val baseArrivalsPerHour = 36f
 
         _queues.update { currentMap ->
@@ -76,7 +69,7 @@ class PassengerQueueManager(
                         waitingPassengers = 30
                     )
 
-                    val arrivalRatePerMin = (baseArrivalsPerHour * hourMultiplier * terminal.passengerDemandMultiplier) / 60f
+                    val arrivalRatePerMin = (baseArrivalsPerHour * arrivalMultiplier * terminal.passengerDemandMultiplier) / 60f
                     val newArrivals = (arrivalRatePerMin * minutes).roundToInt()
 
                     val newElapsedSinceService = existing.minutesSinceLastService + minutes

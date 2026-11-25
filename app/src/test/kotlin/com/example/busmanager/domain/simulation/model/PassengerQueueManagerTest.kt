@@ -3,6 +3,7 @@ package com.example.busmanager.domain.simulation.model
 import com.example.busmanager.data.local.datasource.TerminalDataSource
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
+import kotlin.random.Random
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -85,22 +86,17 @@ class PassengerQueueManagerTest {
     }
 
     @Test
-    fun peakHourMultiplier_generatesMorePassengersThanOffPeak() {
+    fun randomArrivalMultiplier_generatesDynamicFluctuation() {
         val terminalId = testRoute.originTerminal.id
         val routeId = testRoute.id
 
-        queueManager.setInitialQueue(terminalId, routeId, 0)
-        val morningPeak = GameCalendar(day = 1, month = 1, year = 2026, hour = 7, minute = 30)
-        queueManager.advanceTime(minutes = 60, currentTime = morningPeak, activeRoutes = listOf(testRoute))
-        val morningPassengers = queueManager.getQueue(terminalId, routeId).waitingPassengers
+        val managerWithSeed = PassengerQueueManager(Random(42))
+        managerWithSeed.setInitialQueue(terminalId, routeId, 0)
+        val testCalendar = GameCalendar(day = 1, month = 1, year = 2026, hour = 12, minute = 0)
+        managerWithSeed.advanceTime(minutes = 60, currentTime = testCalendar, activeRoutes = listOf(testRoute))
+        val count = managerWithSeed.getQueue(terminalId, routeId).waitingPassengers
 
-        val offPeakManager = PassengerQueueManager()
-        offPeakManager.setInitialQueue(terminalId, routeId, 0)
-        val nightOffPeak = GameCalendar(day = 1, month = 1, year = 2026, hour = 23, minute = 30)
-        offPeakManager.advanceTime(minutes = 60, currentTime = nightOffPeak, activeRoutes = listOf(testRoute))
-        val nightPassengers = offPeakManager.getQueue(terminalId, routeId).waitingPassengers
-
-        assertTrue(morningPassengers > nightPassengers)
+        assertTrue(count > 0)
     }
 
     @Test

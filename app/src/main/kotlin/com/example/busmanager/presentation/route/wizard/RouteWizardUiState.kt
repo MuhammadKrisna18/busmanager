@@ -20,6 +20,7 @@ data class RouteWizardUiState(
     val currentStep: RouteWizardStep = RouteWizardStep.ORIGIN_DESTINATION,
     val allTerminals: List<Terminal> = emptyList(),
     val allSegments: List<RouteSegment> = emptyList(),
+    val selectedPathNodes: List<Terminal> = emptyList(),
     val selectedOrigin: Terminal? = null,
     val selectedDestination: Terminal? = null,
 
@@ -115,8 +116,19 @@ data class RouteWizardUiState(
     val hasConflict: Boolean
         get() = hasOutboundConflict || (isRoundTrip && (hasReturnConflict || hasLayoverConflict))
 
+    val candidateNeighborTerminalIds: Set<String>
+        get() {
+            val head = selectedPathNodes.lastOrNull() ?: return emptySet()
+            val selectedIds = selectedPathNodes.map { it.id }.toSet()
+            return allSegments
+                .filter { it.fromTerminalId == head.id }
+                .map { it.toTerminalId }
+                .filter { it !in selectedIds }
+                .toSet()
+        }
+
     val canProceedFromStep1: Boolean
-        get() = selectedOrigin != null && selectedDestination != null && selectedOrigin.id != selectedDestination.id
+        get() = (selectedPathNodes.size >= 2 && builtRoute != null) || (selectedOrigin != null && selectedDestination != null && selectedOrigin.id != selectedDestination.id)
 
     val canProceedFromStep2: Boolean
         get() = builtRoute != null

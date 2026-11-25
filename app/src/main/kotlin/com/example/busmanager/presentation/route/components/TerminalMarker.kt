@@ -39,6 +39,7 @@ enum class TerminalNodeRole {
     ORIGIN,
     DESTINATION,
     TRANSIT,
+    NEXT_CANDIDATE,
     DEFAULT
 }
 
@@ -53,6 +54,7 @@ fun TerminalMarker(
         TerminalNodeRole.ORIGIN -> SuccessGreen
         TerminalNodeRole.DESTINATION -> PrimaryBlue
         TerminalNodeRole.TRANSIT -> WarningAmber
+        TerminalNodeRole.NEXT_CANDIDATE -> Color(0xFFFFB300)
         TerminalNodeRole.DEFAULT -> SurfaceWhite
     }
 
@@ -60,6 +62,7 @@ fun TerminalMarker(
         TerminalNodeRole.ORIGIN -> "Asal"
         TerminalNodeRole.DESTINATION -> "Tujuan"
         TerminalNodeRole.TRANSIT -> null
+        TerminalNodeRole.NEXT_CANDIDATE -> "✨ Sambung"
         TerminalNodeRole.DEFAULT -> null
     }
 

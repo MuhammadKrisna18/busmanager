@@ -112,7 +112,9 @@ fun RouteWizardScreen(
                             uiState = uiState,
                             onSelectOrigin = { viewModel.selectOrigin(it) },
                             onSelectDestination = { viewModel.selectDestination(it) },
-                            onTerminalMapClick = { viewModel.onTerminalMapClick(it) }
+                            onTerminalMapClick = { viewModel.onTerminalMapClick(it) },
+                            onUndoClick = { viewModel.undoLastPathNode() },
+                            onResetClick = { viewModel.resetPathNodes() }
                         )
                     }
                     RouteWizardStep.PATH_AND_STOPS -> {

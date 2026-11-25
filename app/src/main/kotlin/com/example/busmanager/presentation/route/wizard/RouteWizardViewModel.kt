@@ -93,7 +93,8 @@ class RouteWizardViewModel(
 
     fun selectOrigin(terminal: Terminal?) {
         _uiState.update {
-            val updated = it.copy(selectedOrigin = terminal, errorMessage = null)
+            val nodes = if (terminal != null) listOf(terminal) else emptyList()
+            val updated = it.copy(selectedOrigin = terminal, selectedPathNodes = nodes, errorMessage = null)
             if (terminal != null && updated.selectedDestination != null && updated.selectedDestination.id != terminal.id) {
                 calculatePathsForTerminals(terminal, updated.selectedDestination, updated)
             } else {
@@ -115,16 +116,130 @@ class RouteWizardViewModel(
 
     fun onTerminalMapClick(terminal: Terminal) {
         val state = _uiState.value
-        when {
-            state.selectedOrigin == null -> selectOrigin(terminal)
-            state.selectedDestination == null -> {
-                if (state.selectedOrigin.id != terminal.id) {
-                    selectDestination(terminal)
-                }
+        val currentNodes = state.selectedPathNodes
+        if (currentNodes.isEmpty()) {
+            selectFirstTerminal(terminal)
+            return
+        }
+
+        val head = currentNodes.last()
+        if (terminal.id == head.id) {
+            undoLastPathNode()
+            return
+        }
+
+        val candidates = state.candidateNeighborTerminalIds
+        if (candidates.contains(terminal.id)) {
+            appendPathNode(terminal)
+        } else {
+            if (currentNodes.any { it.id == terminal.id }) {
+                _uiState.update { it.copy(errorMessage = "${terminal.name} sudah berada di dalam rute yang dipilih.") }
+            } else {
+                _uiState.update { it.copy(errorMessage = "${terminal.name} tidak terhubung langsung dengan ${head.name}. Sentuh terminal tetangga yang menyala.") }
             }
-            state.selectedOrigin.id == terminal.id -> selectOrigin(null)
-            state.selectedDestination.id == terminal.id -> selectDestination(null)
-            else -> selectDestination(terminal)
+        }
+    }
+
+    fun selectFirstTerminal(terminal: Terminal) {
+        _uiState.update { state ->
+            state.copy(
+                selectedPathNodes = listOf(terminal),
+                selectedOrigin = terminal,
+                selectedDestination = null,
+                builtRoute = null,
+                pricings = emptyList(),
+                availablePaths = emptyList(),
+                activeTransitIds = emptySet(),
+                errorMessage = null
+            )
+        }
+    }
+
+    fun appendPathNode(terminal: Terminal) {
+        _uiState.update { state ->
+            val updatedNodes = state.selectedPathNodes + terminal
+            val origin = updatedNodes.first()
+            val destination = updatedNodes.last()
+            val intermediate = if (updatedNodes.size > 2) {
+                updatedNodes.subList(1, updatedNodes.size - 1).map { it.id }.toSet()
+            } else {
+                emptySet()
+            }
+            val intermediateState = state.copy(
+                selectedPathNodes = updatedNodes,
+                selectedOrigin = origin,
+                selectedDestination = destination,
+                availablePaths = listOf(updatedNodes),
+                selectedPathIndex = 0,
+                activeTransitIds = intermediate,
+                errorMessage = null
+            )
+            rebuildRouteInternal(intermediateState)
+        }
+    }
+
+    fun undoLastPathNode() {
+        _uiState.update { state ->
+            val currentNodes = state.selectedPathNodes
+            if (currentNodes.isEmpty()) return@update state
+            val updatedNodes = currentNodes.dropLast(1)
+            if (updatedNodes.isEmpty()) {
+                state.copy(
+                    selectedPathNodes = emptyList(),
+                    selectedOrigin = null,
+                    selectedDestination = null,
+                    builtRoute = null,
+                    pricings = emptyList(),
+                    availablePaths = emptyList(),
+                    activeTransitIds = emptySet(),
+                    errorMessage = null
+                )
+            } else if (updatedNodes.size == 1) {
+                val origin = updatedNodes.first()
+                state.copy(
+                    selectedPathNodes = updatedNodes,
+                    selectedOrigin = origin,
+                    selectedDestination = null,
+                    builtRoute = null,
+                    pricings = emptyList(),
+                    availablePaths = emptyList(),
+                    activeTransitIds = emptySet(),
+                    errorMessage = null
+                )
+            } else {
+                val origin = updatedNodes.first()
+                val destination = updatedNodes.last()
+                val intermediate = if (updatedNodes.size > 2) {
+                    updatedNodes.subList(1, updatedNodes.size - 1).map { it.id }.toSet()
+                } else {
+                    emptySet()
+                }
+                val intermediateState = state.copy(
+                    selectedPathNodes = updatedNodes,
+                    selectedOrigin = origin,
+                    selectedDestination = destination,
+                    availablePaths = listOf(updatedNodes),
+                    selectedPathIndex = 0,
+                    activeTransitIds = intermediate,
+                    errorMessage = null
+                )
+                rebuildRouteInternal(intermediateState)
+            }
+        }
+    }
+
+    fun resetPathNodes() {
+        _uiState.update { state ->
+            state.copy(
+                selectedPathNodes = emptyList(),
+                selectedOrigin = null,
+                selectedDestination = null,
+                builtRoute = null,
+                pricings = emptyList(),
+                availablePaths = emptyList(),
+                activeTransitIds = emptySet(),
+                errorMessage = null
+            )
         }
     }
 
@@ -158,6 +273,7 @@ class RouteWizardViewModel(
         }
 
         val intermediateState = currentState.copy(
+            selectedPathNodes = firstPath,
             availablePaths = paths,
             selectedPathIndex = 0,
             activeTransitIds = intermediateTerminals,
@@ -177,6 +293,7 @@ class RouteWizardViewModel(
                 emptySet()
             }
             val updated = state.copy(
+                selectedPathNodes = path,
                 selectedPathIndex = index,
                 activeTransitIds = intermediateTerminals
             )

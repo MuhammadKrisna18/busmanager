@@ -3,6 +3,7 @@ package com.example.busmanager.presentation.route.wizard.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,14 +33,16 @@ import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
 import com.example.busmanager.presentation.route.wizard.RouteWizardUiState
+import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
 import com.example.busmanager.ui.theme.PrimaryBlueDark
+import com.example.busmanager.ui.theme.SuccessGreen
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
-import com.example.busmanager.ui.theme.TextLight
 import com.example.busmanager.ui.theme.TextMuted
+import com.example.busmanager.ui.theme.WarningAmber
 
 @Composable
 fun Slide1OriginDestination(
@@ -47,8 +50,14 @@ fun Slide1OriginDestination(
     onSelectOrigin: (Terminal) -> Unit,
     onSelectDestination: (Terminal) -> Unit,
     onTerminalMapClick: (Terminal) -> Unit = {},
+    onUndoClick: () -> Unit = {},
+    onResetClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val nodes = uiState.selectedPathNodes
+    val head = nodes.lastOrNull()
+    val route = uiState.builtRoute
+
     LazyColumn(
         modifier = modifier
             .fillMaxWidth()
@@ -56,26 +65,30 @@ fun Slide1OriginDestination(
     ) {
         item {
             Text(
-                text = "Peta Interaktif Jalur Bus Jawa Timur",
-                fontSize = 15.sp,
+                text = "Peta Interaktif Perancang Rute",
+                fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = "Sentuh terminal pada peta untuk menentukan titik awal dan titik tujuan rute",
-                fontSize = 11.sp,
+                text = "Sentuh terminal awal, lalu sambungkan terminal demi terminal secara berurutan",
+                fontSize = 12.sp,
                 color = TextMuted
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
                 border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CardBorder))
             ) {
-                Column(modifier = Modifier.padding(8.dp)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(360.dp)
+                ) {
                     EastJavaMapCanvas(
                         terminals = uiState.allTerminals,
                         allSegments = uiState.allSegments,
@@ -83,244 +96,285 @@ fun Slide1OriginDestination(
                         selectedOrigin = uiState.selectedOrigin,
                         selectedDestination = uiState.selectedDestination,
                         transitTerminals = uiState.builtRoute?.transitTerminals ?: emptyList(),
+                        candidateTerminalIds = uiState.candidateNeighborTerminalIds,
                         onTerminalClick = { terminal ->
                             onTerminalMapClick(terminal)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(260.dp)
-                            .clip(RoundedCornerShape(8.dp))
+                            .height(360.dp)
+                            .clip(RoundedCornerShape(14.dp))
                     )
-                }
-            }
 
-            Spacer(modifier = Modifier.height(10.dp))
-
-            val guideText = when {
-                uiState.selectedOrigin == null -> "👉 Sentuh terminal di peta untuk memilih Titik Awal"
-                uiState.selectedDestination == null -> "👉 Sekarang sentuh terminal tujuan (Titik B) di peta"
-                else -> "✨ Titik Awal (${uiState.selectedOrigin.city}) dan Titik Akhir (${uiState.selectedDestination.city}) telah dipilih"
-            }
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (uiState.selectedOrigin != null && uiState.selectedDestination != null) IceBlue else Color(0xFFF1F5F9)
-                )
-            ) {
-                Text(
-                    text = guideText,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = if (uiState.selectedOrigin != null && uiState.selectedDestination != null) PrimaryBlueDark else TextDark,
-                    modifier = Modifier.padding(10.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        item {
-            Text(
-                text = "1. Pilih Terminal Asal (Titik A)",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Tentukan terminal keberangkatan awal bus",
-                fontSize = 12.sp,
-                color = TextMuted
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-        }
-
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                uiState.allTerminals.forEach { terminal ->
-                    val isSelected = uiState.selectedOrigin?.id == terminal.id
-                    val isDest = uiState.selectedDestination?.id == terminal.id
-                    val isDisabled = isDest
-                    val badgeLabel = when {
-                        isSelected -> "Titik Awal"
-                        isDest -> "Tujuan Akhir"
-                        else -> null
+                    val guideStatusText = when {
+                        nodes.isEmpty() -> "👉 Sentuh terminal awal di peta"
+                        nodes.size == 1 -> "✨ Sentuh terminal tetangga yang menyala emas"
+                        else -> "🗺️ ${nodes.first().city} ➔ ${nodes.last().city} (${route?.totalDistanceKm ?: 0} km)"
                     }
 
-                    TerminalSelectCard(
-                        terminal = terminal,
-                        isSelected = isSelected,
-                        isDisabled = isDisabled,
-                        badgeLabel = badgeLabel,
-                        onClick = { if (!isDisabled) onSelectOrigin(terminal) }
-                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(10.dp)
+                            .shadow(4.dp, RoundedCornerShape(AppDimens.radiusPill))
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(Color(0xFF0F172A).copy(alpha = 0.90f))
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                    ) {
+                        Text(
+                            text = guideStatusText,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (nodes.isNotEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .shadow(4.dp, RoundedCornerShape(8.dp))
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(SurfaceWhite)
+                                    .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
+                                    .clickable { onUndoClick() }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(text = "↩️", fontSize = 12.sp)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Undo",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = TextDark
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .shadow(4.dp, RoundedCornerShape(8.dp))
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFFEE2E2))
+                                    .border(1.dp, Color(0xFFFCA5A5), RoundedCornerShape(8.dp))
+                                    .clickable { onResetClick() }
+                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(text = "🔄", fontSize = 12.sp)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = "Reset",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFDC2626)
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
+
+            Spacer(modifier = Modifier.height(14.dp))
         }
 
-        item {
-            Text(
-                text = "2. Pilih Terminal Tujuan (Titik B)",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextDark
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Tentukan terminal tujuan akhir perjalanan bus",
-                fontSize = 12.sp,
-                color = TextMuted
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-        }
-
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                uiState.allTerminals.forEach { terminal ->
-                    val isSelected = uiState.selectedDestination?.id == terminal.id
-                    val isOrigin = uiState.selectedOrigin?.id == terminal.id
-
-                    TerminalSelectCard(
-                        terminal = terminal,
-                        isSelected = isSelected,
-                        isDisabled = isOrigin,
-                        badgeLabel = if (isSelected) "Tujuan Akhir" else if (isOrigin) "Titik Awal" else null,
-                        onClick = { if (!isOrigin) onSelectDestination(terminal) }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-
-        if (uiState.selectedOrigin != null && uiState.selectedDestination != null) {
+        if (nodes.isNotEmpty()) {
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = IceBlue),
-                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(PrimaryBlue))
+                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CardBorder))
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
                             Text(
-                                text = "Rencana Trayek",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = PrimaryBlueDark
-                            )
-                            Text(
-                                text = "${uiState.selectedOrigin.city} ➔ ${uiState.selectedDestination.city}",
-                                fontSize = 16.sp,
+                                text = "Rangkaian Jalur (${nodes.size} Terminal)",
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = TextDark
                             )
-                            Text(
-                                text = "${uiState.selectedOrigin.name} ke ${uiState.selectedDestination.name}",
-                                fontSize = 12.sp,
-                                color = TextMuted
-                            )
+                            if (head != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(AppDimens.radiusPill))
+                                        .background(IceBlue)
+                                        .padding(horizontal = 8.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "Ujung: ${head.city}",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = PrimaryBlueDark
+                                    )
+                                }
+                            }
                         }
-                        Box(
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        Row(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(PrimaryBlue),
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text(
-                                text = "✓",
-                                color = Color.White,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            nodes.forEachIndexed { index, terminal ->
+                                val isOrigin = index == 0
+                                val isDest = index == nodes.size - 1 && nodes.size > 1
+
+                                val badgeColor = when {
+                                    isOrigin -> SuccessGreen
+                                    isDest -> PrimaryBlue
+                                    else -> WarningAmber
+                                }
+
+                                val roleLabel = when {
+                                    isOrigin -> "Asal"
+                                    isDest -> "Tujuan"
+                                    else -> "Transit ${index}"
+                                }
+
+                                Card(
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(badgeColor.copy(alpha = 0.5f)))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(8.dp)
+                                                .clip(CircleShape)
+                                                .background(badgeColor)
+                                        )
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Column {
+                                            Text(
+                                                text = terminal.city,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = TextDark
+                                            )
+                                            Text(
+                                                text = roleLabel,
+                                                fontSize = 9.sp,
+                                                color = TextMuted
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (index < nodes.size - 1) {
+                                    Text(
+                                        text = "➔",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = PrimaryBlue
+                                    )
+                                }
+                            }
+                        }
+
+                        if (route != null && nodes.size >= 2) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(IceBlue)
+                                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = "Total Jarak", fontSize = 10.sp, color = TextMuted)
+                                    Text(
+                                        text = "${route.totalDistanceKm} km",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = PrimaryBlueDark
+                                    )
+                                }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = "Estimasi Waktu", fontSize = 10.sp, color = TextMuted)
+                                    Text(
+                                        text = "${uiState.estimatedDurationMinutes / 60}j ${uiState.estimatedDurationMinutes % 60}m",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = PrimaryBlueDark
+                                    )
+                                }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(text = "Singgah", fontSize = 10.sp, color = TextMuted)
+                                    Text(
+                                        text = "${route.transitTerminals.size} Kota",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = PrimaryBlueDark
+                                    )
+                                }
+                            }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(14.dp))
             }
-        }
-    }
-}
-
-@Composable
-private fun TerminalSelectCard(
-    terminal: Terminal,
-    isSelected: Boolean,
-    isDisabled: Boolean,
-    badgeLabel: String?,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .clickable(enabled = !isDisabled, onClick = onClick),
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = when {
-                isSelected -> IceBlue
-                isDisabled -> Color(0xFFF1F5F9)
-                else -> SurfaceWhite
-            }
-        ),
-        border = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(
-                if (isSelected) PrimaryBlue else CardBorder
-            )
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = terminal.city,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isDisabled) TextLight else TextDark
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "• ${terminal.name}",
-                        fontSize = 13.sp,
-                        color = if (isDisabled) TextLight else TextMuted
-                    )
-                }
-                Text(
-                    text = "${terminal.type.displayName} • Retribusi: ${terminal.retributionFee.formatRupiah()}",
-                    fontSize = 11.sp,
-                    color = TextLight
-                )
-            }
-
-            if (badgeLabel != null) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (isSelected) PrimaryBlue else TextLight)
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
+        } else {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CardBorder))
                 ) {
-                    Text(
-                        text = badgeLabel,
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Cara Merancang Rute",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextDark
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "1. Sentuh titik kota keberangkatan awal bus pada peta (contoh: Surabaya).",
+                            fontSize = 12.sp,
+                            color = TextDark
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "2. Terminal kota tetangga yang terhubung oleh jalan akan menyala terang (✨).",
+                            fontSize = 12.sp,
+                            color = TextDark
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "3. Sentuh terminal tetangga demi terminal secara berurutan hingga tiba di tujuan.",
+                            fontSize = 12.sp,
+                            color = TextDark
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "4. Jalur akan langsung tergambar di peta dan siap diluncurkan.",
+                            fontSize = 12.sp,
+                            color = TextDark
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(14.dp))
             }
         }
     }

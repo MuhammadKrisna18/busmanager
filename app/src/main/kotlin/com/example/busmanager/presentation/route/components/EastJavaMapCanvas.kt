@@ -77,6 +77,7 @@ fun EastJavaMapCanvas(
     selectedOrigin: Terminal? = null,
     selectedDestination: Terminal? = null,
     transitTerminals: List<Terminal> = emptyList(),
+    candidateTerminalIds: Set<String> = emptySet(),
     activeTrips: List<ActiveBusTrip> = emptyList(),
     parkedBuses: List<com.example.busmanager.presentation.simulation.ParkedBusInfo> = emptyList(),
     trackedTripId: String? = null,
@@ -261,6 +262,7 @@ fun EastJavaMapCanvas(
                     selectedOrigin?.id == terminal.id -> TerminalNodeRole.ORIGIN
                     selectedDestination?.id == terminal.id -> TerminalNodeRole.DESTINATION
                     transitTerminals.any { it.id == terminal.id } -> TerminalNodeRole.TRANSIT
+                    candidateTerminalIds.contains(terminal.id) -> TerminalNodeRole.NEXT_CANDIDATE
                     else -> TerminalNodeRole.DEFAULT
                 }
 

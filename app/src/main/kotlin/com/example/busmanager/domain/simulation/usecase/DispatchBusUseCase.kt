@@ -11,6 +11,9 @@ import com.example.busmanager.domain.simulation.repository.SimulationTripReposit
 class DispatchBusUseCase(
     private val simulationTripRepository: SimulationTripRepository
 ) {
+    val passengerQueueManager: com.example.busmanager.domain.simulation.model.PassengerQueueManager
+        get() = simulationTripRepository.passengerQueueManager
+
     operator fun invoke(
         bus: Bus,
         route: BusRoute,

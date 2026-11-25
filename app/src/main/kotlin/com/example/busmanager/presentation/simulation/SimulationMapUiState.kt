@@ -11,6 +11,7 @@ import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.SimulationSpeed
+import com.example.busmanager.domain.simulation.model.TerminalPassengerQueue
 
 enum class SimulationBottomSheetType {
     NONE,
@@ -35,6 +36,7 @@ data class SimulationMapUiState(
     val schedules: List<RouteSchedule> = emptyList(),
     val routePricings: Map<String, List<RoutePricing>> = emptyMap(),
     val busOperationStatuses: Map<String, BusOperationStatus> = emptyMap(),
+    val terminalQueues: Map<String, TerminalPassengerQueue> = emptyMap(),
     val selectedTerminal: Terminal? = null,
     val selectedRoute: BusRoute? = null,
     val selectedTrip: ActiveBusTrip? = null,

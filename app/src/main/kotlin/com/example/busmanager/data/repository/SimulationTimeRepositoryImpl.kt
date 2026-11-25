@@ -72,7 +72,7 @@ class SimulationTimeRepositoryImpl(
 
     override fun advanceMinutes(minutes: Int) {
         _currentTime.update { it.advanceMinutes(minutes) }
-        simulationTripRepository?.advanceTripsTime(minutes)
+        simulationTripRepository?.advanceTripsTime(minutes, _currentTime.value)
         if (_currentTime.value.minute % 10 == 0) {
             persistCurrentState()
         }

@@ -128,9 +128,13 @@ fun SimulationMapScreen(
                     )
                     Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
                 } else if (state.selectedTerminal != null) {
+                    val term = state.selectedTerminal!!
+                    val q = state.terminalQueues.values.find { it.terminalId == term.id }
                     TerminalInspectionCard(
-                        terminal = state.selectedTerminal!!,
+                        terminal = term,
                         routeName = state.selectedRoute?.name,
+                        waitingCount = q?.waitingPassengers ?: 0,
+                        lostCount = q?.totalLostPassengers ?: 0,
                         onClose = { viewModel.clearSelectedTerminal() }
                     )
                     Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
@@ -360,6 +364,8 @@ private fun SimulationStatusBanner(
 private fun TerminalInspectionCard(
     terminal: Terminal,
     routeName: String?,
+    waitingCount: Int = 0,
+    lostCount: Int = 0,
     onClose: () -> Unit
 ) {
     Card(
@@ -392,16 +398,31 @@ private fun TerminalInspectionCard(
                     fontSize = 12.sp
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = if (routeName != null) {
-                        "Trayek Terkait: $routeName (Status: Menunggu Jadwal Keberangkatan)"
-                    } else {
-                        "Status: Menunggu Jadwal Keberangkatan | Tidak ada bus beroperasi"
-                    },
-                    color = PrimaryBlueDark,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "👥 Antrean Peron: $waitingCount penumpang",
+                        color = PrimaryBlueDark,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if (lostCount > 0) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "⚠️ Kehilangan: $lostCount",
+                            color = Color(0xFFDC2626),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+                if (routeName != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Trayek: $routeName",
+                        color = TextMuted,
+                        fontSize = 10.sp
+                    )
+                }
             }
 
             Box(

@@ -7,6 +7,7 @@ import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.BusMovementInterpolator
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.PassengerDemandGenerator
+import com.example.busmanager.domain.simulation.model.PassengerQueueManager
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import com.example.busmanager.domain.simulation.model.TransitExchangeInfo
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.update
 import java.util.UUID
 
 class SimulationTripRepositoryImpl(
+    override val passengerQueueManager: PassengerQueueManager = PassengerQueueManager(),
     private val passengerDemandGenerator: PassengerDemandGenerator = PassengerDemandGenerator()
 ) : SimulationTripRepository {
 
@@ -40,7 +42,16 @@ class SimulationTripRepositoryImpl(
         ticketPricePerPassenger: Money?
     ): ActiveBusTrip {
         val capacity = bus.body.passengerCapacity
-        val passengerCount = passengerDemandGenerator.generateInitialLoad(capacity)
+        val originTerm = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+            route.originTerminal
+        } else {
+            route.destinationTerminal
+        }
+        val passengerCount = passengerQueueManager.boardPassengers(
+            terminalId = originTerm.id,
+            routeId = route.id,
+            availableSeats = capacity
+        )
 
         val ticketEarnings = if (ticketPricePerPassenger != null && ticketPricePerPassenger.amount > 0L) {
             Money.rupiah(ticketPricePerPassenger.amount * passengerCount)
@@ -92,6 +103,16 @@ class SimulationTripRepositoryImpl(
     }
 
     override fun advanceTripsTime(advanceMinutes: Int): List<ActiveBusTrip> {
+        return advanceTripsTime(advanceMinutes, null)
+    }
+
+    override fun advanceTripsTime(advanceMinutes: Int, currentTime: GameCalendar?): List<ActiveBusTrip> {
+        val currentTrips = _activeTrips.value
+        val activeRoutes = currentTrips.map { it.route }.distinctBy { it.id }
+        if (currentTime != null && activeRoutes.isNotEmpty()) {
+            passengerQueueManager.advanceTime(advanceMinutes, currentTime, activeRoutes)
+        }
+
         _activeTrips.update { currentList ->
             currentList.map { trip ->
                 val newElapsed = trip.elapsedMinutes + advanceMinutes
@@ -164,10 +185,18 @@ class SimulationTripRepositoryImpl(
 
                             if (!newlyVisitedStops.contains(i)) {
                                 newlyVisitedStops.add(i)
-                                val alighted = passengerDemandGenerator.calculateTransitAlighting(currentPassengers)
+                                val alighted = passengerQueueManager.alightPassengers(currentPassengers, isTerminalStop = false)
                                 val remaining = (currentPassengers - alighted).coerceAtLeast(0)
                                 val emptySeats = (trip.maxCapacity - remaining).coerceAtLeast(0)
-                                val boarded = passengerDemandGenerator.calculateTransitBoarding(emptySeats)
+                                val boarded = if (transitTerm != null) {
+                                    passengerQueueManager.boardPassengers(
+                                        terminalId = transitTerm.id,
+                                        routeId = trip.route.id,
+                                        availableSeats = emptySeats
+                                    )
+                                } else {
+                                    0
+                                }
                                 currentPassengers = (remaining + boarded).coerceIn(0, trip.maxCapacity)
                                 totalBoarded += boarded
                                 totalAlighted += alighted

@@ -72,7 +72,16 @@ class SimulationMapViewModel(
         observeActiveTrips()
         observeDriversAndSchedules()
         observePricings()
+        observePassengerQueues()
         loadMapData()
+    }
+
+    private fun observePassengerQueues() {
+        viewModelScope.launch {
+            dispatchBusUseCase.passengerQueueManager.queues.collect { queueMap ->
+                _uiState.update { it.copy(terminalQueues = queueMap) }
+            }
+        }
     }
 
     private fun observeSimulationEngine() {

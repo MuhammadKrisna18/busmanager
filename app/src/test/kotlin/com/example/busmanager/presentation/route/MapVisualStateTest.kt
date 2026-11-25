@@ -40,8 +40,8 @@ class MapVisualStateTest {
             transitTerminals = route.transitTerminals
         )
 
-        assertEquals(10, state.terminals.size)
-        assertEquals(34, state.allSegments.size)
+        assertEquals(16, state.terminals.size)
+        assertEquals(58, state.allSegments.size)
         assertNotNull(state.selectedRoute)
         assertEquals(route.originTerminal, state.selectedOrigin)
         assertEquals(route.destinationTerminal, state.selectedDestination)

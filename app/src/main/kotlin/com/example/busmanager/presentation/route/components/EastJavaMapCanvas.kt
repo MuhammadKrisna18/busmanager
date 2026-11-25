@@ -472,22 +472,24 @@ fun EastJavaMapCanvas(
 
 private fun DrawScope.drawEastJavaLandmass() {
     val path = Path().apply {
-        moveTo(size.width * 0.02f, size.height * 0.12f)
-        lineTo(size.width * 0.18f, size.height * 0.14f)
-        lineTo(size.width * 0.25f, size.height * 0.24f)
-        lineTo(size.width * 0.35f, size.height * 0.33f)
-        lineTo(size.width * 0.46f, size.height * 0.37f)
-        lineTo(size.width * 0.65f, size.height * 0.34f)
-        lineTo(size.width * 0.78f, size.height * 0.34f)
-        lineTo(size.width * 0.88f, size.height * 0.36f)
-        lineTo(size.width * 0.95f, size.height * 0.44f)
-        lineTo(size.width * 0.96f, size.height * 0.65f)
-        lineTo(size.width * 0.93f, size.height * 0.88f)
-        lineTo(size.width * 0.84f, size.height * 0.82f)
-        lineTo(size.width * 0.66f, size.height * 0.82f)
-        lineTo(size.width * 0.48f, size.height * 0.80f)
-        lineTo(size.width * 0.28f, size.height * 0.82f)
-        lineTo(size.width * 0.02f, size.height * 0.80f)
+        moveTo(size.width * 0.05f, size.height * 0.22f)
+        lineTo(size.width * 0.18f, size.height * 0.10f)
+        lineTo(size.width * 0.36f, size.height * 0.12f)
+        lineTo(size.width * 0.50f, size.height * 0.22f)
+        lineTo(size.width * 0.54f, size.height * 0.40f)
+        lineTo(size.width * 0.64f, size.height * 0.46f)
+        lineTo(size.width * 0.78f, size.height * 0.42f)
+        lineTo(size.width * 0.86f, size.height * 0.44f)
+        lineTo(size.width * 0.97f, size.height * 0.60f)
+        lineTo(size.width * 0.98f, size.height * 0.82f)
+        lineTo(size.width * 0.90f, size.height * 0.90f)
+        lineTo(size.width * 0.74f, size.height * 0.90f)
+        lineTo(size.width * 0.50f, size.height * 0.88f)
+        lineTo(size.width * 0.32f, size.height * 0.88f)
+        lineTo(size.width * 0.20f, size.height * 0.86f)
+        lineTo(size.width * 0.05f, size.height * 0.86f)
+        lineTo(size.width * 0.04f, size.height * 0.62f)
+        lineTo(size.width * 0.05f, size.height * 0.42f)
         close()
     }
 
@@ -505,11 +507,11 @@ private fun DrawScope.drawEastJavaLandmass() {
 
 private fun DrawScope.drawMaduraIsland() {
     val path = Path().apply {
-        moveTo(size.width * 0.28f, size.height * 0.05f)
-        lineTo(size.width * 0.68f, size.height * 0.04f)
-        lineTo(size.width * 0.74f, size.height * 0.12f)
-        lineTo(size.width * 0.52f, size.height * 0.15f)
-        lineTo(size.width * 0.28f, size.height * 0.13f)
+        moveTo(size.width * 0.45f, size.height * 0.08f)
+        lineTo(size.width * 0.76f, size.height * 0.07f)
+        lineTo(size.width * 0.78f, size.height * 0.16f)
+        lineTo(size.width * 0.60f, size.height * 0.18f)
+        lineTo(size.width * 0.45f, size.height * 0.16f)
         close()
     }
 

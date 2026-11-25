@@ -21,6 +21,12 @@ class RouteDataSource(
     private val tamanan = terminalDataSource.getTerminalById("term_tamanan")!!
     private val gayatri = terminalDataSource.getTerminalById("term_gayatri")!!
     private val patria = terminalDataSource.getTerminalById("term_patria")!!
+    private val surodakan = terminalDataSource.getTerminalById("term_surodakan")!!
+    private val seloaji = terminalDataSource.getTerminalById("term_seloaji")!!
+    private val purboyo = terminalDataSource.getTerminalById("term_purboyo")!!
+    private val kertonegoro = terminalDataSource.getTerminalById("term_kertonegoro")!!
+    private val anjukLadang = terminalDataSource.getTerminalById("term_anjukladang")!!
+    private val rajekwesi = terminalDataSource.getTerminalById("term_rajekwesi")!!
 
     val segSbyMlgToll = RouteSegment(
         id = "seg_sby_mlg_toll",
@@ -33,9 +39,9 @@ class RouteDataSource(
         tollFee = Money.rupiah(60000),
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.19f, 0.28f, -7.50, 112.71),
-            MapCoordinate(0.20f, 0.35f, -7.60, 112.70),
-            MapCoordinate(0.18f, 0.44f, -7.78, 112.69),
+            MapCoordinate(0.46f, 0.38f, -7.50, 112.71),
+            MapCoordinate(0.46f, 0.44f, -7.60, 112.70),
+            MapCoordinate(0.45f, 0.55f, -7.78, 112.69),
             arjosari.coordinate
         )
     )
@@ -51,10 +57,10 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.20f, 0.23f, -7.45, 112.72),
-            MapCoordinate(0.21f, 0.32f, -7.56, 112.70),
-            MapCoordinate(0.18f, 0.42f, -7.75, 112.71),
-            MapCoordinate(0.16f, 0.48f, -7.88, 112.67),
+            MapCoordinate(0.46f, 0.34f, -7.45, 112.72),
+            MapCoordinate(0.46f, 0.41f, -7.56, 112.70),
+            MapCoordinate(0.46f, 0.53f, -7.75, 112.71),
+            MapCoordinate(0.45f, 0.61f, -7.88, 112.67),
             arjosari.coordinate
         )
     )
@@ -94,9 +100,9 @@ class RouteDataSource(
         tollFee = Money.rupiah(65000),
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.20f, 0.32f, -7.57, 112.71),
-            MapCoordinate(0.28f, 0.35f, -7.64, 112.90),
-            MapCoordinate(0.36f, 0.38f, -7.71, 113.08),
+            MapCoordinate(0.46f, 0.42f, -7.57, 112.71),
+            MapCoordinate(0.51f, 0.46f, -7.64, 112.90),
+            MapCoordinate(0.57f, 0.51f, -7.71, 113.08),
             bayuangga.coordinate
         )
     )
@@ -112,10 +118,10 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.23f, 0.28f, -7.52, 112.77),
-            MapCoordinate(0.29f, 0.34f, -7.63, 112.91),
-            MapCoordinate(0.35f, 0.37f, -7.68, 113.03),
-            MapCoordinate(0.40f, 0.40f, -7.73, 113.13),
+            MapCoordinate(0.48f, 0.39f, -7.52, 112.77),
+            MapCoordinate(0.52f, 0.46f, -7.63, 112.91),
+            MapCoordinate(0.55f, 0.49f, -7.68, 113.03),
+            MapCoordinate(0.58f, 0.52f, -7.73, 113.13),
             bayuangga.coordinate
         )
     )
@@ -155,9 +161,9 @@ class RouteDataSource(
         tollFee = Money.rupiah(55000),
         waypoints = listOf(
             bayuangga.coordinate,
-            MapCoordinate(0.53f, 0.40f, -7.74, 113.40),
-            MapCoordinate(0.62f, 0.39f, -7.71, 113.63),
-            MapCoordinate(0.70f, 0.38f, -7.72, 113.82),
+            MapCoordinate(0.66f, 0.53f, -7.74, 113.40),
+            MapCoordinate(0.72f, 0.51f, -7.71, 113.63),
+            MapCoordinate(0.78f, 0.51f, -7.72, 113.82),
             situbondo.coordinate
         )
     )
@@ -173,10 +179,10 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             bayuangga.coordinate,
-            MapCoordinate(0.48f, 0.41f, -7.75, 113.28),
-            MapCoordinate(0.55f, 0.40f, -7.73, 113.45),
-            MapCoordinate(0.64f, 0.39f, -7.70, 113.68),
-            MapCoordinate(0.72f, 0.38f, -7.71, 113.88),
+            MapCoordinate(0.62f, 0.53f, -7.75, 113.28),
+            MapCoordinate(0.67f, 0.52f, -7.73, 113.45),
+            MapCoordinate(0.74f, 0.50f, -7.70, 113.68),
+            MapCoordinate(0.79f, 0.51f, -7.71, 113.88),
             situbondo.coordinate
         )
     )
@@ -216,9 +222,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             situbondo.coordinate,
-            MapCoordinate(0.83f, 0.40f, -7.74, 114.15),
-            MapCoordinate(0.88f, 0.46f, -7.86, 114.33),
-            MapCoordinate(0.90f, 0.54f, -7.98, 114.38),
+            MapCoordinate(0.87f, 0.53f, -7.74, 114.15),
+            MapCoordinate(0.92f, 0.60f, -7.86, 114.33),
+            MapCoordinate(0.94f, 0.68f, -7.98, 114.38),
             sritanjung.coordinate
         )
     )
@@ -246,9 +252,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             bayuangga.coordinate,
-            MapCoordinate(0.48f, 0.48f, -7.88, 113.25),
-            MapCoordinate(0.53f, 0.54f, -7.99, 113.34),
-            MapCoordinate(0.60f, 0.59f, -8.11, 113.48),
+            MapCoordinate(0.61f, 0.61f, -7.88, 113.25),
+            MapCoordinate(0.64f, 0.68f, -7.99, 113.34),
+            MapCoordinate(0.68f, 0.76f, -8.11, 113.48),
             tawangAlun.coordinate
         )
     )
@@ -276,9 +282,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             tawangAlun.coordinate,
-            MapCoordinate(0.74f, 0.67f, -8.24, 113.82),
-            MapCoordinate(0.79f, 0.70f, -8.30, 113.98),
-            MapCoordinate(0.85f, 0.69f, -8.26, 114.15),
+            MapCoordinate(0.78f, 0.84f, -8.24, 113.82),
+            MapCoordinate(0.82f, 0.88f, -8.30, 113.98),
+            MapCoordinate(0.87f, 0.85f, -8.26, 114.15),
             sritanjung.coordinate
         )
     )
@@ -306,8 +312,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             arjosari.coordinate,
-            MapCoordinate(0.18f, 0.42f, -7.75, 112.71),
-            MapCoordinate(0.30f, 0.35f, -7.64, 112.90),
+            MapCoordinate(0.46f, 0.53f, -7.75, 112.71),
+            MapCoordinate(0.51f, 0.46f, -7.64, 112.90),
             bayuangga.coordinate
         )
     )
@@ -335,8 +341,8 @@ class RouteDataSource(
         tollFee = Money.rupiah(39000),
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.15f, 0.19f, -7.40, 112.60),
-            MapCoordinate(0.13f, 0.22f, -7.44, 112.52),
+            MapCoordinate(0.43f, 0.31f, -7.40, 112.60),
+            MapCoordinate(0.41f, 0.34f, -7.44, 112.52),
             kertajaya.coordinate
         )
     )
@@ -364,8 +370,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.16f, 0.20f, -7.42, 112.62),
-            MapCoordinate(0.13f, 0.23f, -7.45, 112.54),
+            MapCoordinate(0.43f, 0.33f, -7.42, 112.62),
+            MapCoordinate(0.41f, 0.34f, -7.45, 112.54),
             kertajaya.coordinate
         )
     )
@@ -393,8 +399,8 @@ class RouteDataSource(
         tollFee = Money.rupiah(55000),
         waypoints = listOf(
             kertajaya.coordinate,
-            MapCoordinate(0.09f, 0.31f, -7.56, 112.25),
-            MapCoordinate(0.07f, 0.37f, -7.69, 112.12),
+            MapCoordinate(0.33f, 0.41f, -7.56, 112.25),
+            MapCoordinate(0.29f, 0.49f, -7.69, 112.12),
             tamanan.coordinate
         )
     )
@@ -422,8 +428,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             kertajaya.coordinate,
-            MapCoordinate(0.09f, 0.32f, -7.57, 112.24),
-            MapCoordinate(0.07f, 0.38f, -7.70, 112.13),
+            MapCoordinate(0.33f, 0.42f, -7.57, 112.24),
+            MapCoordinate(0.29f, 0.50f, -7.70, 112.13),
             tamanan.coordinate
         )
     )
@@ -451,7 +457,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             tamanan.coordinate,
-            MapCoordinate(0.045f, 0.53f, -7.95, 111.95),
+            MapCoordinate(0.24f, 0.66f, -7.95, 111.95),
             gayatri.coordinate
         )
     )
@@ -479,7 +485,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             gayatri.coordinate,
-            MapCoordinate(0.065f, 0.63f, -8.08, 112.03),
+            MapCoordinate(0.27f, 0.74f, -8.08, 112.03),
             patria.coordinate
         )
     )
@@ -507,8 +513,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             patria.coordinate,
-            MapCoordinate(0.11f, 0.61f, -8.10, 112.35),
-            MapCoordinate(0.125f, 0.57f, -8.13, 112.56),
+            MapCoordinate(0.36f, 0.75f, -8.10, 112.35),
+            MapCoordinate(0.42f, 0.77f, -8.13, 112.56),
             arjosari.coordinate
         )
     )
@@ -523,6 +529,342 @@ class RouteDataSource(
         baseDurationMinutes = 110,
         tollFee = Money.ZERO,
         waypoints = segBltMlgNonToll.waypoints.reversed()
+    )
+
+    val segTlgTrgNonToll = RouteSegment(
+        id = "seg_tlg_trg_nontoll",
+        fromTerminalId = gayatri.id,
+        toTerminalId = surodakan.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 30.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            gayatri.coordinate,
+            MapCoordinate(0.20f, 0.72f, -8.06, 111.81),
+            surodakan.coordinate
+        )
+    )
+
+    val segTrgTlgNonToll = RouteSegment(
+        id = "seg_trg_tlg_nontoll",
+        fromTerminalId = surodakan.id,
+        toTerminalId = gayatri.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 30.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.ZERO,
+        waypoints = segTlgTrgNonToll.waypoints.reversed()
+    )
+
+    val segTrgPnrNonToll = RouteSegment(
+        id = "seg_trg_pnr_nontoll",
+        fromTerminalId = surodakan.id,
+        toTerminalId = seloaji.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 50.0,
+        baseDurationMinutes = 70,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            surodakan.coordinate,
+            MapCoordinate(0.15f, 0.66f, -7.95, 111.60),
+            seloaji.coordinate
+        )
+    )
+
+    val segPnrTrgNonToll = RouteSegment(
+        id = "seg_pnr_trg_nontoll",
+        fromTerminalId = seloaji.id,
+        toTerminalId = surodakan.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 50.0,
+        baseDurationMinutes = 70,
+        tollFee = Money.ZERO,
+        waypoints = segTrgPnrNonToll.waypoints.reversed()
+    )
+
+    val segPnrMdnNonToll = RouteSegment(
+        id = "seg_pnr_mdn_nontoll",
+        fromTerminalId = seloaji.id,
+        toTerminalId = purboyo.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 30.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            seloaji.coordinate,
+            MapCoordinate(0.115f, 0.51f, -7.72, 111.50),
+            purboyo.coordinate
+        )
+    )
+
+    val segMdnPnrNonToll = RouteSegment(
+        id = "seg_mdn_pnr_nontoll",
+        fromTerminalId = purboyo.id,
+        toTerminalId = seloaji.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 30.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.ZERO,
+        waypoints = segPnrMdnNonToll.waypoints.reversed()
+    )
+
+    val segMdnNgwToll = RouteSegment(
+        id = "seg_mdn_ngw_toll",
+        fromTerminalId = purboyo.id,
+        toTerminalId = kertonegoro.id,
+        pathType = RoutePathType.TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 35.0,
+        baseDurationMinutes = 25,
+        tollFee = Money.rupiah(26000),
+        waypoints = listOf(
+            purboyo.coordinate,
+            MapCoordinate(0.11f, 0.38f, -7.50, 111.48),
+            kertonegoro.coordinate
+        )
+    )
+
+    val segNgwMdnToll = RouteSegment(
+        id = "seg_ngw_mdn_toll",
+        fromTerminalId = kertonegoro.id,
+        toTerminalId = purboyo.id,
+        pathType = RoutePathType.TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 35.0,
+        baseDurationMinutes = 25,
+        tollFee = Money.rupiah(26000),
+        waypoints = segMdnNgwToll.waypoints.reversed()
+    )
+
+    val segMdnNgwNonToll = RouteSegment(
+        id = "seg_mdn_ngw_nontoll",
+        fromTerminalId = purboyo.id,
+        toTerminalId = kertonegoro.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 38.0,
+        baseDurationMinutes = 55,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            purboyo.coordinate,
+            MapCoordinate(0.11f, 0.38f, -7.51, 111.47),
+            kertonegoro.coordinate
+        )
+    )
+
+    val segNgwMdnNonToll = RouteSegment(
+        id = "seg_ngw_mdn_nontoll",
+        fromTerminalId = kertonegoro.id,
+        toTerminalId = purboyo.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 38.0,
+        baseDurationMinutes = 55,
+        tollFee = Money.ZERO,
+        waypoints = segMdnNgwNonToll.waypoints.reversed()
+    )
+
+    val segMdnNgjToll = RouteSegment(
+        id = "seg_mdn_ngj_toll",
+        fromTerminalId = purboyo.id,
+        toTerminalId = anjukLadang.id,
+        pathType = RoutePathType.TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 48.0,
+        baseDurationMinutes = 35,
+        tollFee = Money.rupiah(38000),
+        waypoints = listOf(
+            purboyo.coordinate,
+            MapCoordinate(0.17f, 0.44f, -7.58, 111.72),
+            anjukLadang.coordinate
+        )
+    )
+
+    val segNgjMdnToll = RouteSegment(
+        id = "seg_ngj_mdn_toll",
+        fromTerminalId = anjukLadang.id,
+        toTerminalId = purboyo.id,
+        pathType = RoutePathType.TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 48.0,
+        baseDurationMinutes = 35,
+        tollFee = Money.rupiah(38000),
+        waypoints = segMdnNgjToll.waypoints.reversed()
+    )
+
+    val segMdnNgjNonToll = RouteSegment(
+        id = "seg_mdn_ngj_nontoll",
+        fromTerminalId = purboyo.id,
+        toTerminalId = anjukLadang.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 52.0,
+        baseDurationMinutes = 75,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            purboyo.coordinate,
+            MapCoordinate(0.17f, 0.45f, -7.59, 111.70),
+            anjukLadang.coordinate
+        )
+    )
+
+    val segNgjMdnNonToll = RouteSegment(
+        id = "seg_ngj_mdn_nontoll",
+        fromTerminalId = anjukLadang.id,
+        toTerminalId = purboyo.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 52.0,
+        baseDurationMinutes = 75,
+        tollFee = Money.ZERO,
+        waypoints = segMdnNgjNonToll.waypoints.reversed()
+    )
+
+    val segNgjKdrNonToll = RouteSegment(
+        id = "seg_ngj_kdr_nontoll",
+        fromTerminalId = anjukLadang.id,
+        toTerminalId = tamanan.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 35.0,
+        baseDurationMinutes = 50,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            anjukLadang.coordinate,
+            MapCoordinate(0.25f, 0.51f, -7.71, 111.96),
+            tamanan.coordinate
+        )
+    )
+
+    val segKdrNgjNonToll = RouteSegment(
+        id = "seg_kdr_ngj_nontoll",
+        fromTerminalId = tamanan.id,
+        toTerminalId = anjukLadang.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 35.0,
+        baseDurationMinutes = 50,
+        tollFee = Money.ZERO,
+        waypoints = segNgjKdrNonToll.waypoints.reversed()
+    )
+
+    val segNgjMjkToll = RouteSegment(
+        id = "seg_ngj_mjk_toll",
+        fromTerminalId = anjukLadang.id,
+        toTerminalId = kertajaya.id,
+        pathType = RoutePathType.TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 65.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.rupiah(54000),
+        waypoints = listOf(
+            anjukLadang.coordinate,
+            MapCoordinate(0.31f, 0.40f, -7.54, 112.18),
+            kertajaya.coordinate
+        )
+    )
+
+    val segMjkNgjToll = RouteSegment(
+        id = "seg_mjk_ngj_toll",
+        fromTerminalId = kertajaya.id,
+        toTerminalId = anjukLadang.id,
+        pathType = RoutePathType.TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 65.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.rupiah(54000),
+        waypoints = segNgjMjkToll.waypoints.reversed()
+    )
+
+    val segNgjMjkNonToll = RouteSegment(
+        id = "seg_ngj_mjk_nontoll",
+        fromTerminalId = anjukLadang.id,
+        toTerminalId = kertajaya.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 70.0,
+        baseDurationMinutes = 105,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            anjukLadang.coordinate,
+            MapCoordinate(0.30f, 0.41f, -7.55, 112.15),
+            kertajaya.coordinate
+        )
+    )
+
+    val segMjkNgjNonToll = RouteSegment(
+        id = "seg_mjk_ngj_nontoll",
+        fromTerminalId = kertajaya.id,
+        toTerminalId = anjukLadang.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 70.0,
+        baseDurationMinutes = 105,
+        tollFee = Money.ZERO,
+        waypoints = segNgjMjkNonToll.waypoints.reversed()
+    )
+
+    val segNgwBjnNonToll = RouteSegment(
+        id = "seg_ngw_bjn_nontoll",
+        fromTerminalId = kertonegoro.id,
+        toTerminalId = rajekwesi.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 70.0,
+        baseDurationMinutes = 95,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            kertonegoro.coordinate,
+            MapCoordinate(0.16f, 0.23f, -7.28, 111.66),
+            rajekwesi.coordinate
+        )
+    )
+
+    val segBjnNgwNonToll = RouteSegment(
+        id = "seg_bjn_ngw_nontoll",
+        fromTerminalId = rajekwesi.id,
+        toTerminalId = kertonegoro.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 70.0,
+        baseDurationMinutes = 95,
+        tollFee = Money.ZERO,
+        waypoints = segNgwBjnNonToll.waypoints.reversed()
+    )
+
+    val segBjnNgjNonToll = RouteSegment(
+        id = "seg_bjn_ngj_nontoll",
+        fromTerminalId = rajekwesi.id,
+        toTerminalId = anjukLadang.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 60.0,
+        baseDurationMinutes = 85,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            rajekwesi.coordinate,
+            MapCoordinate(0.23f, 0.30f, -7.38, 111.90),
+            anjukLadang.coordinate
+        )
+    )
+
+    val segNgjBjnNonToll = RouteSegment(
+        id = "seg_ngj_bjn_nontoll",
+        fromTerminalId = anjukLadang.id,
+        toTerminalId = rajekwesi.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 60.0,
+        baseDurationMinutes = 85,
+        tollFee = Money.ZERO,
+        waypoints = segBjnNgjNonToll.waypoints.reversed()
     )
 
     fun getAllSegments(): List<RouteSegment> = listOf(
@@ -559,7 +901,31 @@ class RouteDataSource(
         segTlgBltNonToll,
         segBltTlgNonToll,
         segBltMlgNonToll,
-        segMlgBltNonToll
+        segMlgBltNonToll,
+        segTlgTrgNonToll,
+        segTrgTlgNonToll,
+        segTrgPnrNonToll,
+        segPnrTrgNonToll,
+        segPnrMdnNonToll,
+        segMdnPnrNonToll,
+        segMdnNgwToll,
+        segNgwMdnToll,
+        segMdnNgwNonToll,
+        segNgwMdnNonToll,
+        segMdnNgjToll,
+        segNgjMdnToll,
+        segMdnNgjNonToll,
+        segNgjMdnNonToll,
+        segNgjKdrNonToll,
+        segKdrNgjNonToll,
+        segNgjMjkToll,
+        segMjkNgjToll,
+        segNgjMjkNonToll,
+        segMjkNgjNonToll,
+        segNgwBjnNonToll,
+        segBjnNgwNonToll,
+        segBjnNgjNonToll,
+        segNgjBjnNonToll
     )
 
     fun getPredefinedRoutes(): List<BusRoute> = listOf(
@@ -672,7 +1038,7 @@ class RouteDataSource(
             transitTerminals = listOf(situbondo, bayuangga)
         ),
         BusRoute(
-            id = "route_sby_bwi_selatan_toll",
+            id = "route_sby_bwi_gumitir_toll",
             name = "Surabaya - Banyuwangi (Via Tol & Jember/Gumitir)",
             originTerminal = purabaya,
             destinationTerminal = sritanjung,
@@ -681,7 +1047,7 @@ class RouteDataSource(
             transitTerminals = listOf(bayuangga, tawangAlun)
         ),
         BusRoute(
-            id = "route_sby_bwi_selatan_nontoll",
+            id = "route_sby_bwi_gumitir_nontoll",
             name = "Surabaya - Banyuwangi (Full Arteri Jember/Gumitir)",
             originTerminal = purabaya,
             destinationTerminal = sritanjung,
@@ -690,7 +1056,7 @@ class RouteDataSource(
             transitTerminals = listOf(bayuangga, tawangAlun)
         ),
         BusRoute(
-            id = "route_bwi_sby_selatan_toll",
+            id = "route_bwi_sby_gumitir_toll",
             name = "Banyuwangi - Surabaya (Via Jember/Gumitir & Tol)",
             originTerminal = sritanjung,
             destinationTerminal = purabaya,
@@ -699,7 +1065,7 @@ class RouteDataSource(
             transitTerminals = listOf(tawangAlun, bayuangga)
         ),
         BusRoute(
-            id = "route_bwi_sby_selatan_nontoll",
+            id = "route_bwi_sby_gumitir_nontoll",
             name = "Banyuwangi - Surabaya (Full Arteri Jember/Gumitir)",
             originTerminal = sritanjung,
             destinationTerminal = purabaya,
@@ -708,7 +1074,7 @@ class RouteDataSource(
             transitTerminals = listOf(tawangAlun, bayuangga)
         ),
         BusRoute(
-            id = "route_mlg_bwi_selatan",
+            id = "route_mlg_bwi_gumitir",
             name = "Malang - Banyuwangi (Via Jember/Gumitir)",
             originTerminal = arjosari,
             destinationTerminal = sritanjung,
@@ -717,7 +1083,7 @@ class RouteDataSource(
             transitTerminals = listOf(bayuangga, tawangAlun)
         ),
         BusRoute(
-            id = "route_bwi_mlg_selatan",
+            id = "route_bwi_mlg_gumitir",
             name = "Banyuwangi - Malang (Via Jember/Gumitir)",
             originTerminal = sritanjung,
             destinationTerminal = arjosari,
@@ -831,6 +1197,132 @@ class RouteDataSource(
             destinationTerminal = purabaya,
             pathType = RoutePathType.TOLL,
             segments = listOf(segBltTlgNonToll, segTlgKdrNonToll, segKdrMjkToll, segMjkSbyToll),
+            transitTerminals = listOf(gayatri, tamanan, kertajaya)
+        ),
+        BusRoute(
+            id = "route_sby_mdn_toll",
+            name = "Surabaya - Madiun (Tol Trans-Jawa SUMO - Caruban)",
+            originTerminal = purabaya,
+            destinationTerminal = purboyo,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segSbyMjkToll, segMjkNgjToll, segNgjMdnToll),
+            transitTerminals = listOf(kertajaya, anjukLadang)
+        ),
+        BusRoute(
+            id = "route_mdn_sby_toll",
+            name = "Madiun - Surabaya (Tol Trans-Jawa Caruban - SUMO)",
+            originTerminal = purboyo,
+            destinationTerminal = purabaya,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segMdnNgjToll, segNgjMjkToll, segMjkSbyToll),
+            transitTerminals = listOf(anjukLadang, kertajaya)
+        ),
+        BusRoute(
+            id = "route_sby_pnr_toll",
+            name = "Surabaya - Ponorogo (Via Tol Madiun)",
+            originTerminal = purabaya,
+            destinationTerminal = seloaji,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segSbyMjkToll, segMjkNgjToll, segNgjMdnToll, segMdnPnrNonToll),
+            transitTerminals = listOf(kertajaya, anjukLadang, purboyo)
+        ),
+        BusRoute(
+            id = "route_pnr_sby_toll",
+            name = "Ponorogo - Surabaya (Via Tol Madiun)",
+            originTerminal = seloaji,
+            destinationTerminal = purabaya,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segPnrMdnNonToll, segMdnNgjToll, segNgjMjkToll, segMjkSbyToll),
+            transitTerminals = listOf(purboyo, anjukLadang, kertajaya)
+        ),
+        BusRoute(
+            id = "route_sby_ngw_toll",
+            name = "Surabaya - Ngawi (Tol Trans-Jawa Lengkap)",
+            originTerminal = purabaya,
+            destinationTerminal = kertonegoro,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segSbyMjkToll, segMjkNgjToll, segNgjMdnToll, segMdnNgwToll),
+            transitTerminals = listOf(kertajaya, anjukLadang, purboyo)
+        ),
+        BusRoute(
+            id = "route_ngw_sby_toll",
+            name = "Ngawi - Surabaya (Tol Trans-Jawa Lengkap)",
+            originTerminal = kertonegoro,
+            destinationTerminal = purabaya,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segNgwMdnToll, segMdnNgjToll, segNgjMjkToll, segMjkSbyToll),
+            transitTerminals = listOf(purboyo, anjukLadang, kertajaya)
+        ),
+        BusRoute(
+            id = "route_sby_bjn_toll",
+            name = "Surabaya - Bojonegoro (Via Tol SUMO & Nganjuk)",
+            originTerminal = purabaya,
+            destinationTerminal = rajekwesi,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segSbyMjkToll, segMjkNgjToll, segNgjBjnNonToll),
+            transitTerminals = listOf(kertajaya, anjukLadang)
+        ),
+        BusRoute(
+            id = "route_bjn_sby_toll",
+            name = "Bojonegoro - Surabaya (Via Nganjuk & Tol SUMO)",
+            originTerminal = rajekwesi,
+            destinationTerminal = purabaya,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segBjnNgjNonToll, segNgjMjkToll, segMjkSbyToll),
+            transitTerminals = listOf(anjukLadang, kertajaya)
+        ),
+        BusRoute(
+            id = "route_kdr_mdn_nontoll",
+            name = "Kediri - Madiun (Via Nganjuk)",
+            originTerminal = tamanan,
+            destinationTerminal = purboyo,
+            pathType = RoutePathType.NON_TOLL,
+            segments = listOf(segKdrNgjNonToll, segNgjMdnNonToll),
+            transitTerminals = listOf(anjukLadang)
+        ),
+        BusRoute(
+            id = "route_mdn_kdr_nontoll",
+            name = "Madiun - Kediri (Via Nganjuk)",
+            originTerminal = purboyo,
+            destinationTerminal = tamanan,
+            pathType = RoutePathType.NON_TOLL,
+            segments = listOf(segMdnNgjNonToll, segNgjKdrNonToll),
+            transitTerminals = listOf(anjukLadang)
+        ),
+        BusRoute(
+            id = "route_tlg_pnr_selatan",
+            name = "Tulungagung - Ponorogo (Jalur Selatan Trenggalek)",
+            originTerminal = gayatri,
+            destinationTerminal = seloaji,
+            pathType = RoutePathType.NON_TOLL,
+            segments = listOf(segTlgTrgNonToll, segTrgPnrNonToll),
+            transitTerminals = listOf(surodakan)
+        ),
+        BusRoute(
+            id = "route_pnr_tlg_selatan",
+            name = "Ponorogo - Tulungagung (Jalur Selatan Trenggalek)",
+            originTerminal = seloaji,
+            destinationTerminal = gayatri,
+            pathType = RoutePathType.NON_TOLL,
+            segments = listOf(segPnrTrgNonToll, segTrgTlgNonToll),
+            transitTerminals = listOf(surodakan)
+        ),
+        BusRoute(
+            id = "route_sby_trg_selatan",
+            name = "Surabaya - Trenggalek (Via Tol Kediri & Tulungagung)",
+            originTerminal = purabaya,
+            destinationTerminal = surodakan,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segSbyMjkToll, segMjkKdrToll, segKdrTlgNonToll, segTlgTrgNonToll),
+            transitTerminals = listOf(kertajaya, tamanan, gayatri)
+        ),
+        BusRoute(
+            id = "route_trg_sby_selatan",
+            name = "Trenggalek - Surabaya (Via Tulungagung, Kediri & Tol)",
+            originTerminal = surodakan,
+            destinationTerminal = purabaya,
+            pathType = RoutePathType.TOLL,
+            segments = listOf(segTrgTlgNonToll, segTlgKdrNonToll, segKdrMjkToll, segMjkSbyToll),
             transitTerminals = listOf(gayatri, tamanan, kertajaya)
         )
     )

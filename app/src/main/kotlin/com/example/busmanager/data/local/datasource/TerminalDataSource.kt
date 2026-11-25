@@ -13,8 +13,8 @@ class TerminalDataSource {
         city = "Surabaya",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.18f,
-            y = 0.16f,
+            x = 0.46f,
+            y = 0.28f,
             latitude = -7.3523,
             longitude = 112.7262
         ),
@@ -28,8 +28,8 @@ class TerminalDataSource {
         city = "Malang",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.14f,
-            y = 0.52f,
+            x = 0.45f,
+            y = 0.64f,
             latitude = -7.9315,
             longitude = 112.6582
         ),
@@ -43,8 +43,8 @@ class TerminalDataSource {
         city = "Probolinggo",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.44f,
-            y = 0.41f,
+            x = 0.60f,
+            y = 0.54f,
             latitude = -7.7655,
             longitude = 113.1952
         ),
@@ -58,8 +58,8 @@ class TerminalDataSource {
         city = "Jember",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.68f,
-            y = 0.63f,
+            x = 0.73f,
+            y = 0.81f,
             latitude = -8.1884,
             longitude = 113.6391
         ),
@@ -73,8 +73,8 @@ class TerminalDataSource {
         city = "Situbondo",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.77f,
-            y = 0.38f,
+            x = 0.83f,
+            y = 0.50f,
             latitude = -7.7051,
             longitude = 114.0044
         ),
@@ -88,8 +88,8 @@ class TerminalDataSource {
         city = "Banyuwangi",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.92f,
-            y = 0.65f,
+            x = 0.94f,
+            y = 0.77f,
             latitude = -8.1342,
             longitude = 114.3912
         ),
@@ -103,8 +103,8 @@ class TerminalDataSource {
         city = "Mojokerto",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.11f,
-            y = 0.25f,
+            x = 0.38f,
+            y = 0.36f,
             latitude = -7.4725,
             longitude = 112.4411
         ),
@@ -118,8 +118,8 @@ class TerminalDataSource {
         city = "Kediri",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.05f,
-            y = 0.44f,
+            x = 0.26f,
+            y = 0.58f,
             latitude = -7.8286,
             longitude = 111.9961
         ),
@@ -133,8 +133,8 @@ class TerminalDataSource {
         city = "Tulungagung",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.04f,
-            y = 0.62f,
+            x = 0.23f,
+            y = 0.73f,
             latitude = -8.0645,
             longitude = 111.9056
         ),
@@ -148,10 +148,100 @@ class TerminalDataSource {
         city = "Blitar",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.09f,
-            y = 0.64f,
+            x = 0.30f,
+            y = 0.75f,
             latitude = -8.0983,
             longitude = 112.1608
+        ),
+        retributionFee = Money.rupiah(3500),
+        passengerDemandMultiplier = 1.25f
+    )
+
+    private val surodakan = Terminal(
+        id = "term_surodakan",
+        name = "Terminal Surodakan",
+        city = "Trenggalek",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.18f,
+            y = 0.72f,
+            latitude = -8.0580,
+            longitude = 111.7160
+        ),
+        retributionFee = Money.rupiah(3000),
+        passengerDemandMultiplier = 1.15f
+    )
+
+    private val seloaji = Terminal(
+        id = "term_seloaji",
+        name = "Terminal Seloaji",
+        city = "Ponorogo",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.11f,
+            y = 0.59f,
+            latitude = -7.8420,
+            longitude = 111.4780
+        ),
+        retributionFee = Money.rupiah(3500),
+        passengerDemandMultiplier = 1.25f
+    )
+
+    private val purboyo = Terminal(
+        id = "term_purboyo",
+        name = "Terminal Purboyo",
+        city = "Madiun",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.12f,
+            y = 0.44f,
+            latitude = -7.6080,
+            longitude = 111.5280
+        ),
+        retributionFee = Money.rupiah(4000),
+        passengerDemandMultiplier = 1.35f
+    )
+
+    private val kertonegoro = Terminal(
+        id = "term_kertonegoro",
+        name = "Terminal Kertonegoro",
+        city = "Ngawi",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.10f,
+            y = 0.32f,
+            latitude = -7.4110,
+            longitude = 111.4350
+        ),
+        retributionFee = Money.rupiah(3500),
+        passengerDemandMultiplier = 1.3f
+    )
+
+    private val anjukLadang = Terminal(
+        id = "term_anjukladang",
+        name = "Terminal Anjuk Ladang",
+        city = "Nganjuk",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.23f,
+            y = 0.44f,
+            latitude = -7.6020,
+            longitude = 111.9120
+        ),
+        retributionFee = Money.rupiah(3500),
+        passengerDemandMultiplier = 1.25f
+    )
+
+    private val rajekwesi = Terminal(
+        id = "term_rajekwesi",
+        name = "Terminal Rajekwesi",
+        city = "Bojonegoro",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.23f,
+            y = 0.16f,
+            latitude = -7.1620,
+            longitude = 111.8900
         ),
         retributionFee = Money.rupiah(3500),
         passengerDemandMultiplier = 1.25f
@@ -167,7 +257,13 @@ class TerminalDataSource {
         kertajaya,
         tamanan,
         gayatri,
-        patria
+        patria,
+        surodakan,
+        seloaji,
+        purboyo,
+        kertonegoro,
+        anjukLadang,
+        rajekwesi
     )
 
     fun getTerminalById(id: String): Terminal? {

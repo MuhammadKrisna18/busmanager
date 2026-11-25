@@ -227,7 +227,13 @@ class RouteWizardViewModelTest {
         val expectedArrivalTotal = 360 + duration
         val expectedArrivalHour = (expectedArrivalTotal / 60) % 24
         val expectedArrivalMinute = expectedArrivalTotal % 60
-        val expectedMinReturnTotal = expectedArrivalTotal + 60
+        val rawMinReturn = expectedArrivalTotal + 30
+        val minOfDay = rawMinReturn % 1440
+        val expectedMinReturnTotal = when {
+            minOfDay > 23 * 60 -> (rawMinReturn / 1440 + 1) * 1440 + 5 * 60
+            minOfDay < 5 * 60 -> (rawMinReturn / 1440) * 1440 + 5 * 60
+            else -> rawMinReturn
+        }
         val expectedMinReturnHour = (expectedMinReturnTotal / 60) % 24
         val expectedMinReturnMinute = expectedMinReturnTotal % 60
 
@@ -239,7 +245,7 @@ class RouteWizardViewModelTest {
     }
 
     @Test
-    fun roundTrip_flagsLayoverConflict_whenReturnTimeLessThanOneHourAfterArrival() = runTest {
+    fun roundTrip_flagsLayoverConflict_whenReturnTimeLessThanThirtyMinutesAfterArrival() = runTest {
         advanceUntilIdle()
         val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
         val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
@@ -259,7 +265,7 @@ class RouteWizardViewModelTest {
     }
 
     @Test
-    fun roundTrip_clearsLayoverConflict_whenReturnTimeAtLeastOneHourAfterArrival() = runTest {
+    fun roundTrip_clearsLayoverConflict_whenReturnTimeAtLeastThirtyMinutesAfterArrival() = runTest {
         advanceUntilIdle()
         val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
         val arjosari = terminalRepository.getTerminalById("term_arjosari")!!

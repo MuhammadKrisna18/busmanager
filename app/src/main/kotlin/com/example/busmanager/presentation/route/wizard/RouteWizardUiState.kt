@@ -75,7 +75,15 @@ data class RouteWizardUiState(
         get() = arrivalTotalMinutes % 60
 
     val minReturnTotalMinutes: Int
-        get() = arrivalTotalMinutes + 60
+        get() {
+            val rawMin = arrivalTotalMinutes + 30
+            val minOfDay = rawMin % 1440
+            return when {
+                minOfDay > 23 * 60 -> (rawMin / 1440 + 1) * 1440 + 5 * 60
+                minOfDay < 5 * 60 -> (rawMin / 1440) * 1440 + 5 * 60
+                else -> rawMin
+            }
+        }
 
     val minReturnHour: Int
         get() = (minReturnTotalMinutes / 60) % 24
@@ -97,7 +105,7 @@ data class RouteWizardUiState(
         get() = effectiveReturnMinutes - arrivalTotalMinutes
 
     val hasLayoverConflict: Boolean
-        get() = isRoundTrip && (layoverMinutes < 60)
+        get() = isRoundTrip && (layoverMinutes < 30)
 
     val hasConflict: Boolean
         get() = hasOutboundConflict || (isRoundTrip && (hasReturnConflict || hasLayoverConflict))

@@ -887,6 +887,121 @@ class SimulationMapViewModelTest {
         assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, nextSched.direction)
     }
 
+    @Test
+    fun operatingHoursEnforcement_noDepartureOutsideWindowUntil5AM() = runTest(testDispatcher) {
+        val scheduleRepo = FakeRouteScheduleRepository()
+        val fleetRepo = FakeFleetRepository()
+        val customTripRepo = SimulationTripRepositoryImpl()
+        val earlyTimeRepo = SimulationTimeRepositoryImpl(
+            initialTime = GameCalendar(2026, 11, 24, 4, 30),
+            simulationTripRepository = customTripRepo
+        )
+
+        val bus = createDummyBus("BUS-EARLY-01").copy(
+            id = "bus-early-01",
+            routeId = "route_sby_mlg_toll",
+            currentTerminalId = "term_purabaya"
+        )
+        fleetRepo.emitBuses(listOf(bus))
+
+        val schedule = RouteSchedule(
+            id = "sched-early-01",
+            routeId = "route_sby_mlg_toll",
+            departureHour = 5,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            assignedBusId = bus.id,
+            headwayMinutes = 30,
+            transitDwellMinutes = 10
+        )
+        scheduleRepo.addSchedule(schedule)
+
+        val vm = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(earlyTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(earlyTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(customTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(customTripRepo),
+            routeScheduleRepository = scheduleRepo,
+            fleetRepository = fleetRepo
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        earlyTimeRepo.play()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(0, customTripRepo.activeTrips.value.size)
+
+        earlyTimeRepo.advanceMinutes(30)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, customTripRepo.activeTrips.value.size)
+        assertEquals(bus.id, customTripRepo.activeTrips.value.first().busId)
+    }
+
+    @Test
+    fun overnightRestEnforcement_departureAfter23RescheduledTo5AMNextDay() = runTest(testDispatcher) {
+        val scheduleRepo = FakeRouteScheduleRepository()
+        val fleetRepo = FakeFleetRepository()
+        val customTripRepo = SimulationTripRepositoryImpl()
+        val lateTimeRepo = SimulationTimeRepositoryImpl(
+            initialTime = GameCalendar(2026, 11, 24, 22, 0),
+            simulationTripRepository = customTripRepo
+        )
+
+        val bus = createDummyBus("BUS-LATE-01").copy(
+            id = "bus-late-01",
+            routeId = "route_sby_mlg_toll",
+            currentTerminalId = "term_purabaya"
+        )
+        fleetRepo.emitBuses(listOf(bus))
+
+        val schedule = RouteSchedule(
+            id = "sched-late-01",
+            routeId = "route_sby_mlg_toll",
+            departureHour = 22,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            assignedBusId = bus.id,
+            headwayMinutes = 30,
+            transitDwellMinutes = 10
+        )
+        scheduleRepo.addSchedule(schedule)
+
+        val vm = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(lateTimeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(lateTimeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(customTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(customTripRepo),
+            routeScheduleRepository = scheduleRepo,
+            fleetRepository = fleetRepo
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        lateTimeRepo.play()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val trips = customTripRepo.activeTrips.value
+        assertEquals(1, trips.size)
+        val trip = trips.first()
+
+        lateTimeRepo.advanceMinutes(trip.estimatedArrivalMinutes)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val nextSched = scheduleRepo.getSchedulesForBus(bus.id).first()
+        assertEquals(5, nextSched.departureHour)
+        assertEquals(0, nextSched.departureMinute)
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, nextSched.direction)
+        assertTrue(nextSched.nextDepartureEpochMinutes > lateTimeRepo.currentTime.value.day * 1440L + 23 * 60L)
+    }
+
     private class FakeFinancialTransactionRepository : FinancialTransactionRepository {
         private val list = mutableListOf<FinancialTransaction>()
         private val flow = MutableStateFlow<List<FinancialTransaction>>(emptyList())

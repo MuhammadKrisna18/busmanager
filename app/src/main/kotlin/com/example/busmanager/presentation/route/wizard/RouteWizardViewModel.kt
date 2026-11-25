@@ -321,11 +321,11 @@ class RouteWizardViewModel(
     }
 
     fun setDepartureTime(hour: Int, minute: Int) {
-        val h = hour.coerceIn(0, 23)
-        val m = minute.coerceIn(0, 59)
+        val h = hour.coerceIn(5, 23)
+        val m = if (h == 23) 0 else minute.coerceIn(0, 59)
         _uiState.update { current ->
             val updatedDeparture = current.copy(departureHour = h, departureMinute = m)
-            if (updatedDeparture.isRoundTrip && updatedDeparture.layoverMinutes < 60) {
+            if (updatedDeparture.isRoundTrip && updatedDeparture.layoverMinutes < 30) {
                 updatedDeparture.copy(
                     returnHour = updatedDeparture.minReturnHour,
                     returnMinute = updatedDeparture.minReturnMinute
@@ -338,10 +338,12 @@ class RouteWizardViewModel(
     }
 
     fun setReturnTime(hour: Int, minute: Int) {
+        val h = hour.coerceIn(5, 23)
+        val m = if (h == 23) 0 else minute.coerceIn(0, 59)
         _uiState.update {
             it.copy(
-                returnHour = hour.coerceIn(0, 23),
-                returnMinute = minute.coerceIn(0, 59)
+                returnHour = h,
+                returnMinute = m
             )
         }
         checkScheduleConflict()

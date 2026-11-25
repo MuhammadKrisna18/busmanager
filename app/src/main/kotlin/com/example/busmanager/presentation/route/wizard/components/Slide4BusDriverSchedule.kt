@@ -293,14 +293,14 @@ fun Slide4BusDriverSchedule(
 
         item {
             Text(
-                text = "3. Atur Pola & Jadwal Operasional 24 Jam",
+                text = "3. Atur Pola & Jadwal Operasional (05.00 - 23.00 WIB)",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Armada beroperasi 24 jam non-stop dengan jeda istirahat di terminal tujuan dan waktu singgah di terminal ampiran",
+                text = "Armada beroperasi pada rentang pukul 05.00 - 23.00 WIB dengan jeda istirahat antar-rit (min. 30 menit). Keberangkatan malam yang tiba di atas pukul 23.00 istirahat di terminal hingga 05.00 pagi.",
                 fontSize = 12.sp,
                 color = TextMuted
             )
@@ -335,6 +335,80 @@ fun Slide4BusDriverSchedule(
                         selectedLabelColor = PrimaryBlueDark
                     )
                 )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = "Jam Keberangkatan Perdana (05.00 - 23.00 WIB)",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Pilih jam armada mulai berdinas pada rute ini",
+                fontSize = 11.sp,
+                color = TextMuted
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(IceBlue)
+                            .clickable {
+                                val nextH = (uiState.departureHour - 1).coerceAtLeast(5)
+                                onSetDepartureTime(nextH, uiState.departureMinute)
+                            }
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text("-1 Jam", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryBlueDark)
+                    }
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = String.format("%02d:%02d WIB", uiState.departureHour, uiState.departureMinute),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(IceBlue)
+                            .clickable {
+                                val nextH = (uiState.departureHour + 1).coerceAtMost(23)
+                                val nextM = if (nextH == 23) 0 else uiState.departureMinute
+                                onSetDepartureTime(nextH, nextM)
+                            }
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text("+1 Jam", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryBlueDark)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf(5, 6, 7, 8, 12, 15, 18).forEach { hour ->
+                    FilterChip(
+                        selected = uiState.departureHour == hour && uiState.departureMinute == 0,
+                        onClick = { onSetDepartureTime(hour, 0) },
+                        label = { Text(String.format("%02d:00", hour)) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = IceBlue,
+                            selectedLabelColor = PrimaryBlueDark
+                        )
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -453,19 +527,19 @@ fun Slide4BusDriverSchedule(
                     modifier = Modifier.padding(14.dp)
                 ) {
                     Text(
-                        text = "📋 Ringkasan Operasional 24 Jam",
+                        text = "📋 Ringkasan Operasional (05.00 - 23.00 WIB)",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlueDark
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "• Pola: Berjalan terus menerus bolak-balik (PP) 24 jam",
+                        text = "• Pola: Bolak-balik (PP) pukul 05.00 - 23.00 WIB",
                         fontSize = 12.sp,
                         color = TextDark
                     )
                     Text(
-                        text = "• Jeda Balik: ${uiState.headwayMinutes} Menit istirahat di terminal tujuan",
+                        text = "• Jeda Balik: ${uiState.headwayMinutes} Menit istirahat di terminal tujuan (Min. 30 mnt)",
                         fontSize = 12.sp,
                         color = TextDark
                     )
@@ -475,7 +549,12 @@ fun Slide4BusDriverSchedule(
                         color = TextDark
                     )
                     Text(
-                        text = "• Keberangkatan Perdana: Menuju $outboundToCity dari $outboundFromCity",
+                        text = "• Keberangkatan Perdana: ${String.format("%02d:%02d WIB", uiState.departureHour, uiState.departureMinute)} menuju $outboundToCity dari $outboundFromCity",
+                        fontSize = 12.sp,
+                        color = TextDark
+                    )
+                    Text(
+                        text = "• Jam Malam: Di atas pukul 23.00 armada menginap di terminal tujuan dan siap kembali pukul 05.00",
                         fontSize = 12.sp,
                         color = TextDark
                     )

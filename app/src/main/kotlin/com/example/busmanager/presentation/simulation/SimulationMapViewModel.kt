@@ -216,10 +216,10 @@ class SimulationMapViewModel(
                         }
 
                         val currentTotalMinutes = currentTime.day * 1440L + currentTime.hour * 60L + currentTime.minute
-                        val effectiveHeadway = trip.headwayMinutes.coerceAtLeast(15)
+                        val effectiveHeadway = trip.headwayMinutes.coerceAtLeast(30)
                         val effectiveDwell = trip.transitDwellMinutes.coerceIn(0, 15)
-                        val nextDepMinutes = currentTotalMinutes + effectiveHeadway
-                        var resolvedMinutes = nextDepMinutes
+                        val rawNextDeparture = currentTotalMinutes + effectiveHeadway
+                        var resolvedMinutes = calculateNextOperatingDeparture(rawNextDeparture)
                         var resolvedHour = (((resolvedMinutes) % 1440L) / 60L).toInt()
                         var resolvedMin = ((resolvedMinutes) % 60L).toInt()
 
@@ -228,7 +228,8 @@ class SimulationMapViewModel(
                             val targetScheduleId = returnSchedule?.id ?: busSchedules.first().id
                             if (routeScheduleRepository != null) {
                                 while (routeScheduleRepository.checkConflict(trip.route.id, returnDir, resolvedHour, resolvedMin, targetScheduleId)) {
-                                    resolvedMinutes += 5
+                                    resolvedMinutes += 10
+                                    resolvedMinutes = calculateNextOperatingDeparture(resolvedMinutes)
                                     resolvedHour = (((resolvedMinutes) % 1440L) / 60L).toInt()
                                     resolvedMin = ((resolvedMinutes) % 60L).toInt()
                                 }
@@ -247,8 +248,12 @@ class SimulationMapViewModel(
 
                                 val otherSchedules = busSchedules.filter { it.id != returnSchedule.id }
                                 otherSchedules.forEach { other ->
+                                    val nextOutboundRaw = resolvedMinutes + trip.estimatedArrivalMinutes + effectiveHeadway
+                                    val nextOutboundResolved = calculateNextOperatingDeparture(nextOutboundRaw)
                                     val updatedOther = other.copy(
-                                        nextDepartureEpochMinutes = resolvedMinutes + trip.estimatedArrivalMinutes + effectiveHeadway
+                                        departureHour = (((nextOutboundResolved) % 1440L) / 60L).toInt(),
+                                        departureMinute = ((nextOutboundResolved) % 60L).toInt(),
+                                        nextDepartureEpochMinutes = nextOutboundResolved
                                     )
                                     routeScheduleRepository?.updateSchedule(updatedOther)
                                 }
@@ -391,7 +396,25 @@ class SimulationMapViewModel(
         _uiState.update { it.copy(busOperationStatuses = statusMap) }
     }
 
+    private fun calculateNextOperatingDeparture(baseEpochMinutes: Long): Long {
+        val minuteOfDay = (baseEpochMinutes % 1440L).toInt()
+        return when {
+            minuteOfDay < 5 * 60 -> {
+                val dayEpoch = (baseEpochMinutes / 1440L) * 1440L
+                dayEpoch + 5 * 60L
+            }
+            minuteOfDay > 23 * 60 -> {
+                val nextDayEpoch = (baseEpochMinutes / 1440L + 1L) * 1440L
+                nextDayEpoch + 5 * 60L
+            }
+            else -> baseEpochMinutes
+        }
+    }
+
     private suspend fun handleScheduledDepartures(time: GameCalendar) {
+        val isOperatingHours = (time.hour in 5..22) || (time.hour == 23 && time.minute == 0)
+        if (!isOperatingHours) return
+
         val schedules = _uiState.value.schedules
         val buses = _uiState.value.ownedBuses
         val activeTrips = _uiState.value.activeTrips

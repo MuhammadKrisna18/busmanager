@@ -10,6 +10,7 @@ import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
+import com.example.busmanager.domain.simulation.model.RouteDirection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -109,9 +110,58 @@ class RouteInfoViewModel(
             fleetRepository.updateBus(bus.copy(routeId = routeId))
 
             val schedules = routeScheduleRepository?.getSchedulesListForRoute(routeId) ?: emptyList()
-            val unassignedSchedule = schedules.firstOrNull { it.assignedBusId == null }
-            if (unassignedSchedule != null) {
-                routeScheduleRepository?.assignBusToSchedule(unassignedSchedule.id, busId)
+            val unassignedSchedules = schedules.filter { it.assignedBusId == null }
+            if (unassignedSchedules.isNotEmpty()) {
+                unassignedSchedules.forEach { sched ->
+                    routeScheduleRepository?.assignBusToSchedule(sched.id, busId)
+                }
+            } else if (routeScheduleRepository != null) {
+                val existingOutbound = schedules.filter { it.direction == RouteDirection.ORIGIN_TO_DESTINATION }
+                val lastOutboundMinutes = existingOutbound.maxOfOrNull { it.departureHour * 60 + it.departureMinute }
+                val startMinutes = if (lastOutboundMinutes != null) {
+                    val candidate = lastOutboundMinutes + 30
+                    if (candidate <= 23 * 60) candidate else 5 * 60
+                } else {
+                    6 * 60
+                }
+                val outboundHour = startMinutes / 60
+                val outboundMin = startMinutes % 60
+                val baseTime = System.currentTimeMillis()
+                val outboundScheduleId = "sched-$routeId-outbound-$baseTime"
+                val outboundSchedule = RouteSchedule(
+                    id = outboundScheduleId,
+                    routeId = routeId,
+                    departureHour = outboundHour,
+                    departureMinute = outboundMin,
+                    direction = RouteDirection.ORIGIN_TO_DESTINATION,
+                    assignedBusId = busId,
+                    headwayMinutes = 60,
+                    transitDwellMinutes = 10
+                )
+                routeScheduleRepository.addSchedule(outboundSchedule)
+                routeScheduleRepository.assignBusToSchedule(outboundScheduleId, busId)
+
+                val returnRawMinutes = startMinutes + 180 + 30
+                val returnMinutes = if (returnRawMinutes <= 23 * 60 && returnRawMinutes >= 5 * 60) {
+                    returnRawMinutes
+                } else {
+                    5 * 60
+                }
+                val returnHour = returnMinutes / 60
+                val returnMin = returnMinutes % 60
+                val returnScheduleId = "sched-$routeId-return-${baseTime + 1}"
+                val returnSchedule = RouteSchedule(
+                    id = returnScheduleId,
+                    routeId = routeId,
+                    departureHour = returnHour,
+                    departureMinute = returnMin,
+                    direction = RouteDirection.DESTINATION_TO_ORIGIN,
+                    assignedBusId = busId,
+                    headwayMinutes = 60,
+                    transitDwellMinutes = 10
+                )
+                routeScheduleRepository.addSchedule(returnSchedule)
+                routeScheduleRepository.assignBusToSchedule(returnScheduleId, busId)
             }
 
             _uiState.update {

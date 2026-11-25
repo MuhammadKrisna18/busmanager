@@ -665,61 +665,76 @@ private fun MenuGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        horizontalArrangement = Arrangement.spacedBy(AppDimens.paddingMedium),
-        verticalArrangement = Arrangement.spacedBy(AppDimens.paddingMedium),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = modifier
     ) {
         item {
             MenuCard(
-                title = "Showroom Bus",
-                subtitle = "Beli Bus Jadi",
-                iconEmoji = "🏪",
-                badgeText = "Ready Stock",
-                isActive = true,
-                onClick = onNavigateToShowroom
-            )
-        }
-
-        item {
-            MenuCard(
                 title = "Garasi Armada",
-                subtitle = "Periksa & Servis",
+                subtitle = "Kelola & Servis Unit",
                 iconEmoji = "🚌",
                 badgeText = "$ownedBusCount Unit",
-                isActive = true,
+                containerColor = Color(0xFFEFF6FF),
+                borderColor = Color(0xFFBFDBFE),
+                badgeBgColor = Color(0xFFDBEAFE),
+                badgeTextColor = Color(0xFF1D4ED8),
                 onClick = onNavigateToGarage
             )
         }
 
         item {
             MenuCard(
+                title = "Showroom Bus",
+                subtitle = "Beli Bus & Sasis Baru",
+                iconEmoji = "🏪",
+                badgeText = "Beli Unit",
+                containerColor = Color(0xFFEEF2FF),
+                borderColor = Color(0xFFC7D2FE),
+                badgeBgColor = Color(0xFFE0E7FF),
+                badgeTextColor = Color(0xFF4338CA),
+                onClick = onNavigateToShowroom
+            )
+        }
+
+        item {
+            MenuCard(
                 title = "Rute & Trayek",
-                subtitle = "Jalur Antar Kota",
+                subtitle = "Jalur Antar Terminal",
                 iconEmoji = "🗺️",
-                badgeText = "Peta Jatim",
-                isActive = true,
+                badgeText = "Peta Jalur",
+                containerColor = Color(0xFFECFDF5),
+                borderColor = Color(0xFFA7F3D0),
+                badgeBgColor = Color(0xFFD1FAE5),
+                badgeTextColor = Color(0xFF065F46),
                 onClick = onNavigateToRoutes
             )
         }
 
         item {
             MenuCard(
-                title = "Kru & Supir",
-                subtitle = "Rekrutmen & Gaji",
+                title = "Kru & Sopir",
+                subtitle = "Rekrutmen & Penugasan",
                 iconEmoji = "👨‍✈️",
                 badgeText = if (hiredDriverCount > 0) "$hiredDriverCount Sopir" else "Rekrut",
-                isActive = true,
+                containerColor = Color(0xFFFFFBEB),
+                borderColor = Color(0xFFFDE68A),
+                badgeBgColor = Color(0xFFFEF3C7),
+                badgeTextColor = Color(0xFF92400E),
                 onClick = onNavigateToDrivers
             )
         }
 
         item {
             MenuCard(
-                title = "Keuangan",
+                title = "Keuangan PO",
                 subtitle = "Buku Kas & Laba Rugi",
                 iconEmoji = "📊",
                 badgeText = "Buku Kas",
-                isActive = true,
+                containerColor = Color(0xFFFEFCE8),
+                borderColor = Color(0xFFFEF08A),
+                badgeBgColor = Color(0xFFFEF9C3),
+                badgeTextColor = Color(0xFF854D0E),
                 onClick = onNavigateToFinance
             )
         }
@@ -727,10 +742,13 @@ private fun MenuGrid(
         item {
             MenuCard(
                 title = "Laporan Terminal",
-                subtitle = "Arus Penumpang Naik/Turun",
+                subtitle = "Arus Penumpang Wilayah",
                 iconEmoji = "🏢",
-                badgeText = "Harian",
-                isActive = true,
+                badgeText = "Data Arus",
+                containerColor = Color(0xFFF0FDFA),
+                borderColor = Color(0xFFA5F3FC),
+                badgeBgColor = Color(0xFFCFFAFE),
+                badgeTextColor = Color(0xFF0E7490),
                 onClick = onNavigateToTerminalReport
             )
         }
@@ -738,10 +756,13 @@ private fun MenuGrid(
         item {
             MenuCard(
                 title = "Informasi Trayek",
-                subtitle = "Status Trayek Aktif & Terbuka",
+                subtitle = "Status Operasi Trayek",
                 iconEmoji = "📋",
                 badgeText = if (activeRouteCount > 0) "$activeRouteCount Aktif" else "Info Rute",
-                isActive = true,
+                containerColor = Color(0xFFFAF5FF),
+                borderColor = Color(0xFFE9D5FF),
+                badgeBgColor = Color(0xFFF3E8FF),
+                badgeTextColor = Color(0xFF6B21A8),
                 onClick = onOpenRouteInfo
             )
         }
@@ -754,65 +775,79 @@ private fun MenuCard(
     subtitle: String,
     iconEmoji: String,
     badgeText: String,
-    isActive: Boolean,
+    containerColor: Color,
+    borderColor: Color,
+    badgeBgColor: Color,
+    badgeTextColor: Color,
+    isActive: Boolean = true,
     onClick: () -> Unit = {}
 ) {
-    val containerBg = if (isActive) SurfaceWhite else DisabledBackground
-    val titleColor = if (isActive) TextDark else DisabledGray
-    val subtitleColor = if (isActive) TextMuted else DisabledGray
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(130.dp)
             .clickable(enabled = isActive, onClick = onClick),
         shape = RoundedCornerShape(AppDimens.radiusMedium),
-        colors = CardDefaults.cardColors(containerColor = containerBg),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isActive) AppDimens.cardElevation else 0.dp),
-        border = if (isActive) null else androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+        colors = CardDefaults.cardColors(containerColor = if (isActive) containerColor else DisabledBackground),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isActive) 1.dp else 0.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, if (isActive) borderColor else CardBorder)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(AppDimens.paddingMedium),
-            verticalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = iconEmoji, fontSize = 28.sp)
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.White.copy(alpha = 0.85f))
+                        .border(1.dp, borderColor.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = iconEmoji, fontSize = 18.sp)
+                }
 
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(AppDimens.radiusPill))
-                        .background(if (isActive) AccentBlue else Color(0xFFE2E8F0))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .background(if (isActive) badgeBgColor else Color(0xFFE2E8F0))
+                        .padding(horizontal = 7.dp, vertical = 2.dp)
                 ) {
                     Text(
                         text = badgeText,
-                        color = if (isActive) PrimaryBlueDark else DisabledGray,
+                        color = if (isActive) badgeTextColor else DisabledGray,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            Column {
-                Text(
-                    text = title,
-                    color = titleColor,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = subtitle,
-                    color = subtitleColor,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Normal
-                )
-            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = title,
+                color = if (isActive) TextDark else DisabledGray,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                text = subtitle,
+                color = if (isActive) TextMuted else DisabledGray,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,7 +49,8 @@ fun TerminalMarker(
     terminal: Terminal,
     role: TerminalNodeRole,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    zoomScale: Float = 1.0f
 ) {
     val nodeColor = when (role) {
         TerminalNodeRole.ORIGIN -> SuccessGreen
@@ -66,6 +68,8 @@ fun TerminalMarker(
         TerminalNodeRole.DEFAULT -> null
     }
 
+    val labelScale = (1f / zoomScale).coerceIn(0.40f, 1.0f)
+
     Column(
         modifier = modifier.clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -73,14 +77,18 @@ fun TerminalMarker(
         if (badgeText != null) {
             Box(
                 modifier = Modifier
+                    .graphicsLayer {
+                        scaleX = labelScale
+                        scaleY = labelScale
+                    }
                     .clip(RoundedCornerShape(AppDimens.radiusPill))
                     .background(nodeColor)
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                    .padding(horizontal = 5.dp, vertical = 1.dp)
             ) {
                 Text(
                     text = badgeText,
                     color = Color.White,
-                    fontSize = 9.sp,
+                    fontSize = 8.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -114,15 +122,19 @@ fun TerminalMarker(
 
         Box(
             modifier = Modifier
+                .graphicsLayer {
+                    scaleX = labelScale
+                    scaleY = labelScale
+                }
                 .clip(RoundedCornerShape(4.dp))
-                .background(SurfaceWhite.copy(alpha = 0.92f))
+                .background(SurfaceWhite.copy(alpha = 0.90f))
                 .border(0.5.dp, CardBorder, RoundedCornerShape(4.dp))
-                .padding(horizontal = 4.dp, vertical = 1.dp)
+                .padding(horizontal = 3.dp, vertical = 0.5.dp)
         ) {
             Text(
                 text = terminal.city,
                 color = TextDark,
-                fontSize = 10.sp,
+                fontSize = 9.sp,
                 fontWeight = if (role != TerminalNodeRole.DEFAULT) FontWeight.Bold else FontWeight.Medium
             )
         }

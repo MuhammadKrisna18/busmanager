@@ -281,7 +281,8 @@ fun EastJavaMapCanvas(
                     TerminalMarker(
                         terminal = terminal,
                         role = role,
-                        onClick = { onTerminalClick(terminal) }
+                        onClick = { onTerminalClick(terminal) },
+                        zoomScale = currentZoom
                     )
                 }
             }
@@ -312,7 +313,8 @@ fun EastJavaMapCanvas(
                     MovingBusMarker(
                         trip = trip,
                         isTracking = isTracked,
-                        onClick = { onTripClick(trip) }
+                        onClick = { onTripClick(trip) },
+                        zoomScale = currentZoom
                     )
                 }
             }
@@ -337,7 +339,8 @@ fun EastJavaMapCanvas(
                             bus = parked.bus,
                             terminal = parked.terminal,
                             route = parked.route,
-                            onClick = { onParkedBusClick(parked.bus) }
+                            onClick = { onParkedBusClick(parked.bus) },
+                            zoomScale = currentZoom
                         )
                     }
                 }
@@ -399,7 +402,7 @@ fun EastJavaMapCanvas(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(AppDimens.paddingSmall)
+                    .padding(top = 116.dp, start = AppDimens.paddingSmall)
                     .shadow(4.dp, RoundedCornerShape(AppDimens.radiusPill))
                     .clip(RoundedCornerShape(AppDimens.radiusPill))
                     .background(Color(0xFF1E293B))
@@ -431,8 +434,8 @@ fun EastJavaMapCanvas(
         if (enableZoomAndPan) {
             Column(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(AppDimens.paddingSmall),
+                    .align(Alignment.CenterEnd)
+                    .padding(end = AppDimens.paddingSmall),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -501,26 +504,24 @@ fun EastJavaMapCanvas(
                         color = Color(0xFF475569)
                     )
                 }
-            }
 
-            if (currentZoom > 1.05f) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(AppDimens.paddingSmall)
-                        .shadow(2.dp, RoundedCornerShape(AppDimens.radiusPill))
-                        .clip(RoundedCornerShape(AppDimens.radiusPill))
-                        .background(Color(0xCC0F172A))
-                        .clickable { resetMap() }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    val zoomFormatted = String.format(Locale.US, "%.1fx", currentZoom)
-                    Text(
-                        text = "$zoomFormatted • ↺",
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                if (currentZoom > 1.05f) {
+                    Box(
+                        modifier = Modifier
+                            .shadow(2.dp, RoundedCornerShape(AppDimens.radiusPill))
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(Color(0xCC0F172A))
+                            .clickable { resetMap() }
+                            .padding(horizontal = 6.dp, vertical = 3.dp)
+                    ) {
+                        val zoomFormatted = String.format(Locale.US, "%.1fx", currentZoom)
+                        Text(
+                            text = zoomFormatted,
+                            color = Color.White,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }

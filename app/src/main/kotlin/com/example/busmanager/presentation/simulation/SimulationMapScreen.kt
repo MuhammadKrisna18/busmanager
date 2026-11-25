@@ -68,15 +68,30 @@ fun SimulationMapScreen(
         modifier = modifier.fillMaxSize(),
         color = BackgroundWhite
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(AppDimens.paddingMedium),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
+        Box(modifier = Modifier.fillMaxSize()) {
+            EastJavaMapCanvas(
+                terminals = state.terminals,
+                allSegments = state.allSegments,
+                modifier = Modifier.fillMaxSize(),
+                openedRoutes = state.openedRoutes,
+                selectedRoute = state.selectedRoute,
+                selectedOrigin = state.selectedTerminal,
+                transitTerminals = state.selectedRoute?.transitTerminals ?: emptyList(),
+                activeTrips = state.activeTrips,
+                parkedBuses = state.parkedBuses,
+                trackedTripId = state.trackedTripId,
+                onTerminalClick = { terminal -> viewModel.onTerminalClick(terminal) },
+                onTripClick = { trip -> viewModel.onTripClick(trip) },
+                onParkedBusClick = { viewModel.openBusesBottomSheet() }
+            )
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = AppDimens.paddingMedium, vertical = AppDimens.paddingSmall)
+            ) {
                 SimulationTopBar(
                     dateText = state.formattedDate,
                     timeText = state.formattedTime,
@@ -87,7 +102,7 @@ fun SimulationMapScreen(
                     onNavigateBack = onNavigateBack
                 )
 
-                Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 SimulationStatusBanner(
                     ownedBusCount = state.ownedBusCount,
@@ -95,31 +110,13 @@ fun SimulationMapScreen(
                 )
             }
 
-            Box(
+            Column(
                 modifier = Modifier
+                    .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(vertical = AppDimens.paddingSmall),
-                contentAlignment = Alignment.Center
+                    .navigationBarsPadding()
+                    .padding(horizontal = AppDimens.paddingMedium, vertical = AppDimens.paddingSmall)
             ) {
-                EastJavaMapCanvas(
-                    terminals = state.terminals,
-                    allSegments = state.allSegments,
-                    modifier = Modifier.fillMaxSize(),
-                    openedRoutes = state.openedRoutes,
-                    selectedRoute = state.selectedRoute,
-                    selectedOrigin = state.selectedTerminal,
-                    transitTerminals = state.selectedRoute?.transitTerminals ?: emptyList(),
-                    activeTrips = state.activeTrips,
-                    parkedBuses = state.parkedBuses,
-                    trackedTripId = state.trackedTripId,
-                    onTerminalClick = { terminal -> viewModel.onTerminalClick(terminal) },
-                    onTripClick = { trip -> viewModel.onTripClick(trip) },
-                    onParkedBusClick = { viewModel.openBusesBottomSheet() }
-                )
-            }
-
-            Column {
                 if (state.selectedTrip != null) {
                     BusLiveTrackingCard(
                         trip = state.selectedTrip!!,

@@ -7,17 +7,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,10 +30,11 @@ fun ParkedBusMarker(
     terminal: Terminal,
     route: BusRoute?,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    zoomScale: Float = 1.0f
 ) {
     val busRadius = 11.dp
-    val busDiameter = busRadius * 2
+    val labelScale = (1f / zoomScale).coerceIn(0.40f, 1.0f)
 
     Box(
         modifier = modifier.wrapContentSize(Alignment.Center, unbounded = true),
@@ -44,21 +43,26 @@ fun ParkedBusMarker(
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
-                .offset(y = -busRadius - 2.dp)
+                .offset(y = -busRadius - 1.dp)
                 .wrapContentSize(Alignment.BottomCenter, unbounded = true)
+                .graphicsLayer {
+                    scaleX = labelScale
+                    scaleY = labelScale
+                }
         ) {
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(AppDimens.radiusPill))
-                    .background(Color(0xFF475569))
-                    .padding(horizontal = 5.dp, vertical = 1.dp)
+                    .background(Color(0xBB334155))
+                    .border(0.5.dp, Color(0x33FFFFFF), RoundedCornerShape(AppDimens.radiusPill))
+                    .padding(horizontal = 3.5.dp, vertical = 0.5.dp)
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "🅿️ ${bus.busCode}",
+                        text = bus.busCode,
                         color = Color.White,
-                        fontSize = 8.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 7.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }

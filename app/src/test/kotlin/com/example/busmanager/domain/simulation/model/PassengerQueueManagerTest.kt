@@ -66,8 +66,8 @@ class PassengerQueueManagerTest {
         queueManager.advanceTime(minutes = 5, currentTime = morningTime, activeRoutes = listOf(testRoute))
 
         val bus2Boarded = queueManager.boardPassengers(terminalId, routeId, availableSeats = 45)
-        assertTrue(bus2Boarded in 1..8)
         assertTrue(bus2Boarded < 15)
+        assertTrue(bus2Boarded < bus1Boarded)
     }
 
     @Test

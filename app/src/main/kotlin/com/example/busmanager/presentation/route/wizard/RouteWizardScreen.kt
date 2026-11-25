@@ -137,7 +137,8 @@ fun RouteWizardScreen(
                             onSaveEditedPrice = { pricing, newAmount ->
                                 viewModel.saveEditedPrice(pricing, newAmount)
                             },
-                            onDismissEditPricing = { viewModel.startEditingPricing(null) }
+                            onDismissEditPricing = { viewModel.startEditingPricing(null) },
+                            onResetPricingsToDefault = { viewModel.resetPricingsToDefault() }
                         )
                     }
                     RouteWizardStep.BUS_DRIVER_SCHEDULE -> {

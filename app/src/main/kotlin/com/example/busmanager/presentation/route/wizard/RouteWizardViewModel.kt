@@ -305,7 +305,7 @@ class RouteWizardViewModel(
 
         return if (buildResult.isSuccess) {
             val route = buildResult.getOrThrow()
-            val generatedPricings = generateHopPricings(route)
+            val generatedPricings = generateHopPricings(route, state.pricings)
             val intermediate = state.copy(
                 builtRoute = route,
                 pricings = generatedPricings,
@@ -328,16 +328,23 @@ class RouteWizardViewModel(
         }
     }
 
-    private fun generateHopPricings(route: com.example.busmanager.domain.route.model.BusRoute): List<RoutePricing> {
+    private fun generateHopPricings(
+        route: com.example.busmanager.domain.route.model.BusRoute,
+        existingPricings: List<RoutePricing> = emptyList()
+    ): List<RoutePricing> {
         val stops = listOf(route.originTerminal) + route.transitTerminals + listOf(route.destinationTerminal)
         val pricings = mutableListOf<RoutePricing>()
+        val existingMap = existingPricings.associateBy { it.originTerminalId to it.destinationTerminalId }
 
         for (i in 0 until stops.size) {
             for (j in i + 1 until stops.size) {
                 val origin = stops[i]
                 val dest = stops[j]
                 val hops = (j - i).toLong()
-                val priceAmount = (hops * 50_000L).coerceAtLeast(50_000L)
+                val defaultPrice = (hops * 50_000L).coerceAtLeast(50_000L)
+
+                val forwardPrice = existingMap[origin.id to dest.id]?.price ?: Money.rupiah(defaultPrice)
+                val reversePrice = existingMap[dest.id to origin.id]?.price ?: forwardPrice
 
                 pricings.add(
                     RoutePricing(
@@ -347,7 +354,7 @@ class RouteWizardViewModel(
                         destinationTerminalId = dest.id,
                         originCity = origin.city,
                         destinationCity = dest.city,
-                        price = Money.rupiah(priceAmount)
+                        price = forwardPrice
                     )
                 )
                 pricings.add(
@@ -358,12 +365,20 @@ class RouteWizardViewModel(
                         destinationTerminalId = origin.id,
                         originCity = dest.city,
                         destinationCity = origin.city,
-                        price = Money.rupiah(priceAmount)
+                        price = reversePrice
                     )
                 )
             }
         }
         return pricings
+    }
+
+    fun resetPricingsToDefault() {
+        _uiState.update { state ->
+            val route = state.builtRoute ?: return@update state
+            val resetPricings = generateHopPricings(route, emptyList())
+            state.copy(pricings = resetPricings)
+        }
     }
 
     fun startEditingPricing(pricing: RoutePricing?) {

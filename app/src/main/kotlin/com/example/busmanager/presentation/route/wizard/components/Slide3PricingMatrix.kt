@@ -21,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +52,7 @@ fun Slide3PricingMatrix(
     onStartEditPricing: (RoutePricing) -> Unit,
     onSaveEditedPrice: (RoutePricing, Long) -> Unit,
     onDismissEditPricing: () -> Unit,
+    onResetPricingsToDefault: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val stops = uiState.builtRoute?.let { route ->
@@ -62,12 +64,13 @@ fun Slide3PricingMatrix(
     val roundTripPricings = uiState.pricings.filter { pricing ->
         val fromIndex = stopIndexMap[pricing.originTerminalId]
         val toIndex = stopIndexMap[pricing.destinationTerminalId]
-        if (fromIndex != null && toIndex != null) {
-            fromIndex < toIndex
-        } else {
-            pricing.originTerminalId == uiState.selectedOrigin?.id
-        }
-    }.distinctBy {
+        fromIndex != null && toIndex != null && fromIndex < toIndex
+    }.sortedWith(
+        compareBy(
+            { stopIndexMap[it.originTerminalId] ?: 0 },
+            { stopIndexMap[it.destinationTerminalId] ?: 0 }
+        )
+    ).distinctBy {
         minOf(it.originTerminalId, it.destinationTerminalId) to maxOf(it.originTerminalId, it.destinationTerminalId)
     }
 
@@ -102,24 +105,38 @@ fun Slide3PricingMatrix(
             ) {
                 Row(
                     modifier = Modifier.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "💡",
-                        fontSize = 24.sp
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
                         Text(
-                            text = "Kalkulasi Otomatis Rp 50.000 / Hop",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryBlueDark
+                            text = "💡",
+                            fontSize = 24.sp
                         )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Kalkulasi Otomatis Rp 50.000 / Hop",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryBlueDark
+                            )
+                            Text(
+                                text = "Harga dihitung berdasarkan jarak per lompatan kota transit. Anda bebas menyesuaikan tarif tiap relasi perjalanan.",
+                                fontSize = 11.sp,
+                                color = TextDark
+                            )
+                        }
+                    }
+                    TextButton(onClick = onResetPricingsToDefault) {
                         Text(
-                            text = "Harga dihitung berdasarkan jarak per lompatan kota transit. Anda bebas menyesuaikan tarif tiap relasi perjalanan.",
-                            fontSize = 11.sp,
-                            color = TextDark
+                            text = "Reset",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryBlue
                         )
                     }
                 }
@@ -154,6 +171,10 @@ fun Slide3PricingMatrix(
         }
 
         items(roundTripPricings) { pricing ->
+            val fromIdx = stopIndexMap[pricing.originTerminalId] ?: 0
+            val toIdx = stopIndexMap[pricing.destinationTerminalId] ?: 1
+            val hopCount = (toIdx - fromIdx).coerceAtLeast(1)
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -194,7 +215,7 @@ fun Slide3PricingMatrix(
                             }
                         }
                         Text(
-                            text = "Tarif Pulang-Pergi (2 Arah)",
+                            text = "$hopCount Hop Relasi • Tarif Pulang-Pergi (2 Arah)",
                             fontSize = 11.sp,
                             color = TextLight
                         )

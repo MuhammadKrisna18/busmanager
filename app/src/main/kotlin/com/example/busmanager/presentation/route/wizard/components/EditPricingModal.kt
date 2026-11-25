@@ -16,7 +16,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,16 +27,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
 import com.example.busmanager.ui.theme.PrimaryBlueDark
-import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextMuted
 
@@ -48,6 +46,7 @@ fun EditPricingModal(
     onSave: (Long) -> Unit
 ) {
     var priceText by remember(pricing) { mutableStateOf(pricing.price.amount.toString()) }
+    val previewAmount = (priceText.toLongOrNull() ?: 0L).coerceAtLeast(0L)
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -103,11 +102,26 @@ fun EditPricingModal(
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Pratinjau: ${Money.rupiah(previewAmount).formatRupiah()}",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryBlue
+                )
+
                 Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Penyesuaian Cepat:",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextMuted
+                )
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     QuickAmountChip(
                         label = "+10 rb",
@@ -124,6 +138,13 @@ fun EditPricingModal(
                         }
                     )
                     QuickAmountChip(
+                        label = "+50 rb",
+                        onClick = {
+                            val current = priceText.toLongOrNull() ?: 0L
+                            priceText = (current + 50_000L).toString()
+                        }
+                    )
+                    QuickAmountChip(
                         label = "-10 rb",
                         onClick = {
                             val current = priceText.toLongOrNull() ?: 0L
@@ -131,12 +152,43 @@ fun EditPricingModal(
                         }
                     )
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Pilihan Tarif Umum:",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextMuted
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    QuickAmountChip(
+                        label = "50 rb",
+                        onClick = { priceText = "50000" }
+                    )
+                    QuickAmountChip(
+                        label = "75 rb",
+                        onClick = { priceText = "75000" }
+                    )
+                    QuickAmountChip(
+                        label = "100 rb",
+                        onClick = { priceText = "100000" }
+                    )
+                    QuickAmountChip(
+                        label = "150 rb",
+                        onClick = { priceText = "150000" }
+                    )
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    val amount = priceText.toLongOrNull() ?: pricing.price.amount
+                    val amount = (priceText.toLongOrNull() ?: pricing.price.amount).coerceAtLeast(10_000L)
                     onSave(amount)
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
@@ -163,12 +215,12 @@ private fun QuickAmountChip(
             .clip(RoundedCornerShape(8.dp))
             .background(IceBlue)
             .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = label,
-            fontSize = 12.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.Bold,
             color = PrimaryBlue
         )

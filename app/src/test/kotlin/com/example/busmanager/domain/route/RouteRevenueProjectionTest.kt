@@ -49,4 +49,19 @@ class RouteRevenueProjectionTest {
         assertEquals(Money.rupiah(300_000), projection.tollFeeRoundTrip)
         assertEquals(Money.rupiah(3_900_000), projection.netProfitRoundTrip)
     }
+
+    @Test
+    fun netProfitCannotBeNegativeWhenTollFeeExceedsRevenue() {
+        val projection = RouteRevenueProjection(
+            seatCapacity = 10,
+            ticketPrice = Money.rupiah(20_000),
+            tollFee = Money.rupiah(500_000),
+            driverWageRate = 0.30f
+        )
+
+        assertEquals(Money.rupiah(200_000), projection.grossRevenueOneWay)
+        assertEquals(Money.rupiah(60_000), projection.driverWageOneWay)
+        assertEquals(Money.ZERO, projection.netProfitOneWay)
+        assertEquals(Money.ZERO, projection.netProfitRoundTrip)
+    }
 }

@@ -78,13 +78,17 @@ fun EastJavaMapCanvas(
     selectedDestination: Terminal? = null,
     transitTerminals: List<Terminal> = emptyList(),
     candidateTerminalIds: Set<String> = emptySet(),
+    segmentToggles: List<MapSegmentToggle> = emptyList(),
+    terminalToggles: List<MapTerminalToggle> = emptyList(),
     activeTrips: List<ActiveBusTrip> = emptyList(),
     parkedBuses: List<com.example.busmanager.presentation.simulation.ParkedBusInfo> = emptyList(),
     trackedTripId: String? = null,
     enableZoomAndPan: Boolean = true,
     onTerminalClick: (Terminal) -> Unit = {},
     onTripClick: (ActiveBusTrip) -> Unit = {},
-    onParkedBusClick: (com.example.busmanager.domain.fleet.model.Bus) -> Unit = {}
+    onParkedBusClick: (com.example.busmanager.domain.fleet.model.Bus) -> Unit = {},
+    onSegmentToggleClick: (fromId: String, toId: String) -> Unit = { _, _ -> },
+    onTerminalToggleClick: (terminalId: String) -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val zoomAnim = remember { Animatable(1.0f) }
@@ -336,6 +340,57 @@ fun EastJavaMapCanvas(
                             onClick = { onParkedBusClick(parked.bus) }
                         )
                     }
+                }
+            }
+
+            segmentToggles.forEach { toggle ->
+                val xPx = (toggle.midCoordinate.x * canvasWidth) - 36.dp.value
+                val yPx = (toggle.midCoordinate.y * canvasHeight) - 12.dp.value
+                val isToll = toggle.currentPathType == RoutePathType.TOLL
+
+                Box(
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(xPx.roundToInt(), yPx.roundToInt())
+                        }
+                        .shadow(4.dp, RoundedCornerShape(AppDimens.radiusPill))
+                        .clip(RoundedCornerShape(AppDimens.radiusPill))
+                        .background(if (isToll) Color(0xFFD97706) else Color(0xFF0F766E))
+                        .border(1.5.dp, Color.White, RoundedCornerShape(AppDimens.radiusPill))
+                        .clickable { onSegmentToggleClick(toggle.fromTerminalId, toggle.toTerminalId) }
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = if (isToll) "🛣️ Tol" else "🚗 Arteri",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+
+            terminalToggles.forEach { toggle ->
+                val xPx = (toggle.coordinate.x * canvasWidth) - 36.dp.value
+                val yPx = (toggle.coordinate.y * canvasHeight) - 46.dp.value
+
+                Box(
+                    modifier = Modifier
+                        .offset {
+                            IntOffset(xPx.roundToInt(), yPx.roundToInt())
+                        }
+                        .shadow(4.dp, RoundedCornerShape(AppDimens.radiusPill))
+                        .clip(RoundedCornerShape(AppDimens.radiusPill))
+                        .background(if (toggle.isTransitActive) Color(0xFF2563EB) else Color(0xFF64748B))
+                        .border(1.5.dp, Color.White, RoundedCornerShape(AppDimens.radiusPill))
+                        .clickable { onTerminalToggleClick(toggle.terminalId) }
+                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                ) {
+                    Text(
+                        text = if (toggle.isTransitActive) "🚏 Singgah" else "⚡ Lewat",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
                 }
             }
         }

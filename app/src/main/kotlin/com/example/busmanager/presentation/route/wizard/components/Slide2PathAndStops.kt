@@ -24,6 +24,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,10 +32,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.domain.route.model.MapCoordinate
 import com.example.busmanager.domain.route.model.RoutePathType
+import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
+import com.example.busmanager.presentation.route.components.MapSegmentToggle
+import com.example.busmanager.presentation.route.components.MapTerminalToggle
 import com.example.busmanager.presentation.route.wizard.RouteWizardUiState
 import com.example.busmanager.ui.theme.AccentBlue
-import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
@@ -44,7 +48,6 @@ import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextLight
 import com.example.busmanager.ui.theme.TextMuted
-import com.example.busmanager.ui.theme.WarningAmber
 
 @Composable
 fun Slide2PathAndStops(
@@ -55,170 +58,195 @@ fun Slide2PathAndStops(
     onSetIsExpress: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val currentPath = uiState.availablePaths.getOrNull(uiState.selectedPathIndex) ?: emptyList()
+    val currentPath = uiState.selectedPathNodes.ifEmpty {
+        uiState.availablePaths.getOrNull(uiState.selectedPathIndex) ?: emptyList()
+    }
     val route = uiState.builtRoute
+
+    val segmentToggles = remember(currentPath, uiState.segmentPathTypes, route) {
+        if (currentPath.size < 2) emptyList() else {
+            (0 until currentPath.size - 1).map { i ->
+                val from = currentPath[i]
+                val to = currentPath[i + 1]
+                val midX = (from.coordinate.x + to.coordinate.x) / 2f
+                val midY = (from.coordinate.y + to.coordinate.y) / 2f
+                val midLat = (from.coordinate.latitude + to.coordinate.latitude) / 2.0
+                val midLng = (from.coordinate.longitude + to.coordinate.longitude) / 2.0
+                val segType = route?.segments?.getOrNull(i)?.pathType
+                    ?: uiState.segmentPathTypes[Pair(from.id, to.id)]
+                    ?: RoutePathType.TOLL
+                MapSegmentToggle(
+                    fromTerminalId = from.id,
+                    toTerminalId = to.id,
+                    midCoordinate = MapCoordinate(midX, midY, midLat, midLng),
+                    currentPathType = segType
+                )
+            }
+        }
+    }
+
+    val terminalToggles = remember(currentPath, uiState.activeTransitIds, uiState.isExpress) {
+        if (currentPath.size <= 2) emptyList() else {
+            (1 until currentPath.size - 1).map { i ->
+                val term = currentPath[i]
+                MapTerminalToggle(
+                    terminalId = term.id,
+                    coordinate = term.coordinate,
+                    isTransitActive = !uiState.isExpress && (term.id in uiState.activeTransitIds)
+                )
+            }
+        }
+    }
 
     LazyColumn(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        if (uiState.availablePaths.size > 1) {
-            item {
-                Text(
-                    text = "Pilih Koridor Jalur",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextDark
+        item {
+            Text(
+                text = "Kustomisasi Jalur & Titik Singgah",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "Sentuh pill Tol/Arteri dan Singgah/Lewat langsung di peta untuk mengubah konfigurasi",
+                fontSize = 12.sp,
+                color = TextMuted
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CardBorder))
+            ) {
+                EastJavaMapCanvas(
+                    terminals = uiState.allTerminals,
+                    allSegments = uiState.allSegments,
+                    selectedRoute = route,
+                    selectedOrigin = route?.originTerminal ?: uiState.selectedOrigin,
+                    selectedDestination = route?.destinationTerminal ?: uiState.selectedDestination,
+                    transitTerminals = route?.transitTerminals ?: emptyList(),
+                    segmentToggles = segmentToggles,
+                    terminalToggles = terminalToggles,
+                    onSegmentToggleClick = { fromId, toId ->
+                        val currentType = uiState.segmentPathTypes[Pair(fromId, toId)] ?: route?.segments?.find {
+                            it.fromTerminalId == fromId && it.toTerminalId == toId
+                        }?.pathType ?: RoutePathType.TOLL
+                        val newType = if (currentType == RoutePathType.TOLL) RoutePathType.NON_TOLL else RoutePathType.TOLL
+                        onSetSegmentPathType(fromId, toId, newType)
+                    },
+                    onTerminalToggleClick = { termId ->
+                        onToggleTransitStop(termId)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .clip(RoundedCornerShape(14.dp))
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Tersedia beberapa alternatif koridor untuk menghubungkan kota asal dan tujuan",
-                    fontSize = 11.sp,
-                    color = TextMuted
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    uiState.availablePaths.forEachIndexed { index, path ->
-                        val isSelected = index == uiState.selectedPathIndex
-                        val transitCities = path.drop(1).dropLast(1).map { it.city }
-                        val viaDescription = if (transitCities.isNotEmpty()) {
-                            "Via: " + transitCities.joinToString(" ➔ ")
-                        } else {
-                            "Jalur Langsung (Tanpa Transit)"
-                        }
-
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onSelectPath(index) },
-                            shape = RoundedCornerShape(10.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (isSelected) AccentBlue else SurfaceWhite
-                            ),
-                            border = androidx.compose.foundation.BorderStroke(
-                                if (isSelected) 2.dp else 1.dp,
-                                if (isSelected) PrimaryBlue else CardBorder
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = "Koridor Jalur ${index + 1}",
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isSelected) PrimaryBlueDark else TextDark
-                                        )
-                                        if (isSelected) {
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Box(
-                                                modifier = Modifier
-                                                    .clip(RoundedCornerShape(AppDimens.radiusPill))
-                                                    .background(PrimaryBlue)
-                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                                            ) {
-                                                Text(
-                                                    text = "Dipilih",
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = Color.White
-                                                )
-                                            }
-                                        }
-                                    }
-                                    Spacer(modifier = Modifier.height(3.dp))
-                                    Text(
-                                        text = viaDescription,
-                                        fontSize = 11.sp,
-                                        color = TextMuted,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .size(22.dp)
-                                        .clip(CircleShape)
-                                        .background(if (isSelected) PrimaryBlue else Color(0xFFE2E8F0)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    if (isSelected) {
-                                        Text(
-                                            text = "✓",
-                                            color = Color.White,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(14.dp))
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
         }
 
         if (route != null) {
             item {
+                val hours = route.totalEstimatedDurationMinutes / 60
+                val mins = route.totalEstimatedDurationMinutes % 60
+                val durationStr = if (hours > 0) "${hours}j ${mins}m" else "${mins} mnt"
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CardBorder))
+                    colors = CardDefaults.cardColors(containerColor = IceBlue),
+                    border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(PrimaryBlue.copy(alpha = 0.5f)))
                 ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Text(
-                            text = route.name,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextDark
-                        )
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = route.name,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryBlueDark
+                            )
+                            Text(
+                                text = "Live Metrics",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = PrimaryBlue
+                            )
+                        }
+
                         Spacer(modifier = Modifier.height(8.dp))
-                        val hours = route.totalEstimatedDurationMinutes / 60
-                        val mins = route.totalEstimatedDurationMinutes % 60
-                        val durationStr = if (hours > 0) "${hours}j ${mins}m" else "${mins} mnt"
 
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFF8FAFC))
-                                .padding(10.dp),
-                            horizontalArrangement = Arrangement.SpaceAround
+                                .background(SurfaceWhite)
+                                .padding(horizontal = 8.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RouteSpecItem(label = "Jarak", value = "${route.totalDistanceKm.toInt()} km")
-                            RouteSpecItem(label = "Waktu", value = durationStr)
-                            RouteSpecItem(
-                                label = "Biaya Tol",
-                                value = if (route.totalTollFee.amount > 0) route.totalTollFee.formatRupiah() else "Gratis (Arteri)"
-                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(text = "Total Jarak", fontSize = 10.sp, color = TextMuted)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = "${route.totalDistanceKm.toInt()} km",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = PrimaryBlueDark
+                                )
+                            }
+                            Box(modifier = Modifier.width(1.dp).height(24.dp).background(CardBorder))
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(text = "Waktu Tempuh", fontSize = 10.sp, color = TextMuted)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = durationStr,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = PrimaryBlueDark
+                                )
+                            }
+                            Box(modifier = Modifier.width(1.dp).height(24.dp).background(CardBorder))
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(text = "Biaya Tol", fontSize = 10.sp, color = TextMuted)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = if (route.totalTollFee.amount > 0) route.totalTollFee.formatRupiah() else "Rp 0 (Arteri)",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (route.totalTollFee.amount > 0) Color(0xFFD97706) else SuccessGreen
+                                )
+                            }
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+
+                Spacer(modifier = Modifier.height(14.dp))
             }
         }
 
         item {
             Text(
                 text = "Pola Perjalanan Koridor",
-                fontSize = 15.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Tentukan apakah armada berjalan langsung tanpa transit atau mampir di halte/terminal",
-                fontSize = 12.sp,
+                text = "Tentukan apakah armada berjalan langsung express atau berhenti di halte transit",
+                fontSize = 11.sp,
                 color = TextMuted
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -229,7 +257,7 @@ fun Slide2PathAndStops(
                 FilterChip(
                     selected = uiState.isExpress,
                     onClick = { onSetIsExpress(true) },
-                    label = { Text("⚡ Jalur Langsung (Tanpa Mampir)") },
+                    label = { Text("⚡ Jalur Langsung Express") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = IceBlue,
                         selectedLabelColor = PrimaryBlueDark
@@ -238,7 +266,7 @@ fun Slide2PathAndStops(
                 FilterChip(
                     selected = !uiState.isExpress,
                     onClick = { onSetIsExpress(false) },
-                    label = { Text("🚏 Mampir di Halte / Terminal") },
+                    label = { Text("🚏 Berhenti di Halte Transit") },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = IceBlue,
                         selectedLabelColor = PrimaryBlueDark
@@ -248,18 +276,18 @@ fun Slide2PathAndStops(
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = "Rangkaian Titik & Halte Naik-Turun",
-                fontSize = 15.sp,
+                text = "Daftar Titik & Ruas Koridor",
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = if (uiState.isExpress) "Mode Jalur Langsung aktif: seluruh titik tengah dilewati tanpa berhenti" else "Tentukan titik singgah penumpang dan jenis jalan per segmen",
-                fontSize = 12.sp,
+                text = "Pengaturan detail titik singgah dan jenis jalan tiap ruas jalan",
+                fontSize = 11.sp,
                 color = TextMuted
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
         }
 
         items(currentPath.size) { index ->
@@ -267,7 +295,7 @@ fun Slide2PathAndStops(
             val isOrigin = index == 0
             val isDestination = index == currentPath.size - 1
             val isIntermediate = !isOrigin && !isDestination
-            val isTransitActive = terminal.id in uiState.activeTransitIds
+            val isTransitActive = !uiState.isExpress && (terminal.id in uiState.activeTransitIds)
 
             Card(
                 modifier = Modifier
@@ -340,7 +368,7 @@ fun Slide2PathAndStops(
                     if (isIntermediate) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = if (isTransitActive) "Aktif" else "Lewat",
+                                text = if (isTransitActive) "Singgah" else "Lewat",
                                 fontSize = 11.sp,
                                 color = if (isTransitActive) SuccessGreen else TextLight,
                                 fontWeight = FontWeight.Medium
@@ -357,7 +385,7 @@ fun Slide2PathAndStops(
 
             if (index < currentPath.size - 1) {
                 val nextTerminal = currentPath[index + 1]
-                val currentSegmentType = uiState.segmentPathTypes[Pair(terminal.id, nextTerminal.id)] ?: RoutePathType.TOLL
+                val currentSegmentType = uiState.segmentPathTypes[Pair(terminal.id, nextTerminal.id)] ?: route?.segments?.getOrNull(index)?.pathType ?: RoutePathType.TOLL
 
                 Row(
                     modifier = Modifier
@@ -422,14 +450,5 @@ private fun SegmentTypeBadge(
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
             color = if (isSelected) Color.White else TextMuted
         )
-    }
-}
-
-@Composable
-private fun RouteSpecItem(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, fontSize = 10.sp, color = TextMuted)
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextDark)
     }
 }

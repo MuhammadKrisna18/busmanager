@@ -100,4 +100,69 @@ class BuildCustomRouteUseCaseTest {
         assertEquals(2, route?.transitTerminals?.size)
         assertEquals(3, route?.segments?.size)
     }
+
+    @Test
+    fun invoke_expressMode_clearsTransitTerminalsEvenIfIntermediateExist() {
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val bayuangga = terminalRepository.getTerminalById("term_bayuangga")!!
+        val tawangalun = terminalRepository.getTerminalById("term_tawangalun")!!
+
+        val result = useCase(
+            terminals = listOf(purabaya, bayuangga, tawangalun),
+            isExpress = true
+        )
+
+        assertTrue(result.isSuccess)
+        val route = result.getOrNull()
+        assertNotNull(route)
+        assertTrue(route!!.transitTerminals.isEmpty())
+    }
+
+    @Test
+    fun invoke_selectiveTransitTerminals_includesOnlyActiveTransitTerminals() {
+        val tamanan = terminalRepository.getTerminalById("term_tamanan")!!
+        val gayatri = terminalRepository.getTerminalById("term_gayatri")!!
+        val patria = terminalRepository.getTerminalById("term_patria")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        val result = useCase(
+            terminals = listOf(tamanan, gayatri, patria, arjosari),
+            activeTransitTerminalIds = setOf(patria.id),
+            isExpress = false
+        )
+
+        assertTrue(result.isSuccess)
+        val route = result.getOrNull()
+        assertNotNull(route)
+        assertEquals(1, route!!.transitTerminals.size)
+        assertEquals(patria.id, route.transitTerminals.first().id)
+    }
+
+    @Test
+    fun invoke_tollVsNonTollToggles_adjustsTollFeeCorrectly() {
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        val tollResult = useCase(
+            terminals = listOf(purabaya, arjosari),
+            preferredSegmentPathTypes = mapOf(
+                Pair(purabaya.id, arjosari.id) to RoutePathType.TOLL
+            )
+        )
+        val nonTollResult = useCase(
+            terminals = listOf(purabaya, arjosari),
+            preferredSegmentPathTypes = mapOf(
+                Pair(purabaya.id, arjosari.id) to RoutePathType.NON_TOLL
+            )
+        )
+
+        assertTrue(tollResult.isSuccess)
+        assertTrue(nonTollResult.isSuccess)
+
+        val tollRoute = tollResult.getOrNull()!!
+        val nonTollRoute = nonTollResult.getOrNull()!!
+
+        assertTrue(tollRoute.totalTollFee.amount > 0L)
+        assertEquals(0L, nonTollRoute.totalTollFee.amount)
+    }
 }

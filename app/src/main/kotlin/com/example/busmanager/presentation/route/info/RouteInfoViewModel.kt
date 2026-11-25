@@ -120,7 +120,7 @@ class RouteInfoViewModel(
                 val lastOutboundMinutes = existingOutbound.maxOfOrNull { it.departureHour * 60 + it.departureMinute }
                 val startMinutes = if (lastOutboundMinutes != null) {
                     val candidate = lastOutboundMinutes + 30
-                    if (candidate <= 23 * 60) candidate else 5 * 60
+                    if (candidate <= 23 * 60 + 59) candidate else 4 * 60
                 } else {
                     6 * 60
                 }
@@ -142,10 +142,10 @@ class RouteInfoViewModel(
                 routeScheduleRepository.assignBusToSchedule(outboundScheduleId, busId)
 
                 val returnRawMinutes = startMinutes + 180 + 30
-                val returnMinutes = if (returnRawMinutes <= 23 * 60 && returnRawMinutes >= 5 * 60) {
+                val returnMinutes = if (returnRawMinutes <= 23 * 60 + 59 && returnRawMinutes >= 4 * 60) {
                     returnRawMinutes
                 } else {
-                    5 * 60
+                    4 * 60
                 }
                 val returnHour = returnMinutes / 60
                 val returnMin = returnMinutes % 60

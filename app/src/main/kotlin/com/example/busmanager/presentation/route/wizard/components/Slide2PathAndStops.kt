@@ -52,6 +52,7 @@ fun Slide2PathAndStops(
     onSelectPath: (Int) -> Unit,
     onToggleTransitStop: (String) -> Unit,
     onSetSegmentPathType: (String, String, RoutePathType) -> Unit,
+    onSetIsExpress: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val currentPath = uiState.availablePaths.getOrNull(uiState.selectedPathIndex) ?: emptyList()
@@ -209,6 +210,44 @@ fun Slide2PathAndStops(
 
         item {
             Text(
+                text = "Pola Perjalanan Koridor",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Tentukan apakah armada berjalan langsung tanpa transit atau mampir di halte/terminal",
+                fontSize = 12.sp,
+                color = TextMuted
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = uiState.isExpress,
+                    onClick = { onSetIsExpress(true) },
+                    label = { Text("⚡ Jalur Langsung (Tanpa Mampir)") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = IceBlue,
+                        selectedLabelColor = PrimaryBlueDark
+                    )
+                )
+                FilterChip(
+                    selected = !uiState.isExpress,
+                    onClick = { onSetIsExpress(false) },
+                    label = { Text("🚏 Mampir di Halte / Terminal") },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = IceBlue,
+                        selectedLabelColor = PrimaryBlueDark
+                    )
+                )
+            }
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
                 text = "Rangkaian Titik & Halte Naik-Turun",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
@@ -216,7 +255,7 @@ fun Slide2PathAndStops(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Tentukan titik singgah penumpang dan jenis jalan per segmen",
+                text = if (uiState.isExpress) "Mode Jalur Langsung aktif: seluruh titik tengah dilewati tanpa berhenti" else "Tentukan titik singgah penumpang dan jenis jalan per segmen",
                 fontSize = 12.sp,
                 color = TextMuted
             )

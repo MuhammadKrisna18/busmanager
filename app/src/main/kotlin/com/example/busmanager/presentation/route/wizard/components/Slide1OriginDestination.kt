@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
 import com.example.busmanager.presentation.route.wizard.RouteWizardUiState
 import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.IceBlue
@@ -45,6 +46,7 @@ fun Slide1OriginDestination(
     uiState: RouteWizardUiState,
     onSelectOrigin: (Terminal) -> Unit,
     onSelectDestination: (Terminal) -> Unit,
+    onTerminalMapClick: (Terminal) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -52,6 +54,72 @@ fun Slide1OriginDestination(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
+        item {
+            Text(
+                text = "Peta Interaktif Jalur Bus Jawa Timur",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "Sentuh terminal pada peta untuk menentukan titik awal dan titik tujuan rute",
+                fontSize = 11.sp,
+                color = TextMuted
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                border = CardDefaults.outlinedCardBorder().copy(brush = androidx.compose.ui.graphics.SolidColor(CardBorder))
+            ) {
+                Column(modifier = Modifier.padding(8.dp)) {
+                    EastJavaMapCanvas(
+                        terminals = uiState.allTerminals,
+                        allSegments = uiState.allSegments,
+                        selectedRoute = uiState.builtRoute,
+                        selectedOrigin = uiState.selectedOrigin,
+                        selectedDestination = uiState.selectedDestination,
+                        transitTerminals = uiState.builtRoute?.transitTerminals ?: emptyList(),
+                        onTerminalClick = { terminal ->
+                            onTerminalMapClick(terminal)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(260.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            val guideText = when {
+                uiState.selectedOrigin == null -> "👉 Sentuh terminal di peta untuk memilih Titik Awal"
+                uiState.selectedDestination == null -> "👉 Sekarang sentuh terminal tujuan (Titik B) di peta"
+                else -> "✨ Titik Awal (${uiState.selectedOrigin.city}) dan Titik Akhir (${uiState.selectedDestination.city}) telah dipilih"
+            }
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (uiState.selectedOrigin != null && uiState.selectedDestination != null) IceBlue else Color(0xFFF1F5F9)
+                )
+            ) {
+                Text(
+                    text = guideText,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (uiState.selectedOrigin != null && uiState.selectedDestination != null) PrimaryBlueDark else TextDark,
+                    modifier = Modifier.padding(10.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
         item {
             Text(
                 text = "1. Pilih Terminal Asal (Titik A)",

@@ -888,12 +888,12 @@ class SimulationMapViewModelTest {
     }
 
     @Test
-    fun operatingHoursEnforcement_noDepartureOutsideWindowUntil5AM() = runTest(testDispatcher) {
+    fun operatingHoursEnforcement_noDepartureOutsideWindowUntil4AM() = runTest(testDispatcher) {
         val scheduleRepo = FakeRouteScheduleRepository()
         val fleetRepo = FakeFleetRepository()
         val customTripRepo = SimulationTripRepositoryImpl()
         val earlyTimeRepo = SimulationTimeRepositoryImpl(
-            initialTime = GameCalendar(2026, 11, 24, 4, 30),
+            initialTime = GameCalendar(2026, 11, 24, 3, 30),
             simulationTripRepository = customTripRepo
         )
 
@@ -907,7 +907,7 @@ class SimulationMapViewModelTest {
         val schedule = RouteSchedule(
             id = "sched-early-01",
             routeId = "route_sby_mlg_toll",
-            departureHour = 5,
+            departureHour = 4,
             departureMinute = 0,
             direction = RouteDirection.ORIGIN_TO_DESTINATION,
             assignedBusId = bus.id,
@@ -943,12 +943,12 @@ class SimulationMapViewModelTest {
     }
 
     @Test
-    fun overnightRestEnforcement_departureAfter23RescheduledTo5AMNextDay() = runTest(testDispatcher) {
+    fun overnightRestEnforcement_departureAfterMidnightRescheduledTo4AM() = runTest(testDispatcher) {
         val scheduleRepo = FakeRouteScheduleRepository()
         val fleetRepo = FakeFleetRepository()
         val customTripRepo = SimulationTripRepositoryImpl()
         val lateTimeRepo = SimulationTimeRepositoryImpl(
-            initialTime = GameCalendar(2026, 11, 24, 22, 0),
+            initialTime = GameCalendar(2026, 11, 24, 23, 30),
             simulationTripRepository = customTripRepo
         )
 
@@ -962,8 +962,8 @@ class SimulationMapViewModelTest {
         val schedule = RouteSchedule(
             id = "sched-late-01",
             routeId = "route_sby_mlg_toll",
-            departureHour = 22,
-            departureMinute = 0,
+            departureHour = 23,
+            departureMinute = 30,
             direction = RouteDirection.ORIGIN_TO_DESTINATION,
             assignedBusId = bus.id,
             headwayMinutes = 30,
@@ -996,10 +996,10 @@ class SimulationMapViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val nextSched = scheduleRepo.getSchedulesForBus(bus.id).first()
-        assertEquals(5, nextSched.departureHour)
+        assertEquals(4, nextSched.departureHour)
         assertEquals(0, nextSched.departureMinute)
         assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, nextSched.direction)
-        assertTrue(nextSched.nextDepartureEpochMinutes > lateTimeRepo.currentTime.value.day * 1440L + 23 * 60L)
+        assertTrue(nextSched.nextDepartureEpochMinutes >= lateTimeRepo.currentTime.value.day * 1440L + 4 * 60L)
     }
 
     private class FakeFinancialTransactionRepository : FinancialTransactionRepository {

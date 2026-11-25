@@ -10,6 +10,7 @@ import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.model.RouteSchedule
+import com.example.busmanager.domain.route.model.SmartScheduleTimeParser
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
@@ -47,7 +48,8 @@ class RouteWizardViewModel(
 
     private fun loadInitialData() {
         val terminals = terminalRepository.getAllTerminals()
-        _uiState.update { it.copy(allTerminals = terminals) }
+        val segments = routeRepository.getAllSegments()
+        _uiState.update { it.copy(allTerminals = terminals, allSegments = segments) }
 
         viewModelScope.launch {
             combine(
@@ -89,10 +91,10 @@ class RouteWizardViewModel(
         }
     }
 
-    fun selectOrigin(terminal: Terminal) {
+    fun selectOrigin(terminal: Terminal?) {
         _uiState.update {
             val updated = it.copy(selectedOrigin = terminal, errorMessage = null)
-            if (updated.selectedDestination != null && updated.selectedDestination.id != terminal.id) {
+            if (terminal != null && updated.selectedDestination != null && updated.selectedDestination.id != terminal.id) {
                 calculatePathsForTerminals(terminal, updated.selectedDestination, updated)
             } else {
                 updated.copy(availablePaths = emptyList(), builtRoute = null, pricings = emptyList())
@@ -100,14 +102,36 @@ class RouteWizardViewModel(
         }
     }
 
-    fun selectDestination(terminal: Terminal) {
+    fun selectDestination(terminal: Terminal?) {
         _uiState.update {
             val updated = it.copy(selectedDestination = terminal, errorMessage = null)
-            if (updated.selectedOrigin != null && updated.selectedOrigin.id != terminal.id) {
+            if (terminal != null && updated.selectedOrigin != null && updated.selectedOrigin.id != terminal.id) {
                 calculatePathsForTerminals(updated.selectedOrigin, terminal, updated)
             } else {
                 updated.copy(availablePaths = emptyList(), builtRoute = null, pricings = emptyList())
             }
+        }
+    }
+
+    fun onTerminalMapClick(terminal: Terminal) {
+        val state = _uiState.value
+        when {
+            state.selectedOrigin == null -> selectOrigin(terminal)
+            state.selectedDestination == null -> {
+                if (state.selectedOrigin.id != terminal.id) {
+                    selectDestination(terminal)
+                }
+            }
+            state.selectedOrigin.id == terminal.id -> selectOrigin(null)
+            state.selectedDestination.id == terminal.id -> selectDestination(null)
+            else -> selectDestination(terminal)
+        }
+    }
+
+    fun setIsExpress(isExpress: Boolean) {
+        _uiState.update { state ->
+            val updated = state.copy(isExpress = isExpress)
+            rebuildRouteInternal(updated)
         }
     }
 
@@ -188,7 +212,8 @@ class RouteWizardViewModel(
         val buildResult = buildCustomRouteUseCase(
             terminals = currentPath,
             preferredSegmentPathTypes = state.segmentPathTypes,
-            activeTransitTerminalIds = state.activeTransitIds
+            activeTransitTerminalIds = state.activeTransitIds,
+            isExpress = state.isExpress
         )
 
         return if (buildResult.isSuccess) {
@@ -199,7 +224,7 @@ class RouteWizardViewModel(
                 pricings = generatedPricings,
                 errorMessage = null
             )
-            if (intermediate.isRoundTrip && intermediate.layoverMinutes < 60) {
+            if (intermediate.isRoundTrip && intermediate.layoverMinutes < 30) {
                 intermediate.copy(
                     returnHour = intermediate.minReturnHour,
                     returnMinute = intermediate.minReturnMinute
@@ -321,10 +346,16 @@ class RouteWizardViewModel(
     }
 
     fun setDepartureTime(hour: Int, minute: Int) {
-        val h = hour.coerceIn(5, 23)
-        val m = if (h == 23) 0 else minute.coerceIn(0, 59)
+        val h = hour.coerceIn(4, 23)
+        val m = minute.coerceIn(0, 59)
+        val parsed = SmartScheduleTimeParser.ParsedTime(h, m)
         _uiState.update { current ->
-            val updatedDeparture = current.copy(departureHour = h, departureMinute = m)
+            val updatedDeparture = current.copy(
+                departureHour = h,
+                departureMinute = m,
+                departureTimeInputText = String.format("%02d:%02d", h, m),
+                departureTimeDescription = parsed.descriptionText
+            )
             if (updatedDeparture.isRoundTrip && updatedDeparture.layoverMinutes < 30) {
                 updatedDeparture.copy(
                     returnHour = updatedDeparture.minReturnHour,
@@ -337,9 +368,34 @@ class RouteWizardViewModel(
         checkScheduleConflict()
     }
 
+    fun setDepartureTimeInput(input: String) {
+        val parsed = SmartScheduleTimeParser.parse(input)
+        _uiState.update { current ->
+            if (parsed != null) {
+                val updatedDeparture = current.copy(
+                    departureHour = parsed.hour,
+                    departureMinute = parsed.minute,
+                    departureTimeInputText = input,
+                    departureTimeDescription = parsed.descriptionText
+                )
+                if (updatedDeparture.isRoundTrip && updatedDeparture.layoverMinutes < 30) {
+                    updatedDeparture.copy(
+                        returnHour = updatedDeparture.minReturnHour,
+                        returnMinute = updatedDeparture.minReturnMinute
+                    )
+                } else {
+                    updatedDeparture
+                }
+            } else {
+                current.copy(departureTimeInputText = input)
+            }
+        }
+        checkScheduleConflict()
+    }
+
     fun setReturnTime(hour: Int, minute: Int) {
-        val h = hour.coerceIn(5, 23)
-        val m = if (h == 23) 0 else minute.coerceIn(0, 59)
+        val h = hour.coerceIn(4, 23)
+        val m = minute.coerceIn(0, 59)
         _uiState.update {
             it.copy(
                 returnHour = h,
@@ -347,6 +403,14 @@ class RouteWizardViewModel(
             )
         }
         checkScheduleConflict()
+    }
+
+    fun openConfirmationDialog() {
+        _uiState.update { it.copy(showConfirmationDialog = true) }
+    }
+
+    fun dismissConfirmationDialog() {
+        _uiState.update { it.copy(showConfirmationDialog = false) }
     }
 
     fun resetReturnTimeToRecommendation() {

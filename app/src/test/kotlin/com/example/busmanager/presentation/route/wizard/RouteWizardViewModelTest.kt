@@ -230,8 +230,7 @@ class RouteWizardViewModelTest {
         val rawMinReturn = expectedArrivalTotal + 30
         val minOfDay = rawMinReturn % 1440
         val expectedMinReturnTotal = when {
-            minOfDay > 23 * 60 -> (rawMinReturn / 1440 + 1) * 1440 + 5 * 60
-            minOfDay < 5 * 60 -> (rawMinReturn / 1440) * 1440 + 5 * 60
+            minOfDay < 4 * 60 -> (rawMinReturn / 1440) * 1440 + 4 * 60
             else -> rawMinReturn
         }
         val expectedMinReturnHour = (expectedMinReturnTotal / 60) % 24

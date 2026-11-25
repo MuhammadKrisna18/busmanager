@@ -399,20 +399,20 @@ class SimulationMapViewModel(
     private fun calculateNextOperatingDeparture(baseEpochMinutes: Long): Long {
         val minuteOfDay = (baseEpochMinutes % 1440L).toInt()
         return when {
-            minuteOfDay < 5 * 60 -> {
+            minuteOfDay < 4 * 60 -> {
                 val dayEpoch = (baseEpochMinutes / 1440L) * 1440L
-                dayEpoch + 5 * 60L
+                dayEpoch + 4 * 60L
             }
-            minuteOfDay > 23 * 60 -> {
+            minuteOfDay > 23 * 60 + 59 -> {
                 val nextDayEpoch = (baseEpochMinutes / 1440L + 1L) * 1440L
-                nextDayEpoch + 5 * 60L
+                nextDayEpoch + 4 * 60L
             }
             else -> baseEpochMinutes
         }
     }
 
     private suspend fun handleScheduledDepartures(time: GameCalendar) {
-        val isOperatingHours = (time.hour in 5..22) || (time.hour == 23 && time.minute == 0)
+        val isOperatingHours = time.hour in 4..23
         if (!isOperatingHours) return
 
         val schedules = _uiState.value.schedules

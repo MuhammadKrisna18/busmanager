@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.presentation.route.wizard.components.RouteConfirmationDialog
 import com.example.busmanager.presentation.route.wizard.components.Slide1OriginDestination
 import com.example.busmanager.presentation.route.wizard.components.Slide2PathAndStops
 import com.example.busmanager.presentation.route.wizard.components.Slide3PricingMatrix
@@ -85,9 +86,7 @@ fun RouteWizardScreen(
                 onPreviousClick = { viewModel.previousStep() },
                 onNextClick = { viewModel.nextStep() },
                 onLaunchClick = {
-                    viewModel.launchAndSaveRoute { routeId ->
-                        onRouteLaunched(routeId)
-                    }
+                    viewModel.openConfirmationDialog()
                 },
                 onSaveStandbyClick = {
                     viewModel.saveRouteStandby { routeId ->
@@ -112,7 +111,8 @@ fun RouteWizardScreen(
                         Slide1OriginDestination(
                             uiState = uiState,
                             onSelectOrigin = { viewModel.selectOrigin(it) },
-                            onSelectDestination = { viewModel.selectDestination(it) }
+                            onSelectDestination = { viewModel.selectDestination(it) },
+                            onTerminalMapClick = { viewModel.onTerminalMapClick(it) }
                         )
                     }
                     RouteWizardStep.PATH_AND_STOPS -> {
@@ -122,7 +122,8 @@ fun RouteWizardScreen(
                             onToggleTransitStop = { viewModel.toggleTransitStop(it) },
                             onSetSegmentPathType = { from, to, type ->
                                 viewModel.setSegmentPathType(from, to, type)
-                            }
+                            },
+                            onSetIsExpress = { viewModel.setIsExpress(it) }
                         )
                     }
                     RouteWizardStep.PRICING_MATRIX -> {
@@ -141,6 +142,7 @@ fun RouteWizardScreen(
                             onSelectBus = { viewModel.selectBus(it) },
                             onSelectDriver = { viewModel.selectDriver(it) },
                             onSetDepartureTime = { h, m -> viewModel.setDepartureTime(h, m) },
+                            onSetDepartureTimeInput = { viewModel.setDepartureTimeInput(it) },
                             onSetDirection = { viewModel.setDirection(it) },
                             onSetIsRoundTrip = { viewModel.setIsRoundTrip(it) },
                             onSetReturnTime = { h, m -> viewModel.setReturnTime(h, m) },
@@ -152,6 +154,19 @@ fun RouteWizardScreen(
                 }
             }
         }
+    }
+
+    if (uiState.showConfirmationDialog) {
+        RouteConfirmationDialog(
+            uiState = uiState,
+            onConfirm = {
+                viewModel.dismissConfirmationDialog()
+                viewModel.launchAndSaveRoute { routeId ->
+                    onRouteLaunched(routeId)
+                }
+            },
+            onDismiss = { viewModel.dismissConfirmationDialog() }
+        )
     }
 
     if (uiState.launchSuccess) {

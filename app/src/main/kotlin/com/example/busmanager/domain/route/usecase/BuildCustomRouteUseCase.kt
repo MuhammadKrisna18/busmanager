@@ -13,6 +13,7 @@ class BuildCustomRouteUseCase(
         terminals: List<Terminal>,
         preferredSegmentPathTypes: Map<Pair<String, String>, RoutePathType> = emptyMap(),
         activeTransitTerminalIds: Set<String> = emptySet(),
+        isExpress: Boolean = false,
         customName: String? = null
     ): Result<BusRoute> {
         if (terminals.size < 2) {
@@ -39,8 +40,12 @@ class BuildCustomRouteUseCase(
         val originTerminal = terminals.first()
         val destinationTerminal = terminals.last()
         val intermediateTerminals = terminals.subList(1, terminals.size - 1)
-        val transitTerminals = intermediateTerminals.filter {
-            activeTransitTerminalIds.isEmpty() || it.id in activeTransitTerminalIds
+        val transitTerminals = if (isExpress) {
+            emptyList()
+        } else {
+            intermediateTerminals.filter {
+                activeTransitTerminalIds.isEmpty() || it.id in activeTransitTerminalIds
+            }
         }
 
         val routePathType = if (segments.any { it.pathType == RoutePathType.TOLL }) {

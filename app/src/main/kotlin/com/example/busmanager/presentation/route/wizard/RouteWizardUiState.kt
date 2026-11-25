@@ -5,6 +5,7 @@ import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RoutePricing
+import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.simulation.model.RouteDirection
 
@@ -18,11 +19,13 @@ enum class RouteWizardStep(val stepNumber: Int, val title: String) {
 data class RouteWizardUiState(
     val currentStep: RouteWizardStep = RouteWizardStep.ORIGIN_DESTINATION,
     val allTerminals: List<Terminal> = emptyList(),
+    val allSegments: List<RouteSegment> = emptyList(),
     val selectedOrigin: Terminal? = null,
     val selectedDestination: Terminal? = null,
 
     val availablePaths: List<List<Terminal>> = emptyList(),
     val selectedPathIndex: Int = 0,
+    val isExpress: Boolean = false,
     val activeTransitIds: Set<String> = emptySet(),
     val segmentPathTypes: Map<Pair<String, String>, RoutePathType> = emptyMap(),
     val builtRoute: BusRoute? = null,
@@ -37,6 +40,8 @@ data class RouteWizardUiState(
     val driverAssignedBusCodes: Map<String, String> = emptyMap(),
     val departureHour: Int = 7,
     val departureMinute: Int = 0,
+    val departureTimeInputText: String = "07:00",
+    val departureTimeDescription: String = "07:00 WIB (07.00 Pagi)",
     val isRoundTrip: Boolean = true,
     val returnHour: Int = 10,
     val returnMinute: Int = 0,
@@ -47,6 +52,7 @@ data class RouteWizardUiState(
     val hasReturnConflict: Boolean = false,
 
     val isSaving: Boolean = false,
+    val showConfirmationDialog: Boolean = false,
     val errorMessage: String? = null,
     val launchSuccess: Boolean = false,
     val isStandbySaved: Boolean = false,
@@ -79,8 +85,7 @@ data class RouteWizardUiState(
             val rawMin = arrivalTotalMinutes + 30
             val minOfDay = rawMin % 1440
             return when {
-                minOfDay > 23 * 60 -> (rawMin / 1440 + 1) * 1440 + 5 * 60
-                minOfDay < 5 * 60 -> (rawMin / 1440) * 1440 + 5 * 60
+                minOfDay < 4 * 60 -> (rawMin / 1440) * 1440 + 4 * 60
                 else -> rawMin
             }
         }

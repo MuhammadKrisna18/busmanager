@@ -6,7 +6,6 @@ import com.example.busmanager.data.repository.ChassisCatalogRepositoryImpl
 import com.example.busmanager.data.repository.FleetRepositoryImpl
 import com.example.busmanager.data.repository.KaroseriCatalogRepositoryImpl
 import com.example.busmanager.domain.fleet.model.Bus
-import com.example.busmanager.domain.fleet.model.BusCondition
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -41,8 +40,7 @@ class FleetRepositoryTest {
             id = "bus-test-1",
             busCode = "TN-01",
             chassis = chassis,
-            body = body,
-            condition = BusCondition(95, 90, 5000)
+            body = body
         )
 
         fleetRepo.addBus(bus)
@@ -50,7 +48,6 @@ class FleetRepositoryTest {
         val retrieved = fleetRepo.getBusById("bus-test-1")
         assertNotNull(retrieved)
         assertEquals("TN-01", retrieved?.busCode)
-        assertEquals(5000L, retrieved?.condition?.odometerKm)
 
         val list = fleetRepo.getOwnedBuses().first()
         assertEquals(1, list.size)

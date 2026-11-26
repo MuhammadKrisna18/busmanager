@@ -5,7 +5,6 @@ import com.example.busmanager.domain.fleet.model.AxleType
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.model.BusBodyType
 import com.example.busmanager.domain.fleet.model.BusClass
-import com.example.busmanager.domain.fleet.model.BusCondition
 import com.example.busmanager.domain.fleet.model.Chassis
 import com.example.busmanager.domain.fleet.model.ChassisBrand
 import com.example.busmanager.domain.fleet.model.EngineLocation
@@ -14,8 +13,6 @@ import com.example.busmanager.domain.fleet.model.KaroseriBrand
 import com.example.busmanager.domain.fleet.model.SuspensionType
 import com.example.busmanager.domain.fleet.model.TransmissionType
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BusTest {
@@ -30,8 +27,6 @@ class BusTest {
         transmission = TransmissionType.MANUAL,
         horsepower = 260,
         torqueNm = 750,
-        fuelCapacityLiters = 270,
-        fuelConsumptionKmPerLiter = 3.2f,
         price = Money.rupiah(750_000_000)
     )
 
@@ -45,8 +40,6 @@ class BusTest {
         transmission = TransmissionType.OPTICRUISE,
         horsepower = 410,
         torqueNm = 2000,
-        fuelCapacityLiters = 450,
-        fuelConsumptionKmPerLiter = 2.6f,
         price = Money.rupiah(1_850_000_000)
     )
 
@@ -105,14 +98,5 @@ class BusTest {
             body = createJetbusDoubleDecker()
         )
         assertEquals(Money.rupiah(2_950_000_000), bus.totalPrice)
-    }
-
-    @Test
-    fun busConditionRoadworthyCalculatedCorrectly() {
-        val goodCondition = BusCondition(engineHealthPercent = 80, bodyHealthPercent = 75)
-        assertTrue(goodCondition.isRoadworthy)
-
-        val degradedCondition = BusCondition(engineHealthPercent = 20, bodyHealthPercent = 60)
-        assertFalse(degradedCondition.isRoadworthy)
     }
 }

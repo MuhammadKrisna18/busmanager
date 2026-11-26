@@ -7,7 +7,6 @@ data class Bus(
     val busCode: String,
     val chassis: Chassis,
     val body: KaroseriBody,
-    val condition: BusCondition = BusCondition(),
     val isOperating: Boolean = false,
     val routeId: String? = null,
     val driverId: String? = null,

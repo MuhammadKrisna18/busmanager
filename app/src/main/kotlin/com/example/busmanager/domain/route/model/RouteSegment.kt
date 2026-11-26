@@ -11,9 +11,7 @@ data class RouteSegment(
     val distanceKm: Double,
     val baseDurationMinutes: Int,
     val tollFee: Money = Money.ZERO,
-    val waypoints: List<MapCoordinate> = emptyList(),
-    val wearTearRate: Float = characteristic.baseWearRate * if (pathType == RoutePathType.TOLL) 0.85f else 1.15f,
-    val fuelMultiplier: Float = characteristic.fuelMultiplier * if (pathType == RoutePathType.TOLL) 0.90f else 1.20f
+    val waypoints: List<MapCoordinate> = emptyList()
 ) {
     init {
         require(distanceKm > 0.0) { "Distance must be greater than zero" }

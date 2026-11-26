@@ -12,8 +12,6 @@ data class Chassis(
     val transmission: TransmissionType,
     val horsepower: Int,
     val torqueNm: Int,
-    val fuelCapacityLiters: Int,
-    val fuelConsumptionKmPerLiter: Float,
     val price: Money
 ) {
     val isSpaceFrame: Boolean

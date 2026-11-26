@@ -6,7 +6,6 @@ import com.example.busmanager.domain.fleet.model.AxleType
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.model.BusBodyType
 import com.example.busmanager.domain.fleet.model.BusClass
-import com.example.busmanager.domain.fleet.model.BusCondition
 import com.example.busmanager.domain.fleet.model.Chassis
 import com.example.busmanager.domain.fleet.model.ChassisBrand
 import com.example.busmanager.domain.fleet.model.EngineLocation
@@ -30,8 +29,6 @@ class BusMapperTest {
         transmission = TransmissionType.OPTICRUISE,
         horsepower = 360,
         torqueNm = 1750,
-        fuelCapacityLiters = 400,
-        fuelConsumptionKmPerLiter = 2.8f,
         price = Money.rupiah(1_550_000_000)
     )
 

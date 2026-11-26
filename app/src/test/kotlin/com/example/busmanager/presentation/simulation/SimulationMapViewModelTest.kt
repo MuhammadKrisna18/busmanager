@@ -1125,8 +1125,6 @@ class SimulationMapViewModelTest {
             transmission = TransmissionType.MANUAL,
             horsepower = 260,
             torqueNm = 750,
-            fuelCapacityLiters = 270,
-            fuelConsumptionKmPerLiter = 3.2f,
             price = Money.rupiah(750_000_000)
         )
         val dummyBody = KaroseriBody(

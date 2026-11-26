@@ -3,7 +3,6 @@ package com.example.busmanager.data.mapper
 import com.example.busmanager.data.local.entity.OwnedBusEntity
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.model.BusClass
-import com.example.busmanager.domain.fleet.model.BusCondition
 import com.example.busmanager.domain.fleet.model.Chassis
 import com.example.busmanager.domain.fleet.model.KaroseriBody
 
@@ -23,11 +22,6 @@ fun OwnedBusEntity.toDomain(chassis: Chassis, body: KaroseriBody): Bus {
         busCode = busCode,
         chassis = chassis,
         body = effectiveBody,
-        condition = BusCondition(
-            engineHealthPercent = engineHealthPercent,
-            bodyHealthPercent = bodyHealthPercent,
-            odometerKm = odometerKm
-        ),
         isOperating = isOperating,
         routeId = routeId,
         driverId = driverId,
@@ -43,9 +37,6 @@ fun Bus.toEntity(): OwnedBusEntity = OwnedBusEntity(
     busClass = body.busClass.name,
     passengerCapacity = body.passengerCapacity,
     currentTerminalId = currentTerminalId,
-    engineHealthPercent = condition.engineHealthPercent,
-    bodyHealthPercent = condition.bodyHealthPercent,
-    odometerKm = condition.odometerKm,
     isOperating = isOperating,
     routeId = routeId,
     driverId = driverId

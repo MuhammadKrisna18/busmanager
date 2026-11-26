@@ -84,7 +84,6 @@ class RouteModelTest {
         assertEquals(75, segment.baseDurationMinutes)
         assertEquals(Money.rupiah(65000), segment.tollFee)
         assertEquals(2, segment.waypoints.size)
-        assertTrue(segment.wearTearRate < 1.0f)
     }
 
     @Test

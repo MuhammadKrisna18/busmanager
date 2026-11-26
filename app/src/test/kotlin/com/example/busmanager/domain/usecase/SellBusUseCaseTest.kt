@@ -60,8 +60,6 @@ class SellBusUseCaseTest {
             transmission = TransmissionType.MANUAL,
             horsepower = 260,
             torqueNm = 750,
-            fuelCapacityLiters = 270,
-            fuelConsumptionKmPerLiter = 3.5f,
             price = Money.rupiah(1_000_000_000L)
         )
         val body = KaroseriBody(

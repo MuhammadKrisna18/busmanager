@@ -11,6 +11,7 @@ import com.example.busmanager.domain.terminal.repository.TerminalPassengerReposi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -32,13 +33,18 @@ class TerminalReportViewModel(
     }
 
     private fun loadTerminalsAndCurrentTime() {
-        val allTerminals = terminalRepository.getAllTerminals()
         val currentTime = simulationTimeRepository?.currentTime?.value
-        val initialTerminal = allTerminals.firstOrNull()
+        val initialTerminals = if (getRouteOperationalStatusUseCase != null) {
+            emptyList()
+        } else {
+            terminalRepository.getAllTerminals()
+        }
+        val initialTerminal = initialTerminals.firstOrNull()
         _uiState.update { current ->
             current.copy(
-                availableTerminals = allTerminals,
+                availableTerminals = initialTerminals,
                 selectedTerminal = initialTerminal,
+                hasActiveTerminals = initialTerminals.isNotEmpty(),
                 selectedDay = currentTime?.day ?: current.selectedDay,
                 selectedMonth = currentTime?.month ?: current.selectedMonth,
                 selectedYear = currentTime?.year ?: current.selectedYear
@@ -73,20 +79,19 @@ class TerminalReportViewModel(
     private fun observeOperationalRoutes() {
         if (getRouteOperationalStatusUseCase == null) return
         viewModelScope.launch {
-            getRouteOperationalStatusUseCase().collect { routeStatuses ->
-                val activeRoutes = routeStatuses.filter { it.isActive }
-                val activeTerminalList = activeRoutes.flatMap { operational ->
+            combine(
+                getRouteOperationalStatusUseCase(),
+                terminalPassengerRepository.getAllRecordsFlow()
+            ) { routeStatuses, records ->
+                val activeRoutes = routeStatuses.filter { it.isActive || it.assignedBuses.isNotEmpty() }
+                val routeTerminals = activeRoutes.flatMap { operational ->
                     val r = operational.route
                     listOf(r.originTerminal, r.destinationTerminal) + r.transitTerminals
-                }.distinctBy { it.id }
-
-                val allTerminals = terminalRepository.getAllTerminals()
-                val targetTerminals = if (activeTerminalList.isNotEmpty()) {
-                    activeTerminalList
-                } else {
-                    allTerminals
                 }
-
+                val recordedTerminalIds = records.map { it.terminalId }.toSet()
+                val recordedTerminals = recordedTerminalIds.mapNotNull { terminalRepository.getTerminalById(it) }
+                (routeTerminals + recordedTerminals).distinctBy { it.id }
+            }.collect { targetTerminals ->
                 _uiState.update { current ->
                     val currentSelectedStillValid = targetTerminals.any { it.id == current.selectedTerminal?.id }
                     val newSelected = if (currentSelectedStillValid) {
@@ -97,7 +102,7 @@ class TerminalReportViewModel(
                     current.copy(
                         availableTerminals = targetTerminals,
                         selectedTerminal = newSelected,
-                        hasActiveTerminals = activeTerminalList.isNotEmpty()
+                        hasActiveTerminals = targetTerminals.isNotEmpty()
                     )
                 }
                 loadRecordsForSelection()
@@ -180,7 +185,18 @@ class TerminalReportViewModel(
     }
 
     private fun loadRecordsForSelection() {
-        val terminal = _uiState.value.selectedTerminal ?: return
+        val terminal = _uiState.value.selectedTerminal
+        if (terminal == null) {
+            _uiState.update { current ->
+                current.copy(
+                    records = emptyList(),
+                    totalBoarded = 0,
+                    totalAlighted = 0,
+                    busBreakdowns = emptyList()
+                )
+            }
+            return
+        }
         val day = _uiState.value.selectedDay
         val month = _uiState.value.selectedMonth
         val year = _uiState.value.selectedYear

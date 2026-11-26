@@ -19,7 +19,7 @@ data class TerminalReportUiState(
     val showHistoryModal: Boolean = false,
     val isHistoricalView: Boolean = false,
     val availableHistoryDates: List<Triple<Int, Int, Int>> = emptyList(),
-    val hasActiveTerminals: Boolean = true,
+    val hasActiveTerminals: Boolean = false,
     val isLoading: Boolean = false
 ) {
     val selectedDateFormatted: String

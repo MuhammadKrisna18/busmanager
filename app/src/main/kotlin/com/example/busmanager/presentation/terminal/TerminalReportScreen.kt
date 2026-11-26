@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -109,6 +110,7 @@ fun TerminalReportScreen(
             Button(
                 onClick = { viewModel.openBreakdownModal() },
                 modifier = Modifier.fillMaxWidth(),
+                enabled = state.availableTerminals.isNotEmpty() && state.busBreakdowns.isNotEmpty(),
                 shape = RoundedCornerShape(AppDimens.radiusMedium),
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
                 contentPadding = PaddingValues(vertical = 12.dp)
@@ -132,7 +134,9 @@ fun TerminalReportScreen(
 
             Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
 
-            if (!state.hasData) {
+            if (state.availableTerminals.isEmpty()) {
+                NoActiveTerminalsCard()
+            } else if (!state.hasData) {
                 EmptyStateCard(terminalName = state.selectedTerminal?.name ?: "Terminal")
             } else {
                 LazyColumn(
@@ -215,6 +219,30 @@ private fun TerminalSelectorBar(
     selectedTerminal: Terminal?,
     onSelectTerminal: (Terminal) -> Unit
 ) {
+    if (terminals.isEmpty()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(AppDimens.radiusMedium),
+            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Belum ada terminal aktif yang dilayani",
+                    fontSize = 12.sp,
+                    color = TextMuted,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+        return
+    }
+
     val scrollState = rememberScrollState()
     Row(
         modifier = Modifier
@@ -542,6 +570,39 @@ private fun EmptyStateCard(terminalName: String) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "Belum Ada Aktivitas di $terminalName", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextDark)
             Text(text = "Armada yang singgah di terminal ini pada tanggal terpilih akan tercatat otomatis di sini.", fontSize = 12.sp, color = TextMuted)
+        }
+    }
+}
+
+@Composable
+private fun NoActiveTerminalsCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(AppDimens.radiusMedium),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "🏢", fontSize = 36.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Belum Ada Terminal Aktif",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextDark
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Buka trayek baru dan tugaskan armada di menu Manajemen Trayek untuk memantau arus penumpang terminal.",
+                fontSize = 12.sp,
+                color = TextMuted,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }

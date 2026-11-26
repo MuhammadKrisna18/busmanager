@@ -3,6 +3,8 @@ package com.example.busmanager.presentation.dashboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,8 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -183,11 +183,13 @@ fun HomeScreen(
         modifier = modifier.fillMaxSize(),
         color = BackgroundWhite
     ) {
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
                 .navigationBarsPadding()
+                .verticalScroll(scrollState)
                 .padding(horizontal = AppDimens.paddingMedium, vertical = AppDimens.paddingSmall)
         ) {
             CompanyHeader(
@@ -249,9 +251,10 @@ fun HomeScreen(
                 onNavigateToDrivers = onNavigateToDrivers,
                 onNavigateToFinance = onNavigateToFinance,
                 onNavigateToTerminalReport = onNavigateToTerminalReport,
-                onOpenRouteInfo = onNavigateToRouteInfo,
-                modifier = Modifier.weight(1f)
+                onOpenRouteInfo = onNavigateToRouteInfo
             )
+
+            Spacer(modifier = Modifier.height(AppDimens.paddingLarge))
         }
     }
 }
@@ -677,108 +680,124 @@ private fun MenuGrid(
     onOpenRouteInfo: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = modifier
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        item {
-            MenuCard(
-                title = "Garasi Armada",
-                subtitle = "Kelola & Servis Unit",
-                iconEmoji = "🚌",
-                badgeText = "$ownedBusCount Unit",
-                containerColor = Color(0xFFEFF6FF),
-                borderColor = Color(0xFFBFDBFE),
-                badgeBgColor = Color(0xFFDBEAFE),
-                badgeTextColor = Color(0xFF1D4ED8),
-                onClick = onNavigateToGarage
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                MenuCard(
+                    title = "Garasi Armada",
+                    subtitle = "Kelola & Servis Unit",
+                    iconEmoji = "🚌",
+                    badgeText = "$ownedBusCount Unit",
+                    containerColor = Color(0xFFEFF6FF),
+                    borderColor = Color(0xFFBFDBFE),
+                    badgeBgColor = Color(0xFFDBEAFE),
+                    badgeTextColor = Color(0xFF1D4ED8),
+                    onClick = onNavigateToGarage
+                )
+            }
+            Box(modifier = Modifier.weight(1f)) {
+                MenuCard(
+                    title = "Showroom Bus",
+                    subtitle = "Beli Bus & Sasis Baru",
+                    iconEmoji = "🏪",
+                    badgeText = "Beli Unit",
+                    containerColor = Color(0xFFEEF2FF),
+                    borderColor = Color(0xFFC7D2FE),
+                    badgeBgColor = Color(0xFFE0E7FF),
+                    badgeTextColor = Color(0xFF4338CA),
+                    onClick = onNavigateToShowroom
+                )
+            }
         }
 
-        item {
-            MenuCard(
-                title = "Showroom Bus",
-                subtitle = "Beli Bus & Sasis Baru",
-                iconEmoji = "🏪",
-                badgeText = "Beli Unit",
-                containerColor = Color(0xFFEEF2FF),
-                borderColor = Color(0xFFC7D2FE),
-                badgeBgColor = Color(0xFFE0E7FF),
-                badgeTextColor = Color(0xFF4338CA),
-                onClick = onNavigateToShowroom
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                MenuCard(
+                    title = "Rute & Trayek",
+                    subtitle = "Jalur Antar Terminal",
+                    iconEmoji = "🗺️",
+                    badgeText = "Peta Jalur",
+                    containerColor = Color(0xFFECFDF5),
+                    borderColor = Color(0xFFA7F3D0),
+                    badgeBgColor = Color(0xFFD1FAE5),
+                    badgeTextColor = Color(0xFF065F46),
+                    onClick = onNavigateToRoutes
+                )
+            }
+            Box(modifier = Modifier.weight(1f)) {
+                MenuCard(
+                    title = "Kru & Sopir",
+                    subtitle = "Rekrutmen & Penugasan",
+                    iconEmoji = "👨‍✈️",
+                    badgeText = if (hiredDriverCount > 0) "$hiredDriverCount Sopir" else "Rekrut",
+                    containerColor = Color(0xFFFFFBEB),
+                    borderColor = Color(0xFFFDE68A),
+                    badgeBgColor = Color(0xFFFEF3C7),
+                    badgeTextColor = Color(0xFF92400E),
+                    onClick = onNavigateToDrivers
+                )
+            }
         }
 
-        item {
-            MenuCard(
-                title = "Rute & Trayek",
-                subtitle = "Jalur Antar Terminal",
-                iconEmoji = "🗺️",
-                badgeText = "Peta Jalur",
-                containerColor = Color(0xFFECFDF5),
-                borderColor = Color(0xFFA7F3D0),
-                badgeBgColor = Color(0xFFD1FAE5),
-                badgeTextColor = Color(0xFF065F46),
-                onClick = onNavigateToRoutes
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                MenuCard(
+                    title = "Keuangan PO",
+                    subtitle = "Buku Kas & Laba Rugi",
+                    iconEmoji = "📊",
+                    badgeText = "Buku Kas",
+                    containerColor = Color(0xFFFEFCE8),
+                    borderColor = Color(0xFFFEF08A),
+                    badgeBgColor = Color(0xFFFEF9C3),
+                    badgeTextColor = Color(0xFF854D0E),
+                    onClick = onNavigateToFinance
+                )
+            }
+            Box(modifier = Modifier.weight(1f)) {
+                MenuCard(
+                    title = "Laporan Terminal",
+                    subtitle = "Arus Penumpang Wilayah",
+                    iconEmoji = "🏢",
+                    badgeText = "Data Arus",
+                    containerColor = Color(0xFFF0FDFA),
+                    borderColor = Color(0xFFA5F3FC),
+                    badgeBgColor = Color(0xFFCFFAFE),
+                    badgeTextColor = Color(0xFF0E7490),
+                    onClick = onNavigateToTerminalReport
+                )
+            }
         }
 
-        item {
-            MenuCard(
-                title = "Kru & Sopir",
-                subtitle = "Rekrutmen & Penugasan",
-                iconEmoji = "👨‍✈️",
-                badgeText = if (hiredDriverCount > 0) "$hiredDriverCount Sopir" else "Rekrut",
-                containerColor = Color(0xFFFFFBEB),
-                borderColor = Color(0xFFFDE68A),
-                badgeBgColor = Color(0xFFFEF3C7),
-                badgeTextColor = Color(0xFF92400E),
-                onClick = onNavigateToDrivers
-            )
-        }
-
-        item {
-            MenuCard(
-                title = "Keuangan PO",
-                subtitle = "Buku Kas & Laba Rugi",
-                iconEmoji = "📊",
-                badgeText = "Buku Kas",
-                containerColor = Color(0xFFFEFCE8),
-                borderColor = Color(0xFFFEF08A),
-                badgeBgColor = Color(0xFFFEF9C3),
-                badgeTextColor = Color(0xFF854D0E),
-                onClick = onNavigateToFinance
-            )
-        }
-
-        item {
-            MenuCard(
-                title = "Laporan Terminal",
-                subtitle = "Arus Penumpang Wilayah",
-                iconEmoji = "🏢",
-                badgeText = "Data Arus",
-                containerColor = Color(0xFFF0FDFA),
-                borderColor = Color(0xFFA5F3FC),
-                badgeBgColor = Color(0xFFCFFAFE),
-                badgeTextColor = Color(0xFF0E7490),
-                onClick = onNavigateToTerminalReport
-            )
-        }
-
-        item {
-            MenuCard(
-                title = "Informasi Trayek",
-                subtitle = "Status Operasi Trayek",
-                iconEmoji = "📋",
-                badgeText = if (activeRouteCount > 0) "$activeRouteCount Aktif" else "Info Rute",
-                containerColor = Color(0xFFFAF5FF),
-                borderColor = Color(0xFFE9D5FF),
-                badgeBgColor = Color(0xFFF3E8FF),
-                badgeTextColor = Color(0xFF6B21A8),
-                onClick = onOpenRouteInfo
-            )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Box(modifier = Modifier.weight(1f)) {
+                MenuCard(
+                    title = "Informasi Trayek",
+                    subtitle = "Status Operasi Trayek",
+                    iconEmoji = "📋",
+                    badgeText = if (activeRouteCount > 0) "$activeRouteCount Aktif" else "Info Rute",
+                    containerColor = Color(0xFFFAF5FF),
+                    borderColor = Color(0xFFE9D5FF),
+                    badgeBgColor = Color(0xFFF3E8FF),
+                    badgeTextColor = Color(0xFF6B21A8),
+                    onClick = onOpenRouteInfo
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }

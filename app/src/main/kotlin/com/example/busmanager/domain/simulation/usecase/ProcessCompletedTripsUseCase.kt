@@ -23,7 +23,8 @@ class ProcessCompletedTripsUseCase(
     private val financialTransactionRepository: FinancialTransactionRepository? = null,
     private val terminalPassengerRepository: TerminalPassengerRepository? = null,
     private val routeScheduleRepository: RouteScheduleRepository? = null,
-    private val driverRepository: DriverRepository? = null
+    private val driverRepository: DriverRepository? = null,
+    private val recordSimulationLogUseCase: RecordSimulationLogUseCase? = null
 ) {
     suspend operator fun invoke(
         completedTrips: List<ActiveBusTrip>,
@@ -144,6 +145,18 @@ class ProcessCompletedTripsUseCase(
                     driverRepository.unassignDriver(driverId)
                 }
             }
+
+            recordSimulationLogUseCase?.recordArrival(
+                busCode = trip.busCode,
+                routeName = trip.route.name,
+                destTerminalName = destTerminal.name,
+                passengerCount = trip.passengerCount,
+                earningsAmount = trip.ticketEarnings.amount,
+                timeText = timeText,
+                dateText = dateText,
+                busId = trip.busId,
+                routeId = trip.route.id
+            )
 
             simulationTripRepository.completeTrip(trip.id)
         }

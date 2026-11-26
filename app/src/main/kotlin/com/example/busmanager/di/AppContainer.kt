@@ -113,9 +113,15 @@ class AppContainer(context: Context) {
     )
 
     val simulationStateRepository: SimulationStateRepository = SimulationStateRepositoryImpl(context)
+    val simulationLogRepository: com.example.busmanager.domain.simulation.repository.SimulationLogRepository =
+        com.example.busmanager.data.repository.SimulationLogRepositoryImpl(database.simulationLogDao())
+    val getSimulationLogsUseCase = com.example.busmanager.domain.simulation.usecase.GetSimulationLogsUseCase(simulationLogRepository)
+    val recordSimulationLogUseCase = com.example.busmanager.domain.simulation.usecase.RecordSimulationLogUseCase(simulationLogRepository)
+
     val simulationTripRepository: SimulationTripRepository = SimulationTripRepositoryImpl(
         activeTripDao = database.activeTripDao(),
-        routeRepository = routeRepository
+        routeRepository = routeRepository,
+        recordSimulationLogUseCase = recordSimulationLogUseCase
     )
     val processCompletedTripsUseCase: com.example.busmanager.domain.simulation.usecase.ProcessCompletedTripsUseCase =
         com.example.busmanager.domain.simulation.usecase.ProcessCompletedTripsUseCase(
@@ -125,7 +131,8 @@ class AppContainer(context: Context) {
             financialTransactionRepository = financialTransactionRepository,
             terminalPassengerRepository = terminalPassengerRepository,
             routeScheduleRepository = routeScheduleRepository,
-            driverRepository = driverRepository
+            driverRepository = driverRepository,
+            recordSimulationLogUseCase = recordSimulationLogUseCase
         )
     val simulationTimeRepository: SimulationTimeRepository = SimulationTimeRepositoryImpl(
         simulationTripRepository = simulationTripRepository,
@@ -146,7 +153,8 @@ class AppContainer(context: Context) {
         simulationTripRepository = simulationTripRepository,
         simulationTimeRepository = simulationTimeRepository,
         simulationStateRepository = simulationStateRepository,
-        routeRepository = routeRepository
+        routeRepository = routeRepository,
+        simulationLogRepository = simulationLogRepository
     )
     val getCompanyUseCase = GetCompanyUseCase(companyRepository)
     val getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepository)

@@ -8,6 +8,7 @@ import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.simulation.model.GameCalendar
+import com.example.busmanager.domain.simulation.repository.SimulationLogRepository
 import com.example.busmanager.domain.simulation.repository.SimulationStateRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
@@ -24,13 +25,15 @@ class ResetGameUseCase(
     private val simulationTripRepository: SimulationTripRepository? = null,
     private val simulationTimeRepository: SimulationTimeRepository? = null,
     private val simulationStateRepository: SimulationStateRepository? = null,
-    private val routeRepository: RouteRepository? = null
+    private val routeRepository: RouteRepository? = null,
+    private val simulationLogRepository: SimulationLogRepository? = null
 ) {
     suspend operator fun invoke() {
         simulationTripRepository?.clearTrips()
         simulationTimeRepository?.pause()
         simulationTimeRepository?.setTime(GameCalendar.initial())
         simulationStateRepository?.clearState()
+        simulationLogRepository?.clearLogs()
         fleetRepository.removeAllBuses()
         driverRepository.resetAllDrivers()
         driverRepository.seedCandidateDriversIfEmpty()

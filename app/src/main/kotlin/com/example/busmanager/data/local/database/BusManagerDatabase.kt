@@ -9,10 +9,11 @@ import com.example.busmanager.data.local.dao.CompanyDao
 import com.example.busmanager.data.local.dao.CustomRouteDao
 import com.example.busmanager.data.local.dao.DriverDao
 import com.example.busmanager.data.local.dao.FinancialTransactionDao
-import com.example.busmanager.data.local.dao.TerminalPassengerRecordDao
 import com.example.busmanager.data.local.dao.OwnedBusDao
 import com.example.busmanager.data.local.dao.RoutePricingDao
 import com.example.busmanager.data.local.dao.RouteScheduleDao
+import com.example.busmanager.data.local.dao.SimulationLogDao
+import com.example.busmanager.data.local.dao.TerminalPassengerRecordDao
 import com.example.busmanager.data.local.entity.ActiveTripEntity
 import com.example.busmanager.data.local.entity.CompanyEntity
 import com.example.busmanager.data.local.entity.CustomRouteEntity
@@ -21,6 +22,7 @@ import com.example.busmanager.data.local.entity.FinancialTransactionEntity
 import com.example.busmanager.data.local.entity.OwnedBusEntity
 import com.example.busmanager.data.local.entity.RoutePricingEntity
 import com.example.busmanager.data.local.entity.RouteScheduleEntity
+import com.example.busmanager.data.local.entity.SimulationLogEntity
 import com.example.busmanager.data.local.entity.TerminalPassengerRecordEntity
 
 @Database(
@@ -33,9 +35,10 @@ import com.example.busmanager.data.local.entity.TerminalPassengerRecordEntity
         FinancialTransactionEntity::class,
         TerminalPassengerRecordEntity::class,
         CustomRouteEntity::class,
-        ActiveTripEntity::class
+        ActiveTripEntity::class,
+        SimulationLogEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class BusManagerDatabase : RoomDatabase() {
@@ -49,6 +52,7 @@ abstract class BusManagerDatabase : RoomDatabase() {
     abstract fun terminalPassengerRecordDao(): TerminalPassengerRecordDao
     abstract fun customRouteDao(): CustomRouteDao
     abstract fun activeTripDao(): ActiveTripDao
+    abstract fun simulationLogDao(): SimulationLogDao
 
     companion object {
         private const val DATABASE_NAME = "bus_manager.db"

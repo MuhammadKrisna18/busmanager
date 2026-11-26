@@ -63,7 +63,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         toggleSimulationPlayUseCase = appContainer.toggleSimulationPlayUseCase,
                         passengerQueueManager = appContainer.simulationTripRepository.passengerQueueManager,
                         calculateCompanyReputationUseCase = appContainer.calculateCompanyReputationUseCase,
-                        calculateCompanyTierUseCase = appContainer.calculateCompanyTierUseCase
+                        calculateCompanyTierUseCase = appContainer.calculateCompanyTierUseCase,
+                        getSimulationLogsUseCase = appContainer.getSimulationLogsUseCase
                     )
                 }
                 HomeScreen(

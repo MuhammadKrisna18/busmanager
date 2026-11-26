@@ -15,6 +15,7 @@ import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.ReconcileBusOperatingStateUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
 import com.example.busmanager.domain.simulation.model.PassengerQueueManager
+import com.example.busmanager.domain.simulation.usecase.GetSimulationLogsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
 import com.example.busmanager.domain.simulation.usecase.ProcessOfflineProgressionUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
@@ -40,7 +41,8 @@ class HomeScreenViewModel(
     private val toggleSimulationPlayUseCase: ToggleSimulationPlayUseCase? = null,
     private val passengerQueueManager: PassengerQueueManager? = null,
     private val calculateCompanyReputationUseCase: CalculateCompanyReputationUseCase = CalculateCompanyReputationUseCase(),
-    private val calculateCompanyTierUseCase: CalculateCompanyTierUseCase = CalculateCompanyTierUseCase()
+    private val calculateCompanyTierUseCase: CalculateCompanyTierUseCase = CalculateCompanyTierUseCase(),
+    private val getSimulationLogsUseCase: GetSimulationLogsUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeScreenUiState())
@@ -51,6 +53,13 @@ class HomeScreenViewModel(
     }
 
     private fun initializeData() {
+        if (getSimulationLogsUseCase != null) {
+            viewModelScope.launch {
+                getSimulationLogsUseCase.invoke(50).collect { logs ->
+                    _uiState.update { it.copy(recentLogs = logs) }
+                }
+            }
+        }
         if (getSimulationTimeUseCase != null) {
             viewModelScope.launch {
                 getSimulationTimeUseCase.invoke().collect { cal ->
@@ -156,6 +165,14 @@ class HomeScreenViewModel(
 
     fun dismissRouteInfoModal() {
         _uiState.update { it.copy(showRouteInfoModal = false) }
+    }
+
+    fun openLogCenterModal() {
+        _uiState.update { it.copy(showLogCenterModal = true) }
+    }
+
+    fun dismissLogCenterModal() {
+        _uiState.update { it.copy(showLogCenterModal = false) }
     }
 
     fun dismissOfflineProgressionDialog() {

@@ -8,6 +8,7 @@ import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.RouteOperationalInfo
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.OfflineProgressionResult
+import com.example.busmanager.domain.simulation.model.SimulationLog
 
 data class HomeScreenUiState(
     val company: Company? = null,
@@ -22,7 +23,9 @@ data class HomeScreenUiState(
     val showRouteInfoModal: Boolean = false,
     val offlineProgressionResult: OfflineProgressionResult? = null,
     val reputation: CompanyReputation = CompanyReputation(),
-    val tier: CompanyTier = CompanyTier.PERINTIS
+    val tier: CompanyTier = CompanyTier.PERINTIS,
+    val recentLogs: List<SimulationLog> = emptyList(),
+    val showLogCenterModal: Boolean = false
 ) {
     val formattedDateTime: String
         get() = gameCalendar.formatDateTime()

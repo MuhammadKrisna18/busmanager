@@ -62,6 +62,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.BuildConfig
+import com.example.busmanager.presentation.dashboard.components.EventTickerBanner
+import com.example.busmanager.presentation.dashboard.components.SimulationLogCenterDialog
 import com.example.busmanager.presentation.update.UpdateDialog
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
@@ -160,6 +162,13 @@ fun HomeScreen(
         )
     }
 
+    if (state.showLogCenterModal) {
+        SimulationLogCenterDialog(
+            logs = state.recentLogs,
+            onDismiss = { viewModel.dismissLogCenterModal() }
+        )
+    }
+
     if (state.isLoading) {
         Box(
             modifier = modifier.fillMaxSize().background(BackgroundWhite),
@@ -190,7 +199,14 @@ fun HomeScreen(
                 onResetClick = { showResetConfirmDialog = true }
             )
 
-            Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
+            Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+
+            EventTickerBanner(
+                recentLogs = state.recentLogs,
+                onOpenLogCenter = { viewModel.openLogCenterModal() }
+            )
+
+            Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
 
             val activeRoutes = state.routeOperationalList.filter { it.isActive }
             val activeBusCount = activeRoutes.flatMap { it.assignedBuses }.distinctBy { it.id }.size

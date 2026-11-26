@@ -15,6 +15,7 @@ import com.example.busmanager.domain.simulation.model.PassengerQueueManager
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import com.example.busmanager.domain.simulation.model.TransitExchangeInfo
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
+import com.example.busmanager.domain.simulation.usecase.RecordSimulationLogUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,6 +30,7 @@ class SimulationTripRepositoryImpl(
     private val passengerDemandGenerator: PassengerDemandGenerator = PassengerDemandGenerator(),
     private val activeTripDao: ActiveTripDao? = null,
     private val routeRepository: RouteRepository? = null,
+    private val recordSimulationLogUseCase: RecordSimulationLogUseCase? = null,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : SimulationTripRepository {
 
@@ -124,6 +126,28 @@ class SimulationTripRepositoryImpl(
         if (activeTripDao != null) {
             scope.launch {
                 activeTripDao.insertTrip(newTrip.toEntity())
+            }
+        }
+
+        if (recordSimulationLogUseCase != null) {
+            val destTerm = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                route.destinationTerminal
+            } else {
+                route.originTerminal
+            }
+            val dateText = "${currentTime.dayOfWeekName()}, ${currentTime.formatDate()}"
+            val timeText = currentTime.formatTime()
+            scope.launch {
+                recordSimulationLogUseCase.recordDispatch(
+                    busCode = bus.busCode,
+                    routeName = route.name,
+                    destTerminalName = destTerm.name,
+                    passengerCount = passengerCount,
+                    timeText = timeText,
+                    dateText = dateText,
+                    busId = bus.id,
+                    routeId = route.id
+                )
             }
         }
 
@@ -248,6 +272,23 @@ class SimulationTripRepositoryImpl(
                                             alightedCount = alighted
                                         )
                                     )
+                                    if (recordSimulationLogUseCase != null && currentTime != null) {
+                                        val dateText = "${currentTime.dayOfWeekName()}, ${currentTime.formatDate()}"
+                                        val timeText = currentTime.formatTime()
+                                        scope.launch {
+                                            recordSimulationLogUseCase.recordTransit(
+                                                busCode = trip.busCode,
+                                                routeName = trip.route.name,
+                                                transitTerminalName = transitTerm.name,
+                                                boardedCount = boarded,
+                                                alightedCount = alighted,
+                                                timeText = timeText,
+                                                dateText = dateText,
+                                                busId = trip.busId,
+                                                routeId = trip.route.id
+                                            )
+                                        }
+                                    }
                                 }
                             }
 

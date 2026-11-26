@@ -146,13 +146,16 @@ fun Slide2PathAndStops(
                                 text = route.name,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = PrimaryBlueDark
+                                color = PrimaryBlueDark,
+                                modifier = Modifier.weight(1f)
                             )
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = "Live Metrics",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = PrimaryBlue
+                                color = PrimaryBlue,
+                                maxLines = 1
                             )
                         }
 

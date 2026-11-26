@@ -7,6 +7,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -410,11 +412,13 @@ fun EastJavaMapCanvas(
         }
 
         if (availablePaths.size > 1) {
+            val corridorScrollState = rememberScrollState()
             Row(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(start = AppDimens.paddingSmall, top = AppDimens.paddingSmall)
-                    .background(Color(0xEE0F172A), RoundedCornerShape(AppDimens.radiusPill))
+                    .padding(start = AppDimens.paddingSmall, top = AppDimens.paddingSmall, end = 56.dp)
+                    .horizontalScroll(corridorScrollState)
+                    .background(Color(0xEE0F172A), RoundedCornerShape(10.dp))
                     .padding(horizontal = 6.dp, vertical = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -428,7 +432,7 @@ fun EastJavaMapCanvas(
                     }
                     Box(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .clip(RoundedCornerShape(8.dp))
                             .background(if (isSelected) PrimaryBlue else Color(0x33FFFFFF))
                             .clickable { onSelectPath(index) }
                             .padding(horizontal = 10.dp, vertical = 5.dp)
@@ -437,7 +441,8 @@ fun EastJavaMapCanvas(
                             text = if (isSelected) "✓ Koridor ${index + 1}: $viaCity" else "Koridor ${index + 1}: $viaCity",
                             fontSize = 11.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = Color.White
+                            color = Color.White,
+                            maxLines = 1
                         )
                     }
                 }

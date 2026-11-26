@@ -37,7 +37,7 @@ class SellBusUseCase(
             return SellBusResult.BusOperatingError
         }
 
-        val refundAmount = Money.rupiah((bus.totalPrice.amount * 0.70).toLong().coerceAtLeast(10_000_000L))
+        val refundAmount = bus.resaleValue
 
         if (bus.driverId != null) {
             driverRepository.unassignDriver(bus.driverId)

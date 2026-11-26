@@ -24,6 +24,9 @@ data class Bus(
     val totalPrice: Money
         get() = chassis.price + body.price
 
+    val resaleValue: Money
+        get() = Money.rupiah((totalPrice.amount * 0.70).toLong().coerceAtLeast(10_000_000L))
+
     val fullName: String
         get() = "${chassis.brand.displayName} ${chassis.modelName} - ${body.brand.displayName} ${body.modelName}"
 

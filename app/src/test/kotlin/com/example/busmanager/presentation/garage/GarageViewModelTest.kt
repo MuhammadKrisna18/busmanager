@@ -351,7 +351,9 @@ class GarageViewModelTest {
         override suspend fun unassignDriver(driverId: String) {}
         override suspend fun fireDriver(driverId: String) {}
         override suspend fun seedCandidateDriversIfEmpty() {}
-    }
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+    override suspend fun resetAllDrivers() {}
+}
 
     private class FakeRoutePricingRepository : RoutePricingRepository {
         val pricingsList = mutableListOf<RoutePricing>()
@@ -373,7 +375,8 @@ class GarageViewModelTest {
             destinationTerminalId: String
         ): RoutePricing? = pricingsList.find { it.routeId == routeId && it.originTerminalId == originTerminalId && it.destinationTerminalId == destinationTerminalId }
         override suspend fun generateAndSaveDefaultPricings(route: BusRoute): List<RoutePricing> = emptyList()
-    }
+        override suspend fun deleteAllPricings() {}
+}
 
     private class FakeCompanyRepository : CompanyRepository {
         private val company = Company(
@@ -401,7 +404,8 @@ class GarageViewModelTest {
             }
             return false
         }
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 
     private class FakeSimulationTripRepository : SimulationTripRepository {
         private val _trips = MutableStateFlow<List<ActiveBusTrip>>(emptyList())
@@ -438,5 +442,9 @@ class GarageViewModelTest {
         override suspend fun deleteSchedule(scheduleId: String) {}
         override suspend fun deleteAllSchedules() {}
         override suspend fun checkConflict(routeId: String, direction: RouteDirection, hour: Int, minute: Int, excludeScheduleId: String?) = false
-    }
+        override suspend fun getSchedulesForBus(busId: String): List<com.example.busmanager.domain.route.model.RouteSchedule> = emptyList()
+    override fun getSchedulesForBusFlow(busId: String): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.domain.route.model.RouteSchedule>> = kotlinx.coroutines.flow.emptyFlow()
+    override suspend fun deleteSchedulesForBus(busId: String) {}
+    override suspend fun deleteSchedulesForRoute(routeId: String) {}
+}
 }

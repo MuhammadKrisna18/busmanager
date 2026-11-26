@@ -13,5 +13,5 @@ interface RoutePricingRepository {
     suspend fun savePricings(pricings: List<RoutePricing>)
     suspend fun getPricingBetween(routeId: String, originTerminalId: String, destinationTerminalId: String): RoutePricing?
     suspend fun generateAndSaveDefaultPricings(route: BusRoute): List<RoutePricing>
-    suspend fun deleteAllPricings() {}
+    suspend fun deleteAllPricings()
 }

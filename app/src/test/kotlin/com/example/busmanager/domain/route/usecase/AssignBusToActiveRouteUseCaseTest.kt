@@ -190,7 +190,8 @@ class AssignBusToActiveRouteUseCaseTest {
             list.removeAll { it.id == busId }
             flow.value = list.toList()
         }
-    }
+        override suspend fun removeAllBuses() {}
+}
 
     private class FakeDriverRepository : DriverRepository {
         private val list = mutableListOf<Driver>()
@@ -216,7 +217,9 @@ class AssignBusToActiveRouteUseCaseTest {
         }
         override suspend fun unassignDriver(driverId: String) {}
         override suspend fun seedCandidateDriversIfEmpty() {}
-    }
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+    override suspend fun resetAllDrivers() {}
+}
 
     private class FakeRouteScheduleRepository : RouteScheduleRepository {
         private val list = mutableListOf<RouteSchedule>()
@@ -244,5 +247,10 @@ class AssignBusToActiveRouteUseCaseTest {
             minute: Int,
             excludeScheduleId: String?
         ): Boolean = false
-    }
+        override suspend fun getSchedulesForBus(busId: String): List<com.example.busmanager.domain.route.model.RouteSchedule> = emptyList()
+    override fun getSchedulesForBusFlow(busId: String): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.domain.route.model.RouteSchedule>> = kotlinx.coroutines.flow.emptyFlow()
+    override suspend fun deleteSchedulesForBus(busId: String) {}
+    override suspend fun deleteSchedulesForRoute(routeId: String) {}
+    override suspend fun deleteAllSchedules() {}
+}
 }

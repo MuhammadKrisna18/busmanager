@@ -166,7 +166,8 @@ class BuyBusUseCaseTest {
             val current = state.value ?: return
             state.value = current.copy(balance = current.balance + amount)
         }
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 
     private class FakeFleetRepository : FleetRepository {
         private val list = mutableListOf<Bus>()
@@ -193,5 +194,6 @@ class BuyBusUseCaseTest {
             list.removeAll { it.id == busId }
             state.value = list.toList()
         }
-    }
+        override suspend fun removeAllBuses() {}
+}
 }

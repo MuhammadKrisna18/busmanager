@@ -311,7 +311,8 @@ class ProcessOfflineProgressionUseCaseTest {
         override suspend fun fireDriver(driverId: String) {}
         override suspend fun resetAllDrivers() {}
         override suspend fun seedCandidateDriversIfEmpty() {}
-    }
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+}
 
     private class FakeRouteRepository(val routesList: List<BusRoute>) : RouteRepository {
         override fun getAllSegments(): List<RouteSegment> = emptyList()
@@ -339,7 +340,11 @@ class ProcessOfflineProgressionUseCaseTest {
         override suspend fun deleteSchedule(scheduleId: String) {}
         override suspend fun deleteAllSchedules() {}
         override suspend fun checkConflict(routeId: String, direction: RouteDirection, hour: Int, minute: Int, excludeScheduleId: String?): Boolean = false
-    }
+        override suspend fun getSchedulesForBus(busId: String): List<com.example.busmanager.domain.route.model.RouteSchedule> = emptyList()
+    override fun getSchedulesForBusFlow(busId: String): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.domain.route.model.RouteSchedule>> = kotlinx.coroutines.flow.emptyFlow()
+    override suspend fun deleteSchedulesForBus(busId: String) {}
+    override suspend fun deleteSchedulesForRoute(routeId: String) {}
+}
 
     private class FakeRoutePricingRepository : RoutePricingRepository {
         var pricings = listOf<RoutePricing>()
@@ -351,7 +356,8 @@ class ProcessOfflineProgressionUseCaseTest {
         override suspend fun savePricings(pricings: List<RoutePricing>) {}
         override suspend fun getPricingBetween(routeId: String, originTerminalId: String, destinationTerminalId: String): RoutePricing? = null
         override suspend fun generateAndSaveDefaultPricings(route: BusRoute): List<RoutePricing> = emptyList()
-    }
+        override suspend fun deleteAllPricings() {}
+}
 
     private class FakeFinancialTransactionRepository : FinancialTransactionRepository {
         val transactions = mutableListOf<FinancialTransaction>()

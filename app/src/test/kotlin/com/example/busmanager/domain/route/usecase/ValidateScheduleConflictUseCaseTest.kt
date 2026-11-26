@@ -332,5 +332,10 @@ class ValidateScheduleConflictUseCaseTest {
             minute: Int,
             excludeScheduleId: String?
         ): Boolean = false
-    }
+        override suspend fun getSchedulesForBus(busId: String): List<com.example.busmanager.domain.route.model.RouteSchedule> = emptyList()
+    override fun getSchedulesForBusFlow(busId: String): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.domain.route.model.RouteSchedule>> = kotlinx.coroutines.flow.emptyFlow()
+    override suspend fun deleteSchedulesForBus(busId: String) {}
+    override suspend fun deleteSchedulesForRoute(routeId: String) {}
+    override suspend fun deleteAllSchedules() {}
+}
 }

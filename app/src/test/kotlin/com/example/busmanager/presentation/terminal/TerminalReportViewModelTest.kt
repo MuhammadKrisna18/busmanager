@@ -268,4 +268,5 @@ class FakeTerminalPassengerRepository : TerminalPassengerRepository {
     fun setRecords(newRecords: List<TerminalPassengerRecord>) {
         records.value = newRecords
     }
+    override suspend fun clearAllRecords() {}
 }

@@ -56,7 +56,8 @@ class StartNewGameUseCaseTest {
                 seeded = true
             }
             override suspend fun resetAllDrivers() {}
-        }
+            override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+}
         val useCase = StartNewGameUseCase(fakeCompanyRepo, fakeDriverRepo)
         useCase("PO Nusantara")
         assertTrue(seeded)
@@ -88,5 +89,6 @@ class StartNewGameUseCaseTest {
             val current = state.value ?: return
             state.value = current.copy(balance = current.balance + amount)
         }
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 }

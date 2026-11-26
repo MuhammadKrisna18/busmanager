@@ -242,7 +242,8 @@ class FinanceViewModelTest {
             updateBalance(Money.rupiah((curr - amount.amount).coerceAtLeast(0L)))
             return true
         }
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 
     private class FakeFinancialTransactionRepository : FinancialTransactionRepository {
         private val list = mutableListOf<FinancialTransaction>()
@@ -281,5 +282,6 @@ class FinanceViewModelTest {
         override suspend fun addBus(bus: Bus) {}
         override suspend fun updateBus(bus: Bus) {}
         override suspend fun removeBus(busId: String) {}
-    }
+        override suspend fun removeAllBuses() {}
+}
 }

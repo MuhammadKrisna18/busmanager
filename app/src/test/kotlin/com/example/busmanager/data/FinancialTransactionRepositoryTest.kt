@@ -180,5 +180,6 @@ class FinancialTransactionRepositoryTest {
             updateBalance(Money.rupiah((current - amount.amount).coerceAtLeast(0L)))
             return true
         }
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 }

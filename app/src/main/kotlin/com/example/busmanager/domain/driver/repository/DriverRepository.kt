@@ -10,8 +10,8 @@ interface DriverRepository {
     suspend fun hireDriver(driverId: String): Boolean
     suspend fun assignDriverToBus(driverId: String, busId: String): Boolean
     suspend fun unassignDriver(driverId: String)
-    suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+    suspend fun setPendingRelease(driverId: String, isPending: Boolean)
     suspend fun fireDriver(driverId: String)
     suspend fun seedCandidateDriversIfEmpty()
-    suspend fun resetAllDrivers() {}
+    suspend fun resetAllDrivers()
 }

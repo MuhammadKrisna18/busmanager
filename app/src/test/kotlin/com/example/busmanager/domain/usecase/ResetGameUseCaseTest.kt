@@ -119,7 +119,8 @@ class ResetGameUseCaseTest {
         override suspend fun resetAllDrivers() {
             wasResetAllCalled = true
         }
-    }
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+}
 
     private class FakeRouteScheduleRepository : RouteScheduleRepository {
         var wasDeleteAllCalled = false
@@ -137,7 +138,11 @@ class ResetGameUseCaseTest {
             wasDeleteAllCalled = true
         }
         override suspend fun checkConflict(routeId: String, direction: com.example.busmanager.domain.simulation.model.RouteDirection, hour: Int, minute: Int, excludeScheduleId: String?) = false
-    }
+        override suspend fun getSchedulesForBus(busId: String): List<com.example.busmanager.domain.route.model.RouteSchedule> = emptyList()
+    override fun getSchedulesForBusFlow(busId: String): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.domain.route.model.RouteSchedule>> = kotlinx.coroutines.flow.emptyFlow()
+    override suspend fun deleteSchedulesForBus(busId: String) {}
+    override suspend fun deleteSchedulesForRoute(routeId: String) {}
+}
 
     private class FakeRoutePricingRepository : RoutePricingRepository {
         var wasDeleteAllCalled = false

@@ -9,4 +9,8 @@ class SaveRoutePricingUseCase(
     suspend operator fun invoke(pricing: RoutePricing) {
         pricingRepository.savePricing(pricing)
     }
+
+    suspend operator fun invoke(pricings: List<RoutePricing>) {
+        pricingRepository.savePricings(pricings)
+    }
 }

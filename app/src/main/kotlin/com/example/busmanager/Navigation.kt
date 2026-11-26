@@ -164,7 +164,8 @@ fun MainNavigation(appContainer: AppContainer) {
                         findAvailablePathsUseCase = appContainer.findAvailablePathsUseCase,
                         buildCustomRouteUseCase = appContainer.buildCustomRouteUseCase,
                         saveCustomRouteUseCase = appContainer.saveCustomRouteUseCase,
-                        routePricingRepository = appContainer.routePricingRepository,
+                        saveRoutePricingUseCase = appContainer.saveRoutePricingUseCase,
+                        launchCustomRouteUseCase = appContainer.launchCustomRouteUseCase,
                         routeScheduleRepository = appContainer.routeScheduleRepository,
                         driverRepository = appContainer.driverRepository,
                         fleetRepository = appContainer.fleetRepository

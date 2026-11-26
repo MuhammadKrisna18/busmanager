@@ -62,14 +62,22 @@ import com.example.busmanager.domain.route.usecase.GetRouteSchedulesUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteTransitStopsUseCase
 import com.example.busmanager.domain.route.usecase.InitializeDefaultRoutePricingsUseCase
 import com.example.busmanager.domain.route.usecase.SaveCustomRouteUseCase
+import com.example.busmanager.data.repository.SimulationLogRepositoryImpl
+import com.example.busmanager.domain.route.usecase.AssignBusToActiveRouteUseCase
+import com.example.busmanager.domain.route.usecase.LaunchCustomRouteUseCase
 import com.example.busmanager.domain.route.usecase.SaveRoutePricingUseCase
+import com.example.busmanager.domain.route.usecase.ValidateScheduleConflictUseCase
+import com.example.busmanager.domain.simulation.repository.SimulationLogRepository
 import com.example.busmanager.domain.simulation.repository.SimulationStateRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
 import com.example.busmanager.domain.simulation.usecase.DispatchBusUseCase
 import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
+import com.example.busmanager.domain.simulation.usecase.GetSimulationLogsUseCase
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
+import com.example.busmanager.domain.simulation.usecase.ProcessCompletedTripsUseCase
 import com.example.busmanager.domain.simulation.usecase.ProcessOfflineProgressionUseCase
+import com.example.busmanager.domain.simulation.usecase.RecordSimulationLogUseCase
 import com.example.busmanager.domain.simulation.usecase.SaveSimulationStateUseCase
 import com.example.busmanager.domain.simulation.usecase.SetSimulationSpeedUseCase
 import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
@@ -113,18 +121,18 @@ class AppContainer(context: Context) {
     )
 
     val simulationStateRepository: SimulationStateRepository = SimulationStateRepositoryImpl(context)
-    val simulationLogRepository: com.example.busmanager.domain.simulation.repository.SimulationLogRepository =
-        com.example.busmanager.data.repository.SimulationLogRepositoryImpl(database.simulationLogDao())
-    val getSimulationLogsUseCase = com.example.busmanager.domain.simulation.usecase.GetSimulationLogsUseCase(simulationLogRepository)
-    val recordSimulationLogUseCase = com.example.busmanager.domain.simulation.usecase.RecordSimulationLogUseCase(simulationLogRepository)
+    val simulationLogRepository: SimulationLogRepository =
+        SimulationLogRepositoryImpl(database.simulationLogDao())
+    val getSimulationLogsUseCase = GetSimulationLogsUseCase(simulationLogRepository)
+    val recordSimulationLogUseCase = RecordSimulationLogUseCase(simulationLogRepository)
 
     val simulationTripRepository: SimulationTripRepository = SimulationTripRepositoryImpl(
         activeTripDao = database.activeTripDao(),
         routeRepository = routeRepository,
         recordSimulationLogUseCase = recordSimulationLogUseCase
     )
-    val processCompletedTripsUseCase: com.example.busmanager.domain.simulation.usecase.ProcessCompletedTripsUseCase =
-        com.example.busmanager.domain.simulation.usecase.ProcessCompletedTripsUseCase(
+    val processCompletedTripsUseCase: ProcessCompletedTripsUseCase =
+        ProcessCompletedTripsUseCase(
             fleetRepository = fleetRepository,
             simulationTripRepository = simulationTripRepository,
             companyRepository = companyRepository,
@@ -192,12 +200,20 @@ class AppContainer(context: Context) {
     val saveRoutePricingUseCase = SaveRoutePricingUseCase(routePricingRepository)
     val initializeDefaultRoutePricingsUseCase = InitializeDefaultRoutePricingsUseCase(routePricingRepository)
 
+    val launchCustomRouteUseCase = LaunchCustomRouteUseCase(
+        routeRepository = routeRepository,
+        routePricingRepository = routePricingRepository,
+        driverRepository = driverRepository,
+        fleetRepository = fleetRepository,
+        routeScheduleRepository = routeScheduleRepository
+    )
+
     val getRouteSchedulesUseCase = GetRouteSchedulesUseCase(routeScheduleRepository)
     val addRouteScheduleUseCase = AddRouteScheduleUseCase(routeScheduleRepository)
     val assignBusToScheduleUseCase = AssignBusToScheduleUseCase(routeScheduleRepository)
     val deleteRouteScheduleUseCase = DeleteRouteScheduleUseCase(routeScheduleRepository)
-    val validateScheduleConflictUseCase = com.example.busmanager.domain.route.usecase.ValidateScheduleConflictUseCase(routeScheduleRepository, routeRepository)
-    val assignBusToActiveRouteUseCase = com.example.busmanager.domain.route.usecase.AssignBusToActiveRouteUseCase(
+    val validateScheduleConflictUseCase = ValidateScheduleConflictUseCase(routeScheduleRepository, routeRepository)
+    val assignBusToActiveRouteUseCase = AssignBusToActiveRouteUseCase(
         fleetRepository = fleetRepository,
         routeRepository = routeRepository,
         driverRepository = driverRepository,

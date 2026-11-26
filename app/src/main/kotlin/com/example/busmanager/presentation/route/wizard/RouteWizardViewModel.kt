@@ -9,16 +9,17 @@ import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RoutePricing
-import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.model.SmartScheduleTimeParser
 import com.example.busmanager.domain.route.model.Terminal
-import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.repository.TerminalRepository
 import com.example.busmanager.domain.route.usecase.BuildCustomRouteUseCase
 import com.example.busmanager.domain.route.usecase.FindAvailablePathsUseCase
+import com.example.busmanager.domain.route.usecase.LaunchCustomRouteParams
+import com.example.busmanager.domain.route.usecase.LaunchCustomRouteUseCase
 import com.example.busmanager.domain.route.usecase.SaveCustomRouteUseCase
+import com.example.busmanager.domain.route.usecase.SaveRoutePricingUseCase
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +34,8 @@ class RouteWizardViewModel(
     private val findAvailablePathsUseCase: FindAvailablePathsUseCase,
     private val buildCustomRouteUseCase: BuildCustomRouteUseCase,
     private val saveCustomRouteUseCase: SaveCustomRouteUseCase,
-    private val routePricingRepository: RoutePricingRepository,
+    private val saveRoutePricingUseCase: SaveRoutePricingUseCase,
+    private val launchCustomRouteUseCase: LaunchCustomRouteUseCase,
     private val routeScheduleRepository: RouteScheduleRepository,
     private val driverRepository: DriverRepository,
     private val fleetRepository: FleetRepository
@@ -642,48 +644,23 @@ class RouteWizardViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, errorMessage = null) }
             try {
-                saveCustomRouteUseCase(route)
-                routePricingRepository.savePricings(state.pricings)
-
-                driverRepository.assignDriverToBus(driver.id, bus.id)
-                fleetRepository.updateBus(
-                    bus.copy(
-                        routeId = route.id,
-                        driverId = driver.id,
-                        currentTerminalId = bus.currentTerminalId ?: route.originTerminal.id
-                    )
-                )
-
-                val baseTime = System.currentTimeMillis()
-                val outboundScheduleId = "sched-${route.id}-outbound-$baseTime"
-                val outboundSchedule = RouteSchedule(
-                    id = outboundScheduleId,
-                    routeId = route.id,
-                    departureHour = state.departureHour,
-                    departureMinute = state.departureMinute,
-                    direction = state.direction,
-                    assignedBusId = bus.id,
-                    headwayMinutes = state.headwayMinutes,
-                    transitDwellMinutes = state.transitDwellMinutes
-                )
-                routeScheduleRepository.addSchedule(outboundSchedule)
-                routeScheduleRepository.assignBusToSchedule(outboundScheduleId, bus.id)
-
-                if (state.isRoundTrip) {
-                    val returnScheduleId = "sched-${route.id}-return-${baseTime + 1}"
-                    val returnSchedule = RouteSchedule(
-                        id = returnScheduleId,
-                        routeId = route.id,
-                        departureHour = state.returnHour,
-                        departureMinute = state.returnMinute,
-                        direction = state.returnDirection,
-                        assignedBusId = bus.id,
+                launchCustomRouteUseCase(
+                    LaunchCustomRouteParams(
+                        route = route,
+                        pricings = state.pricings,
+                        bus = bus,
+                        driver = driver,
+                        departureHour = state.departureHour,
+                        departureMinute = state.departureMinute,
+                        direction = state.direction,
                         headwayMinutes = state.headwayMinutes,
-                        transitDwellMinutes = state.transitDwellMinutes
+                        transitDwellMinutes = state.transitDwellMinutes,
+                        isRoundTrip = state.isRoundTrip,
+                        returnHour = state.returnHour,
+                        returnMinute = state.returnMinute,
+                        returnDirection = state.returnDirection
                     )
-                    routeScheduleRepository.addSchedule(returnSchedule)
-                    routeScheduleRepository.assignBusToSchedule(returnScheduleId, bus.id)
-                }
+                )
 
                 _uiState.update {
                     it.copy(
@@ -713,7 +690,7 @@ class RouteWizardViewModel(
             _uiState.update { it.copy(isSaving = true, errorMessage = null) }
             try {
                 saveCustomRouteUseCase(route)
-                routePricingRepository.savePricings(state.pricings)
+                saveRoutePricingUseCase(state.pricings)
                 _uiState.update {
                     it.copy(
                         isSaving = false,

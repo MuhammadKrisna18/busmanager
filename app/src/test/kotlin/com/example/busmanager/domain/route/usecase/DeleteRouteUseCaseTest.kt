@@ -42,7 +42,8 @@ class DeleteRouteUseCaseTest {
         override suspend fun removeBus(busId: String) {
             _buses.value = _buses.value.filterNot { it.id == busId }
         }
-    }
+        override suspend fun removeAllBuses() {}
+}
 
     @Before
     fun setUp() {

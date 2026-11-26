@@ -18,7 +18,9 @@ import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.usecase.BuildCustomRouteUseCase
 import com.example.busmanager.domain.route.usecase.FindAvailablePathsUseCase
+import com.example.busmanager.domain.route.usecase.LaunchCustomRouteUseCase
 import com.example.busmanager.domain.route.usecase.SaveCustomRouteUseCase
+import com.example.busmanager.domain.route.usecase.SaveRoutePricingUseCase
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -84,13 +86,23 @@ class RouteWizardViewModelTest {
         )
         fakeDriverRepo.setDrivers(listOf(sampleDriver))
 
+        val savePricingUseCase = SaveRoutePricingUseCase(fakePricingRepo)
+        val launchUseCase = LaunchCustomRouteUseCase(
+            routeRepository = routeRepository,
+            routePricingRepository = fakePricingRepo,
+            driverRepository = fakeDriverRepo,
+            fleetRepository = fakeFleetRepo,
+            routeScheduleRepository = fakeScheduleRepo
+        )
+
         viewModel = RouteWizardViewModel(
             terminalRepository = terminalRepository,
             routeRepository = routeRepository,
             findAvailablePathsUseCase = findAvailablePathsUseCase,
             buildCustomRouteUseCase = buildCustomRouteUseCase,
             saveCustomRouteUseCase = saveCustomRouteUseCase,
-            routePricingRepository = fakePricingRepo,
+            saveRoutePricingUseCase = savePricingUseCase,
+            launchCustomRouteUseCase = launchUseCase,
             routeScheduleRepository = fakeScheduleRepo,
             driverRepository = fakeDriverRepo,
             fleetRepository = fakeFleetRepo
@@ -616,7 +628,8 @@ class RouteWizardViewModelTest {
         ): RoutePricing? = list.find { it.routeId == routeId && it.originTerminalId == originTerminalId && it.destinationTerminalId == destinationTerminalId }
 
         override suspend fun generateAndSaveDefaultPricings(route: BusRoute): List<RoutePricing> = emptyList()
-    }
+        override suspend fun deleteAllPricings() {}
+}
 
     private class FakeRouteScheduleRepository : RouteScheduleRepository {
         private val list = mutableListOf<RouteSchedule>()
@@ -657,7 +670,12 @@ class RouteWizardViewModelTest {
             minute: Int,
             excludeScheduleId: String?
         ): Boolean = false
-    }
+        override suspend fun getSchedulesForBus(busId: String): List<com.example.busmanager.domain.route.model.RouteSchedule> = emptyList()
+    override fun getSchedulesForBusFlow(busId: String): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.domain.route.model.RouteSchedule>> = kotlinx.coroutines.flow.emptyFlow()
+    override suspend fun deleteSchedulesForBus(busId: String) {}
+    override suspend fun deleteSchedulesForRoute(routeId: String) {}
+    override suspend fun deleteAllSchedules() {}
+}
 
     private class FakeDriverRepository : DriverRepository {
         private val list = mutableListOf<Driver>()
@@ -685,7 +703,9 @@ class RouteWizardViewModelTest {
         override suspend fun unassignDriver(driverId: String) {}
         override suspend fun fireDriver(driverId: String) {}
         override suspend fun seedCandidateDriversIfEmpty() {}
-    }
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+    override suspend fun resetAllDrivers() {}
+}
 
     private class FakeFleetRepository : FleetRepository {
         private val list = mutableListOf<Bus>()
@@ -711,5 +731,6 @@ class RouteWizardViewModelTest {
             }
         }
         override suspend fun removeBus(busId: String) {}
-    }
+        override suspend fun removeAllBuses() {}
+}
 }

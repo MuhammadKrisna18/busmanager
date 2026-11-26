@@ -9,5 +9,5 @@ interface FleetRepository {
     suspend fun addBus(bus: Bus)
     suspend fun updateBus(bus: Bus)
     suspend fun removeBus(busId: String)
-    suspend fun removeAllBuses() {}
+    suspend fun removeAllBuses()
 }

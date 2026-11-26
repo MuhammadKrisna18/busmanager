@@ -1035,7 +1035,9 @@ class SimulationMapViewModelTest {
         override suspend fun unassignDriver(driverId: String) {}
         override suspend fun fireDriver(driverId: String) {}
         override suspend fun seedCandidateDriversIfEmpty() {}
-    }
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+    override suspend fun resetAllDrivers() {}
+}
 
     private class FakeRoutePricingRepository : RoutePricingRepository {
         private val pricings = mutableListOf<RoutePricing>()
@@ -1059,7 +1061,8 @@ class SimulationMapViewModelTest {
             destinationTerminalId: String
         ): RoutePricing? = pricings.find { it.routeId == routeId && it.originTerminalId == originTerminalId && it.destinationTerminalId == destinationTerminalId }
         override suspend fun generateAndSaveDefaultPricings(route: BusRoute): List<RoutePricing> = emptyList()
-    }
+        override suspend fun deleteAllPricings() {}
+}
 
     private class FakeRouteScheduleRepository : RouteScheduleRepository {
         private val schedules = mutableListOf<RouteSchedule>()
@@ -1106,7 +1109,10 @@ class SimulationMapViewModelTest {
             minute: Int,
             excludeScheduleId: String?
         ): Boolean = false
-    }
+        override suspend fun deleteSchedulesForBus(busId: String) {}
+    override suspend fun deleteSchedulesForRoute(routeId: String) {}
+    override suspend fun deleteAllSchedules() {}
+}
 
     private fun createDummyBus(busCode: String): Bus {
         val dummyChassis = Chassis(
@@ -1164,7 +1170,8 @@ class SimulationMapViewModelTest {
         override suspend fun deductBalance(amount: Money): Boolean = true
 
         override suspend fun addBalance(amount: Money) {}
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 
     private class FakeFleetRepository : FleetRepository {
         private val state = MutableStateFlow<List<Bus>>(emptyList())
@@ -1195,5 +1202,6 @@ class SimulationMapViewModelTest {
         override suspend fun removeBus(busId: String) {
             state.value = state.value.filterNot { it.id == busId }
         }
-    }
+        override suspend fun removeAllBuses() {}
+}
 }

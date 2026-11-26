@@ -144,7 +144,9 @@ class ValidateBusOperationUseCaseTest {
         override suspend fun unassignDriver(driverId: String) {}
         override suspend fun fireDriver(driverId: String) {}
         override suspend fun seedCandidateDriversIfEmpty() {}
-    }
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+    override suspend fun resetAllDrivers() {}
+}
 
     private class FakeRoutePricingRepository : RoutePricingRepository {
         private val pricings = mutableListOf<RoutePricing>()
@@ -180,5 +182,6 @@ class ValidateBusOperationUseCaseTest {
         }
 
         override suspend fun generateAndSaveDefaultPricings(route: BusRoute): List<RoutePricing> = emptyList()
-    }
+        override suspend fun deleteAllPricings() {}
+}
 }

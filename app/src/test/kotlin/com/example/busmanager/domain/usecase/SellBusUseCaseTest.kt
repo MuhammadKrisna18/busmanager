@@ -148,7 +148,8 @@ class SellBusUseCaseTest {
         override suspend fun removeBus(busId: String) {
             buses.removeAll { it.id == busId }
         }
-    }
+        override suspend fun removeAllBuses() {}
+}
 
     private class FakeCompanyRepository : CompanyRepository {
         var currentBalance = Money.ZERO
@@ -165,7 +166,8 @@ class SellBusUseCaseTest {
         override suspend fun addBalance(amount: Money) {
             currentBalance = currentBalance + amount
         }
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 
     private class FakeDriverRepository : DriverRepository {
         val unassignedDriverIds = mutableListOf<String>()
@@ -180,7 +182,9 @@ class SellBusUseCaseTest {
         }
         override suspend fun fireDriver(driverId: String) {}
         override suspend fun seedCandidateDriversIfEmpty() {}
-    }
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+    override suspend fun resetAllDrivers() {}
+}
 
     private class FakeRouteScheduleRepository : RouteScheduleRepository {
         val deletedScheduleIds = mutableListOf<String>()
@@ -201,7 +205,11 @@ class SellBusUseCaseTest {
             deletedBusIds.add(busId)
         }
         override suspend fun checkConflict(routeId: String, direction: RouteDirection, hour: Int, minute: Int, excludeScheduleId: String?) = false
-    }
+        override suspend fun getSchedulesForBus(busId: String): List<com.example.busmanager.domain.route.model.RouteSchedule> = emptyList()
+    override fun getSchedulesForBusFlow(busId: String): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.domain.route.model.RouteSchedule>> = kotlinx.coroutines.flow.emptyFlow()
+    override suspend fun deleteSchedulesForRoute(routeId: String) {}
+    override suspend fun deleteAllSchedules() {}
+}
 
     private class FakeSimulationTripRepository : SimulationTripRepository {
         override val activeTrips: StateFlow<List<ActiveBusTrip>> = MutableStateFlow(emptyList())

@@ -188,7 +188,8 @@ class ProcessCompletedTripsUseCaseTest {
             return true
         }
         override suspend fun addBalance(amount: Money) { currentBalance += amount }
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 
     private class FakeFleetRepository(initialBus: Bus) : FleetRepository {
         private val buses = mutableMapOf(initialBus.id to initialBus)

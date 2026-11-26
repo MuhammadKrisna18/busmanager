@@ -188,7 +188,8 @@ class HomeScreenViewModelTest {
         override suspend fun fireDriver(driverId: String) {}
         override suspend fun seedCandidateDriversIfEmpty() {}
         override suspend fun resetAllDrivers() {}
-    }
+        override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
+}
 
     private class FakeRouteScheduleRepository : com.example.busmanager.domain.route.repository.RouteScheduleRepository {
         override fun getSchedulesForRoute(routeId: String) = MutableStateFlow(emptyList<com.example.busmanager.domain.route.model.RouteSchedule>())
@@ -202,7 +203,11 @@ class HomeScreenViewModelTest {
         override suspend fun deleteSchedule(scheduleId: String) {}
         override suspend fun deleteAllSchedules() {}
         override suspend fun checkConflict(routeId: String, direction: com.example.busmanager.domain.simulation.model.RouteDirection, hour: Int, minute: Int, excludeScheduleId: String?) = false
-    }
+        override suspend fun getSchedulesForBus(busId: String): List<com.example.busmanager.domain.route.model.RouteSchedule> = emptyList()
+    override fun getSchedulesForBusFlow(busId: String): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.domain.route.model.RouteSchedule>> = kotlinx.coroutines.flow.emptyFlow()
+    override suspend fun deleteSchedulesForBus(busId: String) {}
+    override suspend fun deleteSchedulesForRoute(routeId: String) {}
+}
 
     private class FakeRoutePricingRepository : com.example.busmanager.domain.route.repository.RoutePricingRepository {
         override fun getPricingsForRoute(routeId: String) = MutableStateFlow(emptyList<com.example.busmanager.domain.route.model.RoutePricing>())

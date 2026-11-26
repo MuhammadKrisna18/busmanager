@@ -67,7 +67,8 @@ class ShowroomViewModelTest {
             val current = companyFlow.value ?: return
             companyFlow.value = current.copy(balance = newBalance)
         }
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 
     private val ownedBusesFlow = MutableStateFlow<List<Bus>>(emptyList())
     private val mockFleetRepository = object : FleetRepository {
@@ -78,7 +79,8 @@ class ShowroomViewModelTest {
         }
         override suspend fun updateBus(bus: Bus) {}
         override suspend fun removeBus(busId: String) {}
-    }
+        override suspend fun removeAllBuses() {}
+}
 
     private val recordedTransactions = mutableListOf<FinancialTransaction>()
     private val fakeFinancialTransactionRepository = object : FinancialTransactionRepository {

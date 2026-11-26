@@ -276,7 +276,8 @@ class DriverManagementViewModelTest {
         }
 
         override suspend fun seedCandidateDriversIfEmpty() {}
-    }
+        override suspend fun resetAllDrivers() {}
+}
 
     private class FakeFleetRepository : FleetRepository {
         private val buses = MutableStateFlow<List<Bus>>(emptyList())
@@ -289,7 +290,8 @@ class DriverManagementViewModelTest {
         override suspend fun removeBus(busId: String) {
             buses.value = buses.value.filter { it.id != busId }
         }
-    }
+        override suspend fun removeAllBuses() {}
+}
 
     private class FakeCompanyRepository : CompanyRepository {
         private val company = MutableStateFlow<Company?>(
@@ -300,5 +302,6 @@ class DriverManagementViewModelTest {
         override suspend fun updateBalance(newBalance: Money) { company.value = company.value?.copy(balance = newBalance) }
         override suspend fun deductBalance(amount: Money): Boolean = true
         override suspend fun addBalance(amount: Money) {}
-    }
+        override suspend fun resetCompany(name: String, initialBalance: com.example.busmanager.domain.company.model.Money) {}
+}
 }

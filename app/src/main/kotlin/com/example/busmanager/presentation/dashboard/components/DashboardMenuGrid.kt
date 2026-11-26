@@ -58,7 +58,7 @@ fun MenuGrid(
                 MenuCard(
                     title = "Garasi Armada",
                     subtitle = "Kelola & Servis Unit",
-                    iconEmoji = "🚌",
+                    iconCode = "GRS",
                     badgeText = "$ownedBusCount Unit",
                     containerColor = Color(0xFFEFF6FF),
                     borderColor = Color(0xFFBFDBFE),
@@ -71,7 +71,7 @@ fun MenuGrid(
                 MenuCard(
                     title = "Showroom Bus",
                     subtitle = "Beli Bus & Sasis Baru",
-                    iconEmoji = "🏪",
+                    iconCode = "BUS",
                     badgeText = "Beli Unit",
                     containerColor = Color(0xFFEEF2FF),
                     borderColor = Color(0xFFC7D2FE),
@@ -90,7 +90,7 @@ fun MenuGrid(
                 MenuCard(
                     title = "Rute & Trayek",
                     subtitle = "Jalur Antar Terminal",
-                    iconEmoji = "🗺️",
+                    iconCode = "RTE",
                     badgeText = "Peta Jalur",
                     containerColor = Color(0xFFECFDF5),
                     borderColor = Color(0xFFA7F3D0),
@@ -103,7 +103,7 @@ fun MenuGrid(
                 MenuCard(
                     title = "Kru & Sopir",
                     subtitle = "Rekrutmen & Penugasan",
-                    iconEmoji = "👨‍✈️",
+                    iconCode = "KRU",
                     badgeText = if (hiredDriverCount > 0) "$hiredDriverCount Sopir" else "Rekrut",
                     containerColor = Color(0xFFFFFBEB),
                     borderColor = Color(0xFFFDE68A),
@@ -122,7 +122,7 @@ fun MenuGrid(
                 MenuCard(
                     title = "Keuangan PO",
                     subtitle = "Buku Kas & Laba Rugi",
-                    iconEmoji = "📊",
+                    iconCode = "KAS",
                     badgeText = "Buku Kas",
                     containerColor = Color(0xFFFEFCE8),
                     borderColor = Color(0xFFFEF08A),
@@ -135,7 +135,7 @@ fun MenuGrid(
                 MenuCard(
                     title = "Laporan Terminal",
                     subtitle = "Arus Penumpang Wilayah",
-                    iconEmoji = "🏢",
+                    iconCode = "LPR",
                     badgeText = "Data Arus",
                     containerColor = Color(0xFFF0FDFA),
                     borderColor = Color(0xFFA5F3FC),
@@ -154,7 +154,7 @@ fun MenuGrid(
                 MenuCard(
                     title = "Informasi Trayek",
                     subtitle = "Status Operasi Trayek",
-                    iconEmoji = "📋",
+                    iconCode = "INFO",
                     badgeText = if (activeRouteCount > 0) "$activeRouteCount Aktif" else "Info Rute",
                     containerColor = Color(0xFFFAF5FF),
                     borderColor = Color(0xFFE9D5FF),
@@ -172,7 +172,7 @@ fun MenuGrid(
 fun MenuCard(
     title: String,
     subtitle: String,
-    iconEmoji: String,
+    iconCode: String,
     badgeText: String,
     containerColor: Color,
     borderColor: Color,
@@ -208,7 +208,12 @@ fun MenuCard(
                         .border(1.dp, borderColor.copy(alpha = 0.5f), RoundedCornerShape(8.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = iconEmoji, fontSize = 18.sp)
+                    Text(
+                        text = iconCode,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = if (isActive) badgeTextColor else DisabledGray
+                    )
                 }
 
                 Box(

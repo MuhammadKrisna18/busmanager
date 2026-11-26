@@ -13,6 +13,9 @@ import com.example.busmanager.domain.company.usecase.StartNewGameUseCase
 import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.ReconcileBusOperatingStateUseCase
+import com.example.busmanager.domain.quest.model.QuestId
+import com.example.busmanager.domain.quest.usecase.ClaimQuestRewardUseCase
+import com.example.busmanager.domain.quest.usecase.GetStarterQuestsUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
 import com.example.busmanager.domain.simulation.model.PassengerQueueManager
 import com.example.busmanager.domain.simulation.usecase.GetSimulationLogsUseCase
@@ -42,7 +45,9 @@ class HomeScreenViewModel(
     private val passengerQueueManager: PassengerQueueManager? = null,
     private val calculateCompanyReputationUseCase: CalculateCompanyReputationUseCase = CalculateCompanyReputationUseCase(),
     private val calculateCompanyTierUseCase: CalculateCompanyTierUseCase = CalculateCompanyTierUseCase(),
-    private val getSimulationLogsUseCase: GetSimulationLogsUseCase? = null
+    private val getSimulationLogsUseCase: GetSimulationLogsUseCase? = null,
+    private val getStarterQuestsUseCase: GetStarterQuestsUseCase? = null,
+    private val claimQuestRewardUseCase: ClaimQuestRewardUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeScreenUiState())
@@ -100,6 +105,13 @@ class HomeScreenViewModel(
                     routeCount = activeRouteCount,
                     boardedCount = totalBoarded
                 )
+                val quests = getStarterQuestsUseCase?.invoke(
+                    busCount = buses.size,
+                    driverCount = drivers.size,
+                    routeCount = operationalRoutes.size,
+                    activeRouteCount = activeRouteCount,
+                    totalBoardedPassengers = totalBoarded
+                ) ?: emptyList()
                 _uiState.update { current ->
                     current.copy(
                         company = company,
@@ -108,6 +120,7 @@ class HomeScreenViewModel(
                         routeOperationalList = operationalRoutes,
                         reputation = reputation,
                         tier = tier,
+                        starterQuests = quests,
                         isLoading = false
                     )
                 }
@@ -177,6 +190,42 @@ class HomeScreenViewModel(
 
     fun dismissOfflineProgressionDialog() {
         _uiState.update { it.copy(offlineProgressionResult = null) }
+    }
+
+    fun claimQuestReward(questId: QuestId) {
+        val claimUseCase = claimQuestRewardUseCase ?: return
+        viewModelScope.launch {
+            val result = claimUseCase(questId)
+            result.fold(
+                onSuccess = {
+                    refreshQuests()
+                    _uiState.update {
+                        it.copy(questMessage = "Selamat! Hadiah misi ${questId.title} sebesar ${questId.rewardMoney.formatRupiah()} berhasil diklaim")
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(questMessage = error.message ?: "Gagal mengklaim hadiah misi")
+                    }
+                }
+            )
+        }
+    }
+
+    fun dismissQuestMessage() {
+        _uiState.update { it.copy(questMessage = null) }
+    }
+
+    private fun refreshQuests() {
+        val state = _uiState.value
+        val quests = getStarterQuestsUseCase?.invoke(
+            busCount = state.ownedBuses.size,
+            driverCount = state.hiredDriverCount,
+            routeCount = state.routeOperationalList.size,
+            activeRouteCount = state.routeOperationalList.count { it.isActive },
+            totalBoardedPassengers = state.reputation.totalBoardedPassengers
+        ) ?: emptyList()
+        _uiState.update { it.copy(starterQuests = quests) }
     }
 }
 

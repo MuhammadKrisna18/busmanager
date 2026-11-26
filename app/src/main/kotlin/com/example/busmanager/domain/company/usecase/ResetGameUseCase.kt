@@ -12,6 +12,7 @@ import com.example.busmanager.domain.simulation.repository.SimulationLogReposito
 import com.example.busmanager.domain.simulation.repository.SimulationStateRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
+import com.example.busmanager.domain.quest.repository.QuestRepository
 import com.example.busmanager.domain.terminal.repository.TerminalPassengerRepository
 
 class ResetGameUseCase(
@@ -26,7 +27,8 @@ class ResetGameUseCase(
     private val simulationTimeRepository: SimulationTimeRepository? = null,
     private val simulationStateRepository: SimulationStateRepository? = null,
     private val routeRepository: RouteRepository? = null,
-    private val simulationLogRepository: SimulationLogRepository? = null
+    private val simulationLogRepository: SimulationLogRepository? = null,
+    private val questRepository: QuestRepository? = null
 ) {
     suspend operator fun invoke() {
         simulationTripRepository?.clearTrips()
@@ -42,6 +44,7 @@ class ResetGameUseCase(
         routeRepository?.deleteAllCustomRoutes()
         financialTransactionRepository?.clearTransactions()
         terminalPassengerRepository?.clearAllRecords()
+        questRepository?.resetQuests()
         companyRepository.resetCompany(
             name = StartNewGameUseCase.DEFAULT_COMPANY_NAME,
             initialBalance = StartNewGameUseCase.DEFAULT_STARTING_BALANCE

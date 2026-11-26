@@ -9,6 +9,7 @@ import com.example.busmanager.data.repository.DriverRepositoryImpl
 import com.example.busmanager.data.repository.FinancialTransactionRepositoryImpl
 import com.example.busmanager.data.repository.FleetRepositoryImpl
 import com.example.busmanager.data.repository.KaroseriCatalogRepositoryImpl
+import com.example.busmanager.data.repository.QuestRepositoryImpl
 import com.example.busmanager.data.repository.RouteCatalogRepositoryImpl
 import com.example.busmanager.data.repository.RoutePricingRepositoryImpl
 import com.example.busmanager.data.repository.RouteScheduleRepositoryImpl
@@ -42,6 +43,9 @@ import com.example.busmanager.domain.fleet.usecase.GetShowroomBusesUseCase
 import com.example.busmanager.domain.fleet.usecase.ReconcileBusOperatingStateUseCase
 import com.example.busmanager.domain.fleet.usecase.SellBusUseCase
 import com.example.busmanager.domain.fleet.usecase.ValidateBusOperationUseCase
+import com.example.busmanager.domain.quest.repository.QuestRepository
+import com.example.busmanager.domain.quest.usecase.ClaimQuestRewardUseCase
+import com.example.busmanager.domain.quest.usecase.GetStarterQuestsUseCase
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
@@ -118,6 +122,7 @@ class AppContainer(context: Context) {
     val terminalPassengerRepository: TerminalPassengerRepository = TerminalPassengerRepositoryImpl(
         database.terminalPassengerRecordDao()
     )
+    val questRepository: QuestRepository = QuestRepositoryImpl(context)
 
     val simulationStateRepository: SimulationStateRepository = SimulationStateRepositoryImpl(context)
     val simulationLogRepository: SimulationLogRepository =
@@ -161,7 +166,8 @@ class AppContainer(context: Context) {
         simulationTimeRepository = simulationTimeRepository,
         simulationStateRepository = simulationStateRepository,
         routeRepository = routeRepository,
-        simulationLogRepository = simulationLogRepository
+        simulationLogRepository = simulationLogRepository,
+        questRepository = questRepository
     )
     val getCompanyUseCase = GetCompanyUseCase(companyRepository)
     val getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepository)
@@ -208,6 +214,12 @@ class AppContainer(context: Context) {
 
     val getRouteSchedulesUseCase = GetRouteSchedulesUseCase(routeScheduleRepository)
     val addRouteScheduleUseCase = AddRouteScheduleUseCase(routeScheduleRepository)
+    val getStarterQuestsUseCase = GetStarterQuestsUseCase(questRepository)
+    val claimQuestRewardUseCase = ClaimQuestRewardUseCase(
+        questRepository = questRepository,
+        companyRepository = companyRepository,
+        financialTransactionRepository = financialTransactionRepository
+    )
     val assignBusToScheduleUseCase = AssignBusToScheduleUseCase(routeScheduleRepository)
     val deleteRouteScheduleUseCase = DeleteRouteScheduleUseCase(routeScheduleRepository)
     val validateScheduleConflictUseCase = ValidateScheduleConflictUseCase(routeScheduleRepository, routeRepository)

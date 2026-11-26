@@ -1,11 +1,11 @@
 package com.example.busmanager.domain.simulation.model
 
 enum class SimulationLogCategory(val displayName: String, val icon: String) {
-    DISPATCH("Pemberangkatan", "🚌"),
-    ARRIVAL("Tiba di Tujuan", "🏁"),
-    TRANSIT("Ampiran Singgah", "🚏"),
-    FINANCIAL("Keuangan & Tiket", "💰"),
-    MILESTONE("Pencapaian", "⭐")
+    DISPATCH("Pemberangkatan", "BRG"),
+    ARRIVAL("Tiba di Tujuan", "TIBA"),
+    TRANSIT("Ampiran Singgah", "SING"),
+    FINANCIAL("Keuangan & Tiket", "KAS"),
+    MILESTONE("Pencapaian", "ACH")
 }
 
 data class SimulationLog(

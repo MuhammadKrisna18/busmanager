@@ -78,7 +78,7 @@ fun RouteInfoDialog(
                 ) {
                     Column {
                         Text(
-                            text = "📋 Informasi Trayek",
+                            text = "Informasi Trayek",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextDark
@@ -92,13 +92,13 @@ fun RouteInfoDialog(
 
                     Box(
                         modifier = Modifier
-                            .size(28.dp)
-                            .clip(CircleShape)
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
                             .background(IceBlue)
-                            .clickable(onClick = onDismiss),
+                            .clickable(onClick = onDismiss)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "✕", fontSize = 12.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
+                        Text(text = "Tutup", fontSize = 11.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -203,7 +203,7 @@ fun RouteOperationalItemCard(item: RouteOperationalInfo) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${item.route.originTerminal.city} ➔ ${item.route.destinationTerminal.city}",
+                    text = "${item.route.originTerminal.city} - ${item.route.destinationTerminal.city}",
                     color = TextDark,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
@@ -216,7 +216,7 @@ fun RouteOperationalItemCard(item: RouteOperationalInfo) {
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = if (item.isActive) "● Aktif" else "⚠️ Belum Aktif",
+                        text = if (item.isActive) "Aktif" else "Belum Aktif",
                         color = if (item.isActive) SuccessGreen else Color(0xFFB45309),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
@@ -235,7 +235,7 @@ fun RouteOperationalItemCard(item: RouteOperationalInfo) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "📏 ${item.route.totalDistanceKm.toInt()} km • ⏱️ ${item.route.totalEstimatedDurationMinutes} mnt • ${if (item.route.pathType == RoutePathType.TOLL) "Tol" else "Non-Tol"}",
+                text = "${item.route.totalDistanceKm.toInt()} km • ${item.route.totalEstimatedDurationMinutes} mnt • ${if (item.route.pathType == RoutePathType.TOLL) "Tol" else "Non-Tol"}",
                 color = PrimaryBlueDark,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold
@@ -253,7 +253,7 @@ fun RouteOperationalItemCard(item: RouteOperationalInfo) {
                     item.assignedBuses.forEach { bus ->
                         val driver = item.assignedDrivers.find { it.id == bus.driverId || it.assignedBusId == bus.id }
                         Text(
-                            text = "🚌 ${bus.busCode} (${bus.body.modelName}) • 👨‍✈️ ${driver?.name ?: "Sopir Ditugaskan"}",
+                            text = "${bus.busCode} (${bus.body.modelName}) • ${driver?.name ?: "Sopir Ditugaskan"}",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = PrimaryBlueDark
@@ -262,7 +262,7 @@ fun RouteOperationalItemCard(item: RouteOperationalInfo) {
                     if (item.departureSchedules.isNotEmpty()) {
                         item.departureSchedules.forEach { scheduleText ->
                             Text(
-                                text = "⏰ $scheduleText",
+                                text = "Jadwal: $scheduleText",
                                 fontSize = 10.sp,
                                 color = TextMuted
                             )

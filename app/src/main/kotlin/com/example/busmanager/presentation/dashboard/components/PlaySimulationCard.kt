@@ -127,7 +127,7 @@ fun PlaySimulationCard(
                         .padding(horizontal = 8.dp, vertical = 3.dp)
                 ) {
                     Text(
-                        text = "🚌 $activeBusCount/$ownedBusCount Jalan",
+                        text = "$activeBusCount/$ownedBusCount Armada Jalan",
                         color = TextDark,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -185,8 +185,10 @@ fun PlaySimulationCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "🗺️",
-                        fontSize = 20.sp
+                        text = "RADAR",
+                        color = Color.White,
+                        fontSize = 9.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
@@ -209,23 +211,12 @@ fun PlaySimulationCard(
                     .padding(vertical = 9.dp, horizontal = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        text = if (isPlaying) "Pantau Radar Operasi" else "Buka Peta Operasi & Radar",
-                        color = Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "➔",
-                        color = Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Text(
+                    text = if (isPlaying) "Pantau Radar Operasi" else "Buka Peta Operasi & Radar",
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

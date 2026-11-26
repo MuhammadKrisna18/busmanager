@@ -101,7 +101,7 @@ fun SimulationLogCenterDialog(
                                 .background(IceBlue),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(text = "📜", fontSize = 18.sp)
+                            Text(text = "LOG", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
                         }
                         Column {
                             Text(
@@ -127,7 +127,7 @@ fun SimulationLogCenterDialog(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "✕",
+                            text = "X",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextDark
@@ -151,7 +151,7 @@ fun SimulationLogCenterDialog(
                     items(SimulationLogCategory.values()) { category ->
                         val count = logs.count { it.category == category }
                         FilterChip(
-                            label = "${category.icon} ${category.displayName} ($count)",
+                            label = "[${category.icon}] ${category.displayName} ($count)",
                             isSelected = selectedCategory == category,
                             onClick = { selectedCategory = category }
                         )
@@ -173,10 +173,18 @@ fun SimulationLogCenterDialog(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            Text(
-                                text = "📭",
-                                fontSize = 36.sp
-                            )
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = DisabledBackground
+                            ) {
+                                Text(
+                                    text = "KOSONG",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextMuted,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Belum Ada Catatan Log",
@@ -266,7 +274,7 @@ private fun LogItemCard(log: SimulationLog) {
                     .background(IceBlue),
                 contentAlignment = Alignment.Center
             ) {
-                Text(text = log.category.icon, fontSize = 16.sp)
+                Text(text = log.category.icon, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = PrimaryBlue)
             }
 
             Spacer(modifier = Modifier.width(10.dp))

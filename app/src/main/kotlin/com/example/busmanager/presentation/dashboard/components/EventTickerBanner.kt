@@ -91,8 +91,10 @@ fun EventTickerBanner(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = currentLog?.category?.icon ?: "📢",
-                    fontSize = 18.sp
+                    text = currentLog?.category?.icon ?: "LOG",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryBlue
                 )
             }
 

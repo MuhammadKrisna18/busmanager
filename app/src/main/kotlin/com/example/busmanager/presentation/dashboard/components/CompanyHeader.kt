@@ -131,15 +131,17 @@ fun CompanyHeader(
 
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
+                        .clip(RoundedCornerShape(AppDimens.radiusPill))
                         .background(Color(0xFFFEE2E2))
-                        .clickable(onClick = onResetClick),
+                        .clickable(onClick = onResetClick)
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "🔄",
-                        fontSize = 16.sp
+                        text = "Reset",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFDC2626)
                     )
                 }
             }
@@ -162,7 +164,7 @@ fun CompanyHeader(
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
                     Text(
-                        text = "⭐ ${reputation.formattedStars}",
+                        text = "${reputation.formattedStars} Bintang",
                         color = Color(0xFFB45309),
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Black
@@ -187,7 +189,7 @@ fun CompanyHeader(
                         .padding(horizontal = 8.dp, vertical = 2.dp)
                 ) {
                     Text(
-                        text = "👥 ${reputation.totalBoardedPassengers} pnp",
+                        text = "${reputation.totalBoardedPassengers} Penumpang",
                         color = Color(0xFF78350F),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -234,14 +236,16 @@ fun CompanyHeader(
 
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFD1FAE5)),
+                        .clip(RoundedCornerShape(AppDimens.radiusPill))
+                        .background(Color(0xFFD1FAE5))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "💰",
-                        fontSize = 20.sp
+                        text = "KAS",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF047857)
                     )
                 }
             }

@@ -64,7 +64,9 @@ fun MainNavigation(appContainer: AppContainer) {
                         passengerQueueManager = appContainer.simulationTripRepository.passengerQueueManager,
                         calculateCompanyReputationUseCase = appContainer.calculateCompanyReputationUseCase,
                         calculateCompanyTierUseCase = appContainer.calculateCompanyTierUseCase,
-                        getSimulationLogsUseCase = appContainer.getSimulationLogsUseCase
+                        getSimulationLogsUseCase = appContainer.getSimulationLogsUseCase,
+                        getStarterQuestsUseCase = appContainer.getStarterQuestsUseCase,
+                        claimQuestRewardUseCase = appContainer.claimQuestRewardUseCase
                     )
                 }
                 HomeScreen(

@@ -66,7 +66,7 @@ fun OfflineProgressionDialog(
                 ) {
                     Column {
                         Text(
-                            text = "🚌 Operasi Latar Belakang",
+                            text = "Operasi Latar Belakang",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextDark
@@ -80,13 +80,13 @@ fun OfflineProgressionDialog(
 
                     Box(
                         modifier = Modifier
-                            .size(28.dp)
-                            .clip(CircleShape)
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
                             .background(IceBlue)
-                            .clickable(onClick = onDismiss),
+                            .clickable(onClick = onDismiss)
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "✕", fontSize = 12.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
+                        Text(text = "Tutup", fontSize = 11.sp, color = PrimaryBlueDark, fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -100,7 +100,7 @@ fun OfflineProgressionDialog(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "⏱️ Waktu Offline: ${result.offlineGameHours} Jam Permainan (${result.offlineDurationMinutes} mnt)",
+                        text = "Waktu Offline: ${result.offlineGameHours} Jam Permainan (${result.offlineDurationMinutes} mnt)",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlueDark

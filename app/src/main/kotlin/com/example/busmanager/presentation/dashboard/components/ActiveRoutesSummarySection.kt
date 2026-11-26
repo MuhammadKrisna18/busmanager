@@ -69,7 +69,7 @@ fun ActiveRoutesSummarySection(
             }
 
             Text(
-                text = "Lihat Detail ➔",
+                text = "Lihat Detail",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = PrimaryBlue,
@@ -96,7 +96,7 @@ fun ActiveRoutesSummarySection(
                     color = TextMuted
                 )
                 Text(
-                    text = "Tugaskan di Garasi ➔",
+                    text = "Tugaskan di Garasi",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = PrimaryBlueDark,
@@ -124,7 +124,7 @@ fun ActiveRoutesSummarySection(
                         Column(modifier = Modifier.weight(1f)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = "${item.route.originTerminal.city} ➔ ${item.route.destinationTerminal.city}",
+                                    text = "${item.route.originTerminal.city} - ${item.route.destinationTerminal.city}",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = TextDark
@@ -153,7 +153,7 @@ fun ActiveRoutesSummarySection(
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                text = "● Aktif",
+                                text = "Aktif",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF15803D)

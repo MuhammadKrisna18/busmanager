@@ -1,19 +1,26 @@
 package com.example.busmanager.presentation.dashboard
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -30,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.BuildConfig
 import com.example.busmanager.presentation.dashboard.components.ActiveRoutesSummarySection
@@ -40,10 +48,13 @@ import com.example.busmanager.presentation.dashboard.components.OfflineProgressi
 import com.example.busmanager.presentation.dashboard.components.PlaySimulationCard
 import com.example.busmanager.presentation.dashboard.components.RouteInfoDialog
 import com.example.busmanager.presentation.dashboard.components.SimulationLogCenterDialog
+import com.example.busmanager.presentation.dashboard.components.StarterQuestsCard
 import com.example.busmanager.presentation.update.UpdateDialog
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
 import com.example.busmanager.ui.theme.PrimaryBlue
+import com.example.busmanager.ui.theme.SuccessGreen
+import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextMuted
 
@@ -172,6 +183,51 @@ fun HomeScreen(
             EventTickerBanner(
                 recentLogs = state.recentLogs,
                 onOpenLogCenter = { viewModel.openLogCenterModal() }
+            )
+
+            state.questMessage?.let { msg ->
+                Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { viewModel.dismissQuestMessage() },
+                    shape = RoundedCornerShape(AppDimens.radiusSmall),
+                    colors = CardDefaults.cardColors(containerColor = SuccessGreenLight)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = msg,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = SuccessGreen,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = "Tutup",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = SuccessGreen
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
+
+            StarterQuestsCard(
+                quests = state.starterQuests,
+                onClaimReward = { viewModel.claimQuestReward(it) },
+                onNavigateToShowroom = onNavigateToShowroom,
+                onNavigateToDrivers = onNavigateToDrivers,
+                onNavigateToRoutes = onNavigateToRoutes,
+                onOpenRouteInfo = onNavigateToRouteInfo,
+                onNavigateToSimulationMap = onNavigateToSimulationMap
             )
 
             Spacer(modifier = Modifier.height(AppDimens.paddingMedium))

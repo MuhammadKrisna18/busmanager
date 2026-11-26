@@ -56,6 +56,7 @@ import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.simulation.model.RouteDirection
+import com.example.busmanager.presentation.common.GameFeedbackToast
 import com.example.busmanager.presentation.route.components.EditScheduleDialog
 import com.example.busmanager.ui.theme.BackgroundWhite
 import com.example.busmanager.ui.theme.CardBorder
@@ -212,6 +213,11 @@ fun GarageScreen(
             }
         )
     }
+
+    GameFeedbackToast(
+        data = uiState.feedbackToast,
+        onDismiss = { viewModel.dismissFeedbackToast() }
+    )
 
     Scaffold(
         modifier = modifier.fillMaxSize(),

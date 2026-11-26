@@ -24,6 +24,7 @@ import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseC
 import com.example.busmanager.domain.route.usecase.ScheduleConflictResult
 import com.example.busmanager.domain.route.usecase.ValidateScheduleConflictUseCase
 import com.example.busmanager.domain.simulation.model.RouteDirection
+import com.example.busmanager.presentation.common.FeedbackToastData
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -126,7 +127,20 @@ class GarageViewModel(
 
     fun sellBus(busId: String, onResult: (SellBusResult) -> Unit = {}) {
         viewModelScope.launch {
+            val targetBus = _uiState.value.allBuses.find { it.bus.id == busId }?.bus
             val result = sellBusUseCase?.invoke(busId) ?: SellBusResult.BusNotFound
+            if (result is SellBusResult.Success) {
+                _uiState.update {
+                    it.copy(
+                        feedbackToast = FeedbackToastData(
+                            iconEmoji = "💰",
+                            title = "Armada Berhasil Dijual!",
+                            subtitle = "${targetBus?.busCode ?: "Armada"} terjual seharga ${result.refundAmount.formatRupiah()}",
+                            durationMillis = 1000L
+                        )
+                    )
+                }
+            }
             onResult(result)
         }
     }
@@ -300,7 +314,13 @@ class GarageViewModel(
                 _uiState.update {
                     it.copy(
                         quickAssignState = null,
-                        userMessage = "Armada ${target.bus.busCode} berhasil ditugaskan ke ${route.name}!"
+                        userMessage = "Armada ${target.bus.busCode} berhasil ditugaskan ke ${route.name}!",
+                        feedbackToast = FeedbackToastData(
+                            iconEmoji = "🚌",
+                            title = "Armada Berhasil Ditugaskan!",
+                            subtitle = "${target.bus.busCode} siap melayani rute ${route.name}",
+                            durationMillis = 1000L
+                        )
                     )
                 }
             } else {
@@ -318,5 +338,9 @@ class GarageViewModel(
 
     fun dismissUserMessage() {
         _uiState.update { it.copy(userMessage = null) }
+    }
+
+    fun dismissFeedbackToast() {
+        _uiState.update { it.copy(feedbackToast = null) }
     }
 }

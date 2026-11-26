@@ -4,6 +4,7 @@ import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.simulation.model.RouteDirection
+import com.example.busmanager.presentation.common.FeedbackToastData
 
 enum class GarageFilter(val displayName: String) {
     ALL("Semua"),
@@ -73,5 +74,6 @@ data class GarageUiState(
     val companyName: String = "PO TransNusantara",
     val editingScheduleTarget: GarageScheduleTarget? = null,
     val quickAssignState: QuickAssignState? = null,
-    val userMessage: String? = null
+    val userMessage: String? = null,
+    val feedbackToast: FeedbackToastData? = null
 )

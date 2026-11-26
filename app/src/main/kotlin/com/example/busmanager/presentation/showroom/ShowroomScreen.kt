@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,6 +54,8 @@ import com.example.busmanager.domain.fleet.model.Chassis
 import com.example.busmanager.domain.fleet.model.ChassisBrand
 import com.example.busmanager.domain.fleet.model.KaroseriBody
 import com.example.busmanager.domain.fleet.model.KaroseriBrand
+import com.example.busmanager.presentation.common.FeedbackToastData
+import com.example.busmanager.presentation.common.GameFeedbackToast
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -306,17 +309,32 @@ fun ShowroomScreen(
         }
     }
 
-    if (uiState.purchaseSuccessBuses.isNotEmpty() || uiState.purchaseSuccessBus != null) {
-        val successList = uiState.purchaseSuccessBuses.ifEmpty { listOfNotNull(uiState.purchaseSuccessBus) }
-        PurchaseSuccessModal(
-            buses = successList,
-            onDismiss = { viewModel.dismissSuccessNotice() },
-            onNavigateToGarage = {
-                viewModel.dismissSuccessNotice()
-                onNavigateToGarage()
-            }
-        )
+    val successBus = uiState.purchaseSuccessBus
+    val successBuses = uiState.purchaseSuccessBuses
+    val toastData = remember(successBus, successBuses) {
+        if (successBuses.isNotEmpty()) {
+            val first = successBuses.first()
+            val last = successBuses.last()
+            FeedbackToastData(
+                iconEmoji = "🚌",
+                title = "Berhasil Membeli ${successBuses.size} Unit Armada!",
+                subtitle = "${first.busCode} s/d ${last.busCode} • ${first.fullName}",
+                durationMillis = 1000L
+            )
+        } else if (successBus != null) {
+            FeedbackToastData(
+                iconEmoji = "🚌",
+                title = "Armada Berhasil Dibeli!",
+                subtitle = "${successBus.busCode} • ${successBus.fullName}",
+                durationMillis = 1000L
+            )
+        } else null
     }
+
+    GameFeedbackToast(
+        data = toastData,
+        onDismiss = { viewModel.dismissSuccessNotice() }
+    )
 }
 
 @Composable
@@ -1130,90 +1148,6 @@ private fun ShowroomBottomActionBar(
                     modifier = Modifier.weight(if (currentStep == ShowroomStep.CHASSIS) 1f else 2f)
                 ) {
                     Text("Lanjut Langkah Berikutnya ➔", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PurchaseSuccessModal(
-    buses: List<Bus>,
-    onDismiss: () -> Unit,
-    onNavigateToGarage: () -> Unit
-) {
-    val isMulti = buses.size > 1
-    val firstBus = buses.firstOrNull() ?: return
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(AppDimens.radiusLarge),
-            colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(AppDimens.paddingSmall)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(AppDimens.paddingLarge),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(SuccessGreenLight),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "🚌", fontSize = 28.sp)
-                }
-
-                Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
-
-                Text(
-                    text = if (isMulti) "Berhasil Membeli ${buses.size} Unit Armada!" else "Armada Berhasil Dirakit!",
-                    color = TextDark,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = if (isMulti) "${buses.first().busCode} s/d ${buses.last().busCode} • ${firstBus.fullName}" else "${firstBus.busCode} • ${firstBus.fullName}",
-                    color = PrimaryBlueDark,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Text(
-                    text = "Kelas ${firstBus.body.busClass.displayName} (${firstBus.body.passengerCapacity} Kursi)",
-                    color = TextMuted,
-                    fontSize = 11.sp
-                )
-
-                Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
-
-                Button(
-                    onClick = onNavigateToGarage,
-                    shape = RoundedCornerShape(AppDimens.radiusPill),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "Buka Garasi Armada", color = Color.White, fontWeight = FontWeight.Bold)
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                OutlinedButton(
-                    onClick = onDismiss,
-                    shape = RoundedCornerShape(AppDimens.radiusPill),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(text = "Beli Armada Lagi", fontWeight = FontWeight.Bold)
                 }
             }
         }

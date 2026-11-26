@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.fleet.model.Bus
+import com.example.busmanager.presentation.common.GameFeedbackToast
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -177,6 +178,11 @@ fun DriverManagementScreen(
                 onConfirm = { viewModel.confirmFireDriver() }
             )
         }
+
+        GameFeedbackToast(
+            data = state.feedbackToast,
+            onDismiss = { viewModel.dismissFeedbackToast() }
+        )
     }
 }
 

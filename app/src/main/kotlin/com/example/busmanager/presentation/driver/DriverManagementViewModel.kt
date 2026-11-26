@@ -10,6 +10,7 @@ import com.example.busmanager.domain.driver.usecase.GetAvailableDriversUseCase
 import com.example.busmanager.domain.driver.usecase.GetHiredDriversUseCase
 import com.example.busmanager.domain.driver.usecase.HireDriverUseCase
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
+import com.example.busmanager.presentation.common.FeedbackToastData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -63,9 +64,21 @@ class DriverManagementViewModel(
 
     fun hireDriver(driverId: String) {
         viewModelScope.launch {
+            val candidate = _uiState.value.candidateDrivers.find { it.id == driverId }
+            val driverName = candidate?.name ?: "Sopir"
             val success = hireDriverUseCase(driverId)
             if (success) {
-                _uiState.update { it.copy(message = "Sopir berhasil direkrut ke armada!") }
+                _uiState.update {
+                    it.copy(
+                        message = "Sopir berhasil direkrut ke armada!",
+                        feedbackToast = FeedbackToastData(
+                            iconEmoji = "👨‍✈️",
+                            title = "$driverName Berhasil Direkrut!",
+                            subtitle = "Siap ditugaskan berdinas pada armada bus",
+                            durationMillis = 1000L
+                        )
+                    )
+                }
             }
         }
     }
@@ -80,12 +93,20 @@ class DriverManagementViewModel(
 
     fun assignDriverToBus(driverId: String, busId: String) {
         viewModelScope.launch {
+            val driver = _uiState.value.hiredDrivers.find { it.id == driverId }
+            val bus = _uiState.value.ownedBuses.find { it.id == busId }
             val success = assignDriverToBusUseCase(driverId, busId)
             if (success) {
                 _uiState.update {
                     it.copy(
                         selectedDriverForAssignment = null,
-                        message = "Sopir berhasil ditugaskan ke armada!"
+                        message = "Sopir berhasil ditugaskan ke armada!",
+                        feedbackToast = FeedbackToastData(
+                            iconEmoji = "📋",
+                            title = "Penugasan Berhasil!",
+                            subtitle = "${driver?.name ?: "Sopir"} ditugaskan ke ${bus?.busCode ?: "armada"}",
+                            durationMillis = 1000L
+                        )
                     )
                 }
             }
@@ -173,5 +194,9 @@ class DriverManagementViewModel(
 
     fun clearMessage() {
         _uiState.update { it.copy(message = null) }
+    }
+
+    fun dismissFeedbackToast() {
+        _uiState.update { it.copy(feedbackToast = null) }
     }
 }

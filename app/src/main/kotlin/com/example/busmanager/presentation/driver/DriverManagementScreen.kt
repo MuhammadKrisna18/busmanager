@@ -814,7 +814,7 @@ private fun UnassignDriverDialog(
         text = {
             Text(
                 text = if (isOperating) {
-                    "Pengemudi ${driver.name} saat ini sedang bertugas di jalan raya bersama armada ${assignedBus?.busCode ?: "bus"}. Tugas pengemudi akan otomatis dilepas setelah armada tiba di terminal/titik singgah berikutnya."
+                    "Pengemudi ${driver.name} saat ini sedang bertugas di jalan raya bersama armada ${assignedBus.busCode}. Tugas pengemudi akan otomatis dilepas setelah armada tiba di terminal/titik singgah berikutnya."
                 } else {
                     "Apakah Anda yakin ingin melepas tugas pengemudi ${driver.name} dari armada ${assignedBus?.busCode ?: "bus"}?"
                 },

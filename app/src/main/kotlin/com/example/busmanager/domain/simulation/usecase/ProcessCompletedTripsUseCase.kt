@@ -2,6 +2,7 @@ package com.example.busmanager.domain.simulation.usecase
 
 import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.company.repository.CompanyRepository
+import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.finance.model.FinancialTransaction
 import com.example.busmanager.domain.finance.model.TransactionCategory
@@ -88,8 +89,8 @@ class ProcessCompletedTripsUseCase(
                 financialTransactionRepository?.recordTransaction(ticketTx)
                 companyRepository?.addBalance(trip.ticketEarnings)
 
-                val wageAmount = (trip.ticketEarnings.amount * 0.30).toLong()
-                if (wageAmount > 0L) {
+                val wage = Driver.calculateTripCommission(trip.ticketEarnings)
+                if (wage.amount > 0L) {
                     val wageTx = FinancialTransaction(
                         id = "tx-wage-${trip.busId}-${System.nanoTime()}",
                         dateText = dateText,
@@ -99,7 +100,7 @@ class ProcessCompletedTripsUseCase(
                         year = currentTime.year,
                         type = TransactionType.EXPENSE,
                         category = TransactionCategory.DRIVER_WAGE,
-                        amount = Money.rupiah(wageAmount),
+                        amount = wage,
                         busId = trip.busId,
                         busCode = trip.busCode,
                         routeId = trip.route.id,
@@ -107,7 +108,7 @@ class ProcessCompletedTripsUseCase(
                         description = "Bagi hasil komisi sopir rute ${trip.route.name}"
                     )
                     financialTransactionRepository?.recordTransaction(wageTx)
-                    companyRepository?.deductBalance(Money.rupiah(wageAmount))
+                    companyRepository?.deductBalance(wage)
                 }
             }
 

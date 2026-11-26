@@ -171,9 +171,8 @@ class SimulationDispatchCoordinator(
             companyRepository?.addBalance(ticketEarnings)
         }
 
-        val driverWageAmount = (ticketEarnings.amount * 0.30).toLong().coerceAtLeast(0L)
-        if (driverWageAmount > 0L) {
-            val driverWage = Money.rupiah(driverWageAmount)
+        val driverWage = Driver.calculateTripCommission(ticketEarnings)
+        if (driverWage.amount > 0L) {
             val driver = bus.driverId?.let { driverRepository?.getDriverById(it) }
                 ?: drivers.find { it.id == bus.driverId }
             val driverName = driver?.name ?: bus.busCode

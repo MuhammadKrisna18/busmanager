@@ -80,8 +80,8 @@ class ProcessOfflineProgressionUseCase(
             }
 
             val grossAmount = avgPrice * busPassengers
-            val wageAmount = (grossAmount * 0.30).toLong().coerceAtLeast(0L)
-            val netAmount = grossAmount - wageAmount
+            val wage = driver.calculateTripCommission(grossAmount)
+            val netAmount = grossAmount - wage.amount
 
             val destTerminal = if (tripsCompleted % 2 != 0) {
                 route.destinationTerminal
@@ -117,7 +117,7 @@ class ProcessOfflineProgressionUseCase(
             )
             financialTransactionRepository?.recordTransaction(ticketTx)
 
-            if (wageAmount > 0L) {
+            if (wage.amount > 0L) {
                 val wageTx = FinancialTransaction(
                     id = "tx-off-wage-${bus.id}-${System.nanoTime()}",
                     dateText = dateText,
@@ -127,7 +127,7 @@ class ProcessOfflineProgressionUseCase(
                     year = updatedCalendar.year,
                     type = TransactionType.EXPENSE,
                     category = TransactionCategory.DRIVER_WAGE,
-                    amount = Money.rupiah(wageAmount),
+                    amount = wage,
                     busId = bus.id,
                     busCode = bus.busCode,
                     routeId = route.id,
@@ -181,7 +181,7 @@ class ProcessOfflineProgressionUseCase(
             totalTrips += tripsCompleted
             totalPassengers += busPassengers
             totalGrossRevenueAmount += grossAmount
-            totalWagesAmount += wageAmount
+            totalWagesAmount += wage.amount
 
             busSummaries.add(
                 OfflineBusSummary(
@@ -190,7 +190,7 @@ class ProcessOfflineProgressionUseCase(
                     tripsCompleted = tripsCompleted,
                     passengersCarried = busPassengers,
                     grossRevenue = Money.rupiah(grossAmount),
-                    driverWage = Money.rupiah(wageAmount),
+                    driverWage = wage,
                     netEarnings = Money.rupiah(netAmount),
                     currentTerminalName = destTerminal.name
                 )

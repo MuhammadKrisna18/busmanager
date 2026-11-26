@@ -1,12 +1,13 @@
 package com.example.busmanager.domain.route.model
 
 import com.example.busmanager.domain.company.model.Money
+import com.example.busmanager.domain.driver.model.Driver
 
 data class RouteRevenueProjection(
     val seatCapacity: Int,
     val ticketPrice: Money,
     val tollFee: Money = Money.ZERO,
-    val driverWageRate: Float = 0.30f
+    val driverWageRate: Float = Driver.COMMISSION_RATE.toFloat()
 ) {
     val grossRevenueOneWay: Money
         get() = ticketPrice * seatCapacity

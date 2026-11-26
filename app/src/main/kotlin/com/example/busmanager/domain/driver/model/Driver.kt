@@ -15,4 +15,26 @@ data class Driver(
     }
 
     val isAssigned: Boolean get() = !assignedBusId.isNullOrBlank()
+
+    fun calculateTripCommission(grossEarnings: Money): Money {
+        return calculateTripCommission(grossEarnings.amount)
+    }
+
+    fun calculateTripCommission(grossEarningsAmount: Long): Money {
+        val commission = (grossEarningsAmount * COMMISSION_RATE).toLong().coerceAtLeast(0L)
+        return Money.rupiah(commission)
+    }
+
+    companion object {
+        const val COMMISSION_RATE: Double = 0.30
+
+        fun calculateTripCommission(grossEarnings: Money): Money {
+            return calculateTripCommission(grossEarnings.amount)
+        }
+
+        fun calculateTripCommission(grossEarningsAmount: Long): Money {
+            val commission = (grossEarningsAmount * COMMISSION_RATE).toLong().coerceAtLeast(0L)
+            return Money.rupiah(commission)
+        }
+    }
 }

@@ -64,4 +64,36 @@ class DriverTest {
 
         assertEquals(original, mapped)
     }
+
+    @Test
+    fun calculateTripCommission_companionWithMoney_calculatesThirtyPercent() {
+        val gross = Money.rupiah(1_000_000)
+        val commission = Driver.calculateTripCommission(gross)
+        assertEquals(Money.rupiah(300_000), commission)
+    }
+
+    @Test
+    fun calculateTripCommission_companionWithLong_calculatesThirtyPercent() {
+        val commission = Driver.calculateTripCommission(500_000L)
+        assertEquals(Money.rupiah(150_000), commission)
+    }
+
+    @Test
+    fun calculateTripCommission_instanceMethod_calculatesThirtyPercent() {
+        val driver = Driver(
+            id = "driver-1",
+            name = "Pak Bambang",
+            wagePerDay = Money.rupiah(200_000)
+        )
+        val gross = Money.rupiah(2_500_000)
+        val commission = driver.calculateTripCommission(gross)
+        assertEquals(Money.rupiah(750_000), commission)
+    }
+
+    @Test
+    fun calculateTripCommission_zeroOrNegative_returnsZero() {
+        assertEquals(Money.ZERO, Driver.calculateTripCommission(Money.ZERO))
+        assertEquals(Money.ZERO, Driver.calculateTripCommission(0L))
+        assertEquals(Money.ZERO, Driver.calculateTripCommission(-100_000L))
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.busmanager.data.repository
 
+import android.util.Log
 import com.example.busmanager.data.local.dao.CustomRouteDao
 import com.example.busmanager.data.local.dao.RoutePricingDao
 import com.example.busmanager.data.local.dao.RouteScheduleDao
@@ -11,15 +12,22 @@ import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.TerminalRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class RouteCatalogRepositoryImpl(
     private val dataSource: RouteDataSource = RouteDataSource(),
     private val customRouteDao: CustomRouteDao? = null,
     private val terminalRepository: TerminalRepository? = null,
     private val routeScheduleDao: RouteScheduleDao? = null,
-    private val routePricingDao: RoutePricingDao? = null
+    private val routePricingDao: RoutePricingDao? = null,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : RouteRepository {
 
+    private val scope = CoroutineScope(ioDispatcher)
     private val segmentMap = dataSource.getAllSegments().associateBy { it.id }
     private val customRoutes = mutableListOf<BusRoute>()
 
@@ -29,16 +37,20 @@ class RouteCatalogRepositoryImpl(
 
     private fun loadCustomRoutesFromDatabase() {
         if (customRouteDao != null && terminalRepository != null) {
-            try {
-                val entities = customRouteDao.getAllCustomRoutesSync()
-                val loadedRoutes = entities.mapNotNull { entity ->
-                    entity.toDomain(terminalRepository) { segmentMap[it] }
+            scope.launch {
+                try {
+                    val entities = customRouteDao.getAllCustomRoutes()
+                    val loadedRoutes = entities.mapNotNull { entity ->
+                        entity.toDomain(terminalRepository) { segmentMap[it] }
+                    }
+                    synchronized(customRoutes) {
+                        customRoutes.clear()
+                        customRoutes.addAll(loadedRoutes)
+                    }
+                } catch (e: Exception) {
+                    Log.e("RouteCatalogRepo", "Gagal memuat rute kustom dari database", e)
                 }
-                synchronized(customRoutes) {
-                    customRoutes.clear()
-                    customRoutes.addAll(loadedRoutes)
-                }
-            } catch (_: Exception) {}
+            }
         }
     }
 
@@ -70,7 +82,7 @@ class RouteCatalogRepositoryImpl(
         return custom ?: dataSource.getPredefinedRoutes().find { it.id == id }
     }
 
-    override fun saveRoute(route: BusRoute) {
+    override suspend fun saveRoute(route: BusRoute) {
         synchronized(customRoutes) {
             val existingIndex = customRoutes.indexOfFirst { it.id == route.id }
             if (existingIndex >= 0) {
@@ -79,23 +91,43 @@ class RouteCatalogRepositoryImpl(
                 customRoutes.add(route)
             }
         }
-        customRouteDao?.insertCustomRouteSync(route.toCustomRouteEntity())
+        if (customRouteDao != null) {
+            withContext(ioDispatcher) {
+                try {
+                    customRouteDao.insertCustomRoute(route.toCustomRouteEntity())
+                } catch (e: Exception) {
+                    Log.e("RouteCatalogRepo", "Gagal menyimpan rute kustom", e)
+                }
+            }
+        }
     }
 
-    override fun deleteRoute(routeId: String) {
+    override suspend fun deleteRoute(routeId: String) {
         synchronized(customRoutes) {
             customRoutes.removeAll { it.id == routeId }
         }
-        customRouteDao?.deleteCustomRouteById(routeId)
-        routeScheduleDao?.deleteSchedulesByRouteSync(routeId)
-        routePricingDao?.deletePricingsByRouteSync(routeId)
+        withContext(ioDispatcher) {
+            try {
+                customRouteDao?.deleteCustomRouteById(routeId)
+                routeScheduleDao?.deleteSchedulesByRoute(routeId)
+                routePricingDao?.deletePricingsByRoute(routeId)
+            } catch (e: Exception) {
+                Log.e("RouteCatalogRepo", "Gagal menghapus rute", e)
+            }
+        }
     }
 
-    override fun deleteAllCustomRoutes() {
+    override suspend fun deleteAllCustomRoutes() {
         synchronized(customRoutes) {
             customRoutes.clear()
         }
-        customRouteDao?.deleteAllCustomRoutes()
+        withContext(ioDispatcher) {
+            try {
+                customRouteDao?.deleteAllCustomRoutes()
+            } catch (e: Exception) {
+                Log.e("RouteCatalogRepo", "Gagal menghapus seluruh rute kustom", e)
+            }
+        }
     }
 
     override fun findRoutes(

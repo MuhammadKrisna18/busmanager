@@ -1,0 +1,836 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 10,
+    "identityHash": "d12999744fcce5fcb9f523ddb78d9636",
+    "entities": [
+      {
+        "tableName": "companies",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `balance` INTEGER NOT NULL, `reputation` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "balance",
+            "columnName": "balance",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reputation",
+            "columnName": "reputation",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "owned_buses",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `busCode` TEXT NOT NULL, `chassisId` TEXT NOT NULL, `bodyId` TEXT NOT NULL, `busClass` TEXT, `passengerCapacity` INTEGER, `currentTerminalId` TEXT, `engineHealthPercent` INTEGER NOT NULL, `bodyHealthPercent` INTEGER NOT NULL, `odometerKm` INTEGER NOT NULL, `isOperating` INTEGER NOT NULL, `routeId` TEXT, `driverId` TEXT, `purchasedAtTimestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "busCode",
+            "columnName": "busCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chassisId",
+            "columnName": "chassisId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bodyId",
+            "columnName": "bodyId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "busClass",
+            "columnName": "busClass",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "passengerCapacity",
+            "columnName": "passengerCapacity",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "currentTerminalId",
+            "columnName": "currentTerminalId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "engineHealthPercent",
+            "columnName": "engineHealthPercent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bodyHealthPercent",
+            "columnName": "bodyHealthPercent",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "odometerKm",
+            "columnName": "odometerKm",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isOperating",
+            "columnName": "isOperating",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "driverId",
+            "columnName": "driverId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "purchasedAtTimestamp",
+            "columnName": "purchasedAtTimestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "drivers",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `wagePerDayAmount` INTEGER NOT NULL, `assignedBusId` TEXT, `isHired` INTEGER NOT NULL, `isPendingRelease` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "wagePerDayAmount",
+            "columnName": "wagePerDayAmount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignedBusId",
+            "columnName": "assignedBusId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isHired",
+            "columnName": "isHired",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPendingRelease",
+            "columnName": "isPendingRelease",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "route_pricings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `routeId` TEXT NOT NULL, `originTerminalId` TEXT NOT NULL, `destinationTerminalId` TEXT NOT NULL, `originCity` TEXT NOT NULL, `destinationCity` TEXT NOT NULL, `priceAmount` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "originTerminalId",
+            "columnName": "originTerminalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destinationTerminalId",
+            "columnName": "destinationTerminalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "originCity",
+            "columnName": "originCity",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destinationCity",
+            "columnName": "destinationCity",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priceAmount",
+            "columnName": "priceAmount",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "route_schedules",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `routeId` TEXT NOT NULL, `departureHour` INTEGER NOT NULL, `departureMinute` INTEGER NOT NULL, `direction` TEXT NOT NULL, `assignedBusId` TEXT, `isActive` INTEGER NOT NULL, `headwayMinutes` INTEGER NOT NULL, `transitDwellMinutes` INTEGER NOT NULL, `nextDepartureEpochMinutes` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departureHour",
+            "columnName": "departureHour",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departureMinute",
+            "columnName": "departureMinute",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assignedBusId",
+            "columnName": "assignedBusId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isActive",
+            "columnName": "isActive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "headwayMinutes",
+            "columnName": "headwayMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transitDwellMinutes",
+            "columnName": "transitDwellMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextDepartureEpochMinutes",
+            "columnName": "nextDepartureEpochMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "financial_transactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `dateText` TEXT NOT NULL, `timeText` TEXT NOT NULL, `day` INTEGER NOT NULL, `month` INTEGER NOT NULL, `year` INTEGER NOT NULL, `type` TEXT NOT NULL, `category` TEXT NOT NULL, `amount` INTEGER NOT NULL, `busId` TEXT, `busCode` TEXT, `routeId` TEXT, `routeName` TEXT, `description` TEXT NOT NULL, `createdAtMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateText",
+            "columnName": "dateText",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeText",
+            "columnName": "timeText",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "month",
+            "columnName": "month",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "busId",
+            "columnName": "busId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "busCode",
+            "columnName": "busCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "routeName",
+            "columnName": "routeName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtMillis",
+            "columnName": "createdAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "terminal_passenger_records",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `terminalId` TEXT NOT NULL, `terminalName` TEXT NOT NULL, `busId` TEXT NOT NULL, `busCode` TEXT NOT NULL, `routeId` TEXT NOT NULL, `routeName` TEXT NOT NULL, `day` INTEGER NOT NULL, `month` INTEGER NOT NULL, `year` INTEGER NOT NULL, `dateFormatted` TEXT NOT NULL, `timeFormatted` TEXT NOT NULL, `boardedCount` INTEGER NOT NULL, `alightedCount` INTEGER NOT NULL, `timestamp` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "terminalId",
+            "columnName": "terminalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "terminalName",
+            "columnName": "terminalName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "busId",
+            "columnName": "busId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "busCode",
+            "columnName": "busCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeName",
+            "columnName": "routeName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "month",
+            "columnName": "month",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "year",
+            "columnName": "year",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateFormatted",
+            "columnName": "dateFormatted",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeFormatted",
+            "columnName": "timeFormatted",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "boardedCount",
+            "columnName": "boardedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "alightedCount",
+            "columnName": "alightedCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "custom_routes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `originTerminalId` TEXT NOT NULL, `destinationTerminalId` TEXT NOT NULL, `pathType` TEXT NOT NULL, `segmentIds` TEXT NOT NULL, `transitTerminalIds` TEXT NOT NULL, `createdAtMillis` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "originTerminalId",
+            "columnName": "originTerminalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destinationTerminalId",
+            "columnName": "destinationTerminalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pathType",
+            "columnName": "pathType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "segmentIds",
+            "columnName": "segmentIds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transitTerminalIds",
+            "columnName": "transitTerminalIds",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAtMillis",
+            "columnName": "createdAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "active_trips",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `busId` TEXT NOT NULL, `busCode` TEXT NOT NULL, `routeId` TEXT NOT NULL, `direction` TEXT NOT NULL, `departureYear` INTEGER NOT NULL, `departureMonth` INTEGER NOT NULL, `departureDay` INTEGER NOT NULL, `departureHour` INTEGER NOT NULL, `departureMinute` INTEGER NOT NULL, `estimatedArrivalMinutes` INTEGER NOT NULL, `elapsedMinutes` INTEGER NOT NULL, `progressFraction` REAL NOT NULL, `coordX` REAL NOT NULL, `coordY` REAL NOT NULL, `coordLat` REAL NOT NULL, `coordLon` REAL NOT NULL, `passengerCount` INTEGER NOT NULL, `ticketEarningsAmount` INTEGER NOT NULL, `isCompleted` INTEGER NOT NULL, `maxCapacity` INTEGER NOT NULL, `visitedTransitIndicesCsv` TEXT NOT NULL, `totalBoardedPassengers` INTEGER NOT NULL, `totalAlightedPassengers` INTEGER NOT NULL, `cancelNextSchedule` INTEGER NOT NULL, `isDwellingAtTransit` INTEGER NOT NULL, `dwellingTerminalName` TEXT, `headwayMinutes` INTEGER NOT NULL, `transitDwellMinutes` INTEGER NOT NULL, `ticketPricePerPassengerAmount` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "busId",
+            "columnName": "busId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "busCode",
+            "columnName": "busCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departureYear",
+            "columnName": "departureYear",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departureMonth",
+            "columnName": "departureMonth",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departureDay",
+            "columnName": "departureDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departureHour",
+            "columnName": "departureHour",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "departureMinute",
+            "columnName": "departureMinute",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimatedArrivalMinutes",
+            "columnName": "estimatedArrivalMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "elapsedMinutes",
+            "columnName": "elapsedMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "progressFraction",
+            "columnName": "progressFraction",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coordX",
+            "columnName": "coordX",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coordY",
+            "columnName": "coordY",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coordLat",
+            "columnName": "coordLat",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coordLon",
+            "columnName": "coordLon",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "passengerCount",
+            "columnName": "passengerCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ticketEarningsAmount",
+            "columnName": "ticketEarningsAmount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCompleted",
+            "columnName": "isCompleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "maxCapacity",
+            "columnName": "maxCapacity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "visitedTransitIndicesCsv",
+            "columnName": "visitedTransitIndicesCsv",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalBoardedPassengers",
+            "columnName": "totalBoardedPassengers",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalAlightedPassengers",
+            "columnName": "totalAlightedPassengers",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cancelNextSchedule",
+            "columnName": "cancelNextSchedule",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isDwellingAtTransit",
+            "columnName": "isDwellingAtTransit",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dwellingTerminalName",
+            "columnName": "dwellingTerminalName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "headwayMinutes",
+            "columnName": "headwayMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transitDwellMinutes",
+            "columnName": "transitDwellMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ticketPricePerPassengerAmount",
+            "columnName": "ticketPricePerPassengerAmount",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "simulation_logs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `timestampMillis` INTEGER NOT NULL, `dateFormatted` TEXT NOT NULL, `timeFormatted` TEXT NOT NULL, `category` TEXT NOT NULL, `title` TEXT NOT NULL, `message` TEXT NOT NULL, `busId` TEXT, `busCode` TEXT, `routeId` TEXT, `routeName` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timestampMillis",
+            "columnName": "timestampMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateFormatted",
+            "columnName": "dateFormatted",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeFormatted",
+            "columnName": "timeFormatted",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "message",
+            "columnName": "message",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "busId",
+            "columnName": "busId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "busCode",
+            "columnName": "busCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "routeId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "routeName",
+            "columnName": "routeName",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd12999744fcce5fcb9f523ddb78d9636')"
+    ]
+  }
+}

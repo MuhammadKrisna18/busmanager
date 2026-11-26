@@ -64,7 +64,9 @@ class DeleteRouteUseCaseTest {
             segments = routeRepository.getSegmentsBetween(sby.id, mlg.id),
             transitTerminals = emptyList()
         )
-        routeRepository.saveRoute(testRoute)
+        runBlocking {
+            routeRepository.saveRoute(testRoute)
+        }
     }
 
     @Test

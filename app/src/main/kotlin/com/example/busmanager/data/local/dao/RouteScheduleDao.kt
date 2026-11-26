@@ -45,13 +45,7 @@ interface RouteScheduleDao {
     suspend fun deleteScheduleById(id: String): Int
 
     @Query("DELETE FROM route_schedules WHERE routeId = :routeId")
-    fun deleteSchedulesByRouteSync(routeId: String): Int
-
-    @Query("DELETE FROM route_schedules WHERE routeId = :routeId")
     suspend fun deleteSchedulesByRoute(routeId: String): Int
-
-    @Query("DELETE FROM route_schedules WHERE assignedBusId = :busId")
-    fun deleteSchedulesByBusIdSync(busId: String): Int
 
     @Query("DELETE FROM route_schedules WHERE assignedBusId = :busId")
     suspend fun deleteSchedulesByBusId(busId: String): Int

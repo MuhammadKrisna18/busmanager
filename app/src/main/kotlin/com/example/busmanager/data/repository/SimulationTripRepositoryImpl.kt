@@ -39,13 +39,17 @@ class SimulationTripRepositoryImpl(
 
     init {
         if (activeTripDao != null && routeRepository != null) {
-            try {
-                val entities = activeTripDao.getAllTripsSync()
-                val loadedTrips = entities.mapNotNull { it.toDomain(routeRepository) }
-                if (loadedTrips.isNotEmpty()) {
-                    _activeTrips.value = loadedTrips
+            scope.launch {
+                try {
+                    val entities = activeTripDao.getAllTrips()
+                    val loadedTrips = entities.mapNotNull { it.toDomain(routeRepository) }
+                    if (loadedTrips.isNotEmpty()) {
+                        _activeTrips.value = loadedTrips
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("SimulationTripRepo", "Gagal memuat perjalanan aktif dari database", e)
                 }
-            } catch (_: Exception) {}
+            }
         }
     }
 

@@ -3,6 +3,10 @@ package com.example.busmanager.data
 import com.example.busmanager.data.repository.RouteCatalogRepositoryImpl
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -10,13 +14,15 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class RouteRepositoryTest {
 
     private lateinit var repository: RouteCatalogRepositoryImpl
+    private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setUp() {
-        repository = RouteCatalogRepositoryImpl()
+        repository = RouteCatalogRepositoryImpl(ioDispatcher = testDispatcher)
     }
 
     @Test
@@ -97,7 +103,7 @@ class RouteRepositoryTest {
     }
 
     @Test
-    fun saveRoute_and_getAllRoutes_shouldIncludeCustomRoute() {
+    fun saveRoute_and_getAllRoutes_shouldIncludeCustomRoute() = runTest(testDispatcher) {
         val baseRoute = repository.getAllPredefinedRoutes().first()
         val customRoute = BusRoute(
             id = "custom_test_route",
@@ -111,6 +117,7 @@ class RouteRepositoryTest {
 
         val beforeCount = repository.getAllRoutes().size
         repository.saveRoute(customRoute)
+        advanceUntilIdle()
         val afterCount = repository.getAllRoutes().size
 
         assertEquals(beforeCount + 1, afterCount)
@@ -120,12 +127,13 @@ class RouteRepositoryTest {
     }
 
     @Test
-    fun customRouteDao_persistsAndRestoresOnNewRepositoryInstance() {
+    fun customRouteDao_persistsAndRestoresOnNewRepositoryInstance() = runTest(testDispatcher) {
         val fakeDao = FakeCustomRouteDao()
         val terminalRepo = com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl()
         val repo1 = RouteCatalogRepositoryImpl(
             customRouteDao = fakeDao,
-            terminalRepository = terminalRepo
+            terminalRepository = terminalRepo,
+            ioDispatcher = testDispatcher
         )
 
         val baseRoute = repo1.getAllPredefinedRoutes().first()
@@ -140,29 +148,34 @@ class RouteRepositoryTest {
         )
 
         repo1.saveRoute(customRoute)
+        advanceUntilIdle()
         assertEquals(1, fakeDao.list.size)
         assertEquals("custom_persisted_route", fakeDao.list.first().id)
 
         val repo2 = RouteCatalogRepositoryImpl(
             customRouteDao = fakeDao,
-            terminalRepository = terminalRepo
+            terminalRepository = terminalRepo,
+            ioDispatcher = testDispatcher
         )
+        advanceUntilIdle()
         val restored = repo2.getRouteById("custom_persisted_route")
         assertNotNull(restored)
         assertEquals("Rute Surabaya - Malang Khusus", restored?.name)
 
         repo2.deleteRoute("custom_persisted_route")
+        advanceUntilIdle()
         assertEquals(0, fakeDao.list.size)
         assertNull(repo2.getRouteById("custom_persisted_route"))
     }
 
     @Test
-    fun deleteAllCustomRoutes_clearsCustomRoutesFromDao() {
+    fun deleteAllCustomRoutes_clearsCustomRoutesFromDao() = runTest(testDispatcher) {
         val fakeDao = FakeCustomRouteDao()
         val terminalRepo = com.example.busmanager.data.repository.TerminalCatalogRepositoryImpl()
         val repo = RouteCatalogRepositoryImpl(
             customRouteDao = fakeDao,
-            terminalRepository = terminalRepo
+            terminalRepository = terminalRepo,
+            ioDispatcher = testDispatcher
         )
 
         val baseRoute = repo.getAllPredefinedRoutes().first()
@@ -177,9 +190,11 @@ class RouteRepositoryTest {
         )
 
         repo.saveRoute(customRoute)
+        advanceUntilIdle()
         assertEquals(1, fakeDao.list.size)
 
         repo.deleteAllCustomRoutes()
+        advanceUntilIdle()
         assertEquals(0, fakeDao.list.size)
         assertNull(repo.getRouteById("route_to_clear"))
     }
@@ -198,14 +213,9 @@ class RouteRepositoryTest {
 
         override fun getAllCustomRoutesFlow(): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.data.local.entity.CustomRouteEntity>> = flow
 
-        override fun getAllCustomRoutesSync(): List<com.example.busmanager.data.local.entity.CustomRouteEntity> = list.toList()
-
         override suspend fun getAllCustomRoutes(): List<com.example.busmanager.data.local.entity.CustomRouteEntity> = list.toList()
 
         override suspend fun getCustomRouteById(id: String): com.example.busmanager.data.local.entity.CustomRouteEntity? =
-            list.find { it.id == id }
-
-        override fun getCustomRouteByIdSync(id: String): com.example.busmanager.data.local.entity.CustomRouteEntity? =
             list.find { it.id == id }
 
         override suspend fun insertCustomRoute(route: com.example.busmanager.data.local.entity.CustomRouteEntity) {
@@ -214,19 +224,13 @@ class RouteRepositoryTest {
             updateFlow()
         }
 
-        override fun insertCustomRouteSync(route: com.example.busmanager.data.local.entity.CustomRouteEntity) {
-            list.removeAll { it.id == route.id }
-            list.add(route)
-            updateFlow()
-        }
-
-        override fun deleteCustomRouteById(id: String): Int {
+        override suspend fun deleteCustomRouteById(id: String): Int {
             val removed = list.removeAll { it.id == id }
             updateFlow()
             return if (removed) 1 else 0
         }
 
-        override fun deleteAllCustomRoutes(): Int {
+        override suspend fun deleteAllCustomRoutes(): Int {
             val count = list.size
             list.clear()
             updateFlow()

@@ -39,7 +39,7 @@ import com.example.busmanager.data.local.entity.TerminalPassengerRecordEntity
         SimulationLogEntity::class
     ],
     version = 10,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class BusManagerDatabase : RoomDatabase() {
 
@@ -66,7 +66,7 @@ abstract class BusManagerDatabase : RoomDatabase() {
                     context.applicationContext,
                     BusManagerDatabase::class.java,
                     DATABASE_NAME
-                ).fallbackToDestructiveMigration(true).allowMainThreadQueries().build().also { instance = it }
+                ).build().also { instance = it }
             }
         }
     }

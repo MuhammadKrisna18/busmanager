@@ -185,10 +185,11 @@ class ResetGameUseCaseTest {
         override fun getAllPredefinedRoutes() = emptyList<com.example.busmanager.domain.route.model.BusRoute>()
         override fun getAllRoutes() = emptyList<com.example.busmanager.domain.route.model.BusRoute>()
         override fun getRouteById(id: String) = null
-        override fun saveRoute(route: com.example.busmanager.domain.route.model.BusRoute) {}
+        override suspend fun saveRoute(route: com.example.busmanager.domain.route.model.BusRoute) {}
         override fun findRoutes(originTerminalId: String, destinationTerminalId: String, preferredPathType: com.example.busmanager.domain.route.model.RoutePathType?) = emptyList<com.example.busmanager.domain.route.model.BusRoute>()
         override fun getConnectedTerminalIds(terminalId: String) = emptyList<String>()
-        override fun deleteAllCustomRoutes() {
+        override suspend fun deleteRoute(routeId: String) {}
+        override suspend fun deleteAllCustomRoutes() {
             wasDeleteAllCalled = true
         }
     }

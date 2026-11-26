@@ -19,9 +19,6 @@ interface SimulationLogDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLog(log: SimulationLogEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertLogSync(log: SimulationLogEntity)
-
     @Query("DELETE FROM simulation_logs")
     suspend fun deleteAllLogs()
 }

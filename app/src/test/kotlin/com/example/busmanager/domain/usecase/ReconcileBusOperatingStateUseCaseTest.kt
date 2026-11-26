@@ -249,8 +249,10 @@ class ReconcileBusOperatingStateUseCaseTest {
         override fun getAllPredefinedRoutes() = listOf(route)
         override fun getAllRoutes() = listOf(route)
         override fun getRouteById(id: String) = if (id == route.id) route else null
-        override fun saveRoute(route: BusRoute) {}
+        override suspend fun saveRoute(route: BusRoute) {}
         override fun findRoutes(originTerminalId: String, destinationTerminalId: String, preferredPathType: RoutePathType?) = listOf(route)
         override fun getConnectedTerminalIds(terminalId: String) = emptyList<String>()
+        override suspend fun deleteRoute(routeId: String) {}
+        override suspend fun deleteAllCustomRoutes() {}
     }
 }

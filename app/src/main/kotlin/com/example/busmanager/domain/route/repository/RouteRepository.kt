@@ -11,13 +11,13 @@ interface RouteRepository {
     fun getAllPredefinedRoutes(): List<BusRoute>
     fun getAllRoutes(): List<BusRoute>
     fun getRouteById(id: String): BusRoute?
-    fun saveRoute(route: BusRoute)
+    suspend fun saveRoute(route: BusRoute)
     fun findRoutes(
         originTerminalId: String,
         destinationTerminalId: String,
         preferredPathType: RoutePathType? = null
     ): List<BusRoute>
     fun getConnectedTerminalIds(terminalId: String): List<String>
-    fun deleteRoute(routeId: String) {}
-    fun deleteAllCustomRoutes() {}
+    suspend fun deleteRoute(routeId: String)
+    suspend fun deleteAllCustomRoutes()
 }

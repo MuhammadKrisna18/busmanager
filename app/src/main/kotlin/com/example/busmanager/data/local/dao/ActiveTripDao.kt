@@ -15,9 +15,6 @@ interface ActiveTripDao {
     fun getAllTripsFlow(): Flow<List<ActiveTripEntity>>
 
     @Query("SELECT * FROM active_trips")
-    fun getAllTripsSync(): List<ActiveTripEntity>
-
-    @Query("SELECT * FROM active_trips")
     suspend fun getAllTrips(): List<ActiveTripEntity>
 
     @Query("SELECT * FROM active_trips WHERE id = :tripId")
@@ -27,13 +24,7 @@ interface ActiveTripDao {
     suspend fun insertTrip(trip: ActiveTripEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertTripSync(trip: ActiveTripEntity)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTrips(trips: List<ActiveTripEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertTripsSync(trips: List<ActiveTripEntity>)
 
     @Update
     suspend fun updateTrip(trip: ActiveTripEntity)
@@ -41,15 +32,9 @@ interface ActiveTripDao {
     @Query("DELETE FROM active_trips WHERE id = :tripId")
     suspend fun deleteTrip(tripId: String)
 
-    @Query("DELETE FROM active_trips WHERE id = :tripId")
-    fun deleteTripSync(tripId: String)
-
     @Query("DELETE FROM active_trips WHERE busId = :busId")
     suspend fun deleteTripsForBus(busId: String)
 
     @Query("DELETE FROM active_trips")
     suspend fun deleteAllTrips()
-
-    @Query("DELETE FROM active_trips")
-    fun deleteAllTripsSync()
 }

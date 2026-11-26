@@ -213,9 +213,11 @@ class GetRouteOperationalStatusUseCaseTest {
         override fun getAllPredefinedRoutes(): List<BusRoute> = routesList
         override fun getAllRoutes(): List<BusRoute> = routesList
         override fun getRouteById(id: String): BusRoute? = routesList.find { it.id == id }
-        override fun saveRoute(route: BusRoute) {}
+        override suspend fun saveRoute(route: BusRoute) {}
         override fun findRoutes(originTerminalId: String, destinationTerminalId: String, preferredPathType: RoutePathType?): List<BusRoute> = routesList
         override fun getConnectedTerminalIds(terminalId: String): List<String> = emptyList()
+        override suspend fun deleteRoute(routeId: String) {}
+        override suspend fun deleteAllCustomRoutes() {}
     }
 
     private class FakeRouteScheduleRepository : RouteScheduleRepository {

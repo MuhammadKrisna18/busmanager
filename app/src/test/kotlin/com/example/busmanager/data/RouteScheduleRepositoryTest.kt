@@ -285,26 +285,18 @@ class RouteScheduleRepositoryTest {
             return if (removed) 1 else 0
         }
 
-        override fun deleteSchedulesByRouteSync(routeId: String): Int {
+        override suspend fun deleteSchedulesByRoute(routeId: String): Int {
             val keysToRemove = scheduleMap.filter { it.value.routeId == routeId }.keys
             keysToRemove.forEach { scheduleMap.remove(it) }
             scheduleFlow.value = scheduleMap.values.toList()
             return keysToRemove.size
         }
 
-        override suspend fun deleteSchedulesByRoute(routeId: String): Int {
-            return deleteSchedulesByRouteSync(routeId)
-        }
-
-        override fun deleteSchedulesByBusIdSync(busId: String): Int {
+        override suspend fun deleteSchedulesByBusId(busId: String): Int {
             val keysToRemove = scheduleMap.filter { it.value.assignedBusId == busId }.keys
             keysToRemove.forEach { scheduleMap.remove(it) }
             scheduleFlow.value = scheduleMap.values.toList()
             return keysToRemove.size
-        }
-
-        override suspend fun deleteSchedulesByBusId(busId: String): Int {
-            return deleteSchedulesByBusIdSync(busId)
         }
 
         override suspend fun unassignSchedulesByBusId(busId: String): Int {

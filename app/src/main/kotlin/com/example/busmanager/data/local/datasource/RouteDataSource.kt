@@ -27,6 +27,11 @@ class RouteDataSource(
     private val kertonegoro = terminalDataSource.getTerminalById("term_kertonegoro")!!
     private val anjukLadang = terminalDataSource.getTerminalById("term_anjukladang")!!
     private val rajekwesi = terminalDataSource.getTerminalById("term_rajekwesi")!!
+    private val minakKoncar = terminalDataSource.getTerminalById("term_lumajang")!!
+    private val bondowoso = terminalDataSource.getTerminalById("term_bondowoso")!!
+    private val pacitan = terminalDataSource.getTerminalById("term_pacitan")!!
+    private val pilangsari = terminalDataSource.getTerminalById("term_sragen")!!
+    private val kembangJoyo = terminalDataSource.getTerminalById("term_pati")!!
 
     val segSbyMlgToll = RouteSegment(
         id = "seg_sby_mlg_toll",
@@ -222,9 +227,10 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             situbondo.coordinate,
-            MapCoordinate(0.87f, 0.53f, -7.74, 114.15),
-            MapCoordinate(0.92f, 0.60f, -7.86, 114.33),
-            MapCoordinate(0.94f, 0.68f, -7.98, 114.38),
+            MapCoordinate(0.88f, 0.52f, -7.75, 114.15),
+            MapCoordinate(0.93f, 0.58f, -7.85, 114.38),
+            MapCoordinate(0.95f, 0.65f, -7.95, 114.42),
+            MapCoordinate(0.945f, 0.72f, -8.05, 114.40),
             sritanjung.coordinate
         )
     )
@@ -252,9 +258,12 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             bayuangga.coordinate,
-            MapCoordinate(0.61f, 0.61f, -7.88, 113.25),
-            MapCoordinate(0.64f, 0.68f, -7.99, 113.34),
-            MapCoordinate(0.68f, 0.76f, -8.11, 113.48),
+            MapCoordinate(0.605f, 0.58f, -7.88, 113.20),
+            MapCoordinate(0.61f, 0.64f, -7.99, 113.21),
+            MapCoordinate(0.61f, 0.72f, -8.13, 113.22),
+            MapCoordinate(0.65f, 0.75f, -8.15, 113.34),
+            MapCoordinate(0.68f, 0.77f, -8.16, 113.45),
+            MapCoordinate(0.71f, 0.79f, -8.18, 113.56),
             tawangAlun.coordinate
         )
     )
@@ -282,9 +291,11 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             tawangAlun.coordinate,
-            MapCoordinate(0.78f, 0.84f, -8.24, 113.82),
-            MapCoordinate(0.82f, 0.88f, -8.30, 113.98),
-            MapCoordinate(0.87f, 0.85f, -8.26, 114.15),
+            MapCoordinate(0.76f, 0.81f, -8.19, 113.78),
+            MapCoordinate(0.79f, 0.83f, -8.25, 113.91),
+            MapCoordinate(0.83f, 0.82f, -8.28, 114.02),
+            MapCoordinate(0.87f, 0.80f, -8.32, 114.15),
+            MapCoordinate(0.91f, 0.78f, -8.30, 114.28),
             sritanjung.coordinate
         )
     )
@@ -867,6 +878,362 @@ class RouteDataSource(
         waypoints = segBjnNgjNonToll.waypoints.reversed()
     )
 
+    val segProboLmjNonToll = RouteSegment(
+        id = "seg_probo_lmj_nontoll",
+        fromTerminalId = bayuangga.id,
+        toTerminalId = minakKoncar.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 45.0,
+        baseDurationMinutes = 55,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            bayuangga.coordinate,
+            MapCoordinate(0.605f, 0.58f, -7.88, 113.20),
+            MapCoordinate(0.61f, 0.64f, -7.99, 113.21),
+            minakKoncar.coordinate
+        )
+    )
+
+    val segLmjProboNonToll = RouteSegment(
+        id = "seg_lmj_probo_nontoll",
+        fromTerminalId = minakKoncar.id,
+        toTerminalId = bayuangga.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 45.0,
+        baseDurationMinutes = 55,
+        tollFee = Money.ZERO,
+        waypoints = segProboLmjNonToll.waypoints.reversed()
+    )
+
+    val segLmjJbrNonToll = RouteSegment(
+        id = "seg_lmj_jbr_nontoll",
+        fromTerminalId = minakKoncar.id,
+        toTerminalId = tawangAlun.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 65.0,
+        baseDurationMinutes = 75,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            minakKoncar.coordinate,
+            MapCoordinate(0.65f, 0.75f, -8.15, 113.34),
+            MapCoordinate(0.68f, 0.77f, -8.16, 113.45),
+            MapCoordinate(0.71f, 0.79f, -8.18, 113.56),
+            tawangAlun.coordinate
+        )
+    )
+
+    val segJbrLmjNonToll = RouteSegment(
+        id = "seg_jbr_lmj_nontoll",
+        fromTerminalId = tawangAlun.id,
+        toTerminalId = minakKoncar.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 65.0,
+        baseDurationMinutes = 75,
+        tollFee = Money.ZERO,
+        waypoints = segLmjJbrNonToll.waypoints.reversed()
+    )
+
+    val segMlgLmjNonToll = RouteSegment(
+        id = "seg_mlg_lmj_nontoll",
+        fromTerminalId = arjosari.id,
+        toTerminalId = minakKoncar.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 110.0,
+        baseDurationMinutes = 160,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            arjosari.coordinate,
+            MapCoordinate(0.48f, 0.68f, -8.05, 112.72),
+            MapCoordinate(0.52f, 0.71f, -8.20, 112.87),
+            MapCoordinate(0.56f, 0.73f, -8.22, 112.98),
+            minakKoncar.coordinate
+        )
+    )
+
+    val segLmjMlgNonToll = RouteSegment(
+        id = "seg_lmj_mlg_nontoll",
+        fromTerminalId = minakKoncar.id,
+        toTerminalId = arjosari.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 110.0,
+        baseDurationMinutes = 160,
+        tollFee = Money.ZERO,
+        waypoints = segMlgLmjNonToll.waypoints.reversed()
+    )
+
+    val segStbBdwNonToll = RouteSegment(
+        id = "seg_stb_bdw_nontoll",
+        fromTerminalId = situbondo.id,
+        toTerminalId = bondowoso.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 35.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            situbondo.coordinate,
+            MapCoordinate(0.81f, 0.56f, -7.80, 113.92),
+            MapCoordinate(0.795f, 0.60f, -7.86, 113.88),
+            bondowoso.coordinate
+        )
+    )
+
+    val segBdwStbNonToll = RouteSegment(
+        id = "seg_bdw_stb_nontoll",
+        fromTerminalId = bondowoso.id,
+        toTerminalId = situbondo.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 35.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.ZERO,
+        waypoints = segStbBdwNonToll.waypoints.reversed()
+    )
+
+    val segBdwJbrNonToll = RouteSegment(
+        id = "seg_bdw_jbr_nontoll",
+        fromTerminalId = bondowoso.id,
+        toTerminalId = tawangAlun.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 35.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            bondowoso.coordinate,
+            MapCoordinate(0.76f, 0.69f, -8.01, 113.78),
+            MapCoordinate(0.745f, 0.75f, -8.11, 113.71),
+            tawangAlun.coordinate
+        )
+    )
+
+    val segJbrBdwNonToll = RouteSegment(
+        id = "seg_jbr_bdw_nontoll",
+        fromTerminalId = tawangAlun.id,
+        toTerminalId = bondowoso.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 35.0,
+        baseDurationMinutes = 45,
+        tollFee = Money.ZERO,
+        waypoints = segBdwJbrNonToll.waypoints.reversed()
+    )
+
+    val segProboBdwNonToll = RouteSegment(
+        id = "seg_probo_bdw_nontoll",
+        fromTerminalId = bayuangga.id,
+        toTerminalId = bondowoso.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 70.0,
+        baseDurationMinutes = 90,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            bayuangga.coordinate,
+            MapCoordinate(0.66f, 0.53f, -7.74, 113.35),
+            MapCoordinate(0.72f, 0.51f, -7.72, 113.68),
+            MapCoordinate(0.75f, 0.57f, -7.82, 113.75),
+            bondowoso.coordinate
+        )
+    )
+
+    val segBdwProboNonToll = RouteSegment(
+        id = "seg_bdw_probo_nontoll",
+        fromTerminalId = bondowoso.id,
+        toTerminalId = bayuangga.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 70.0,
+        baseDurationMinutes = 90,
+        tollFee = Money.ZERO,
+        waypoints = segProboBdwNonToll.waypoints.reversed()
+    )
+
+    val segPnrPctNonToll = RouteSegment(
+        id = "seg_pnr_pct_nontoll",
+        fromTerminalId = seloaji.id,
+        toTerminalId = pacitan.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 75.0,
+        baseDurationMinutes = 105,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            seloaji.coordinate,
+            MapCoordinate(0.09f, 0.66f, -7.95, 111.38),
+            MapCoordinate(0.075f, 0.72f, -8.05, 111.25),
+            MapCoordinate(0.06f, 0.76f, -8.12, 111.15),
+            pacitan.coordinate
+        )
+    )
+
+    val segPctPnrNonToll = RouteSegment(
+        id = "seg_pct_pnr_nontoll",
+        fromTerminalId = pacitan.id,
+        toTerminalId = seloaji.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 75.0,
+        baseDurationMinutes = 105,
+        tollFee = Money.ZERO,
+        waypoints = segPnrPctNonToll.waypoints.reversed()
+    )
+
+    val segTrgPctNonToll = RouteSegment(
+        id = "seg_trg_pct_nontoll",
+        fromTerminalId = surodakan.id,
+        toTerminalId = pacitan.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 105.0,
+        baseDurationMinutes = 145,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            surodakan.coordinate,
+            MapCoordinate(0.14f, 0.76f, -8.12, 111.55),
+            MapCoordinate(0.10f, 0.79f, -8.21, 111.32),
+            MapCoordinate(0.07f, 0.81f, -8.22, 111.19),
+            pacitan.coordinate
+        )
+    )
+
+    val segPctTrgNonToll = RouteSegment(
+        id = "seg_pct_trg_nontoll",
+        fromTerminalId = pacitan.id,
+        toTerminalId = surodakan.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.MOUNTAIN_PASS,
+        distanceKm = 105.0,
+        baseDurationMinutes = 145,
+        tollFee = Money.ZERO,
+        waypoints = segTrgPctNonToll.waypoints.reversed()
+    )
+
+    val segNgwSrgToll = RouteSegment(
+        id = "seg_ngw_srg_toll",
+        fromTerminalId = kertonegoro.id,
+        toTerminalId = pilangsari.id,
+        pathType = RoutePathType.TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 55.0,
+        baseDurationMinutes = 38,
+        tollFee = Money.rupiah(45000),
+        waypoints = listOf(
+            kertonegoro.coordinate,
+            MapCoordinate(0.08f, 0.325f, -7.42, 111.23),
+            MapCoordinate(0.06f, 0.328f, -7.43, 111.12),
+            pilangsari.coordinate
+        )
+    )
+
+    val segSrgNgwToll = RouteSegment(
+        id = "seg_srg_ngw_toll",
+        fromTerminalId = pilangsari.id,
+        toTerminalId = kertonegoro.id,
+        pathType = RoutePathType.TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 55.0,
+        baseDurationMinutes = 38,
+        tollFee = Money.rupiah(45000),
+        waypoints = segNgwSrgToll.waypoints.reversed()
+    )
+
+    val segNgwSrgNonToll = RouteSegment(
+        id = "seg_ngw_srg_nontoll",
+        fromTerminalId = kertonegoro.id,
+        toTerminalId = pilangsari.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 58.0,
+        baseDurationMinutes = 75,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            kertonegoro.coordinate,
+            MapCoordinate(0.08f, 0.335f, -7.43, 111.22),
+            MapCoordinate(0.06f, 0.338f, -7.44, 111.11),
+            pilangsari.coordinate
+        )
+    )
+
+    val segSrgNgwNonToll = RouteSegment(
+        id = "seg_srg_ngw_nontoll",
+        fromTerminalId = pilangsari.id,
+        toTerminalId = kertonegoro.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 58.0,
+        baseDurationMinutes = 75,
+        tollFee = Money.ZERO,
+        waypoints = segNgwSrgNonToll.waypoints.reversed()
+    )
+
+    val segBjnPtiNonToll = RouteSegment(
+        id = "seg_bjn_pti_nontoll",
+        fromTerminalId = rajekwesi.id,
+        toTerminalId = kembangJoyo.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 120.0,
+        baseDurationMinutes = 160,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            rajekwesi.coordinate,
+            MapCoordinate(0.18f, 0.165f, -7.15, 111.60),
+            MapCoordinate(0.13f, 0.15f, -6.97, 111.41),
+            MapCoordinate(0.09f, 0.11f, -6.71, 111.34),
+            MapCoordinate(0.07f, 0.105f, -6.73, 111.18),
+            kembangJoyo.coordinate
+        )
+    )
+
+    val segPtiBjnNonToll = RouteSegment(
+        id = "seg_pti_bjn_nontoll",
+        fromTerminalId = kembangJoyo.id,
+        toTerminalId = rajekwesi.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 120.0,
+        baseDurationMinutes = 160,
+        tollFee = Money.ZERO,
+        waypoints = segBjnPtiNonToll.waypoints.reversed()
+    )
+
+    val segSrgPtiNonToll = RouteSegment(
+        id = "seg_srg_pti_nontoll",
+        fromTerminalId = pilangsari.id,
+        toTerminalId = kembangJoyo.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 105.0,
+        baseDurationMinutes = 140,
+        tollFee = Money.ZERO,
+        waypoints = listOf(
+            pilangsari.coordinate,
+            MapCoordinate(0.04f, 0.25f, -7.22, 110.98),
+            MapCoordinate(0.045f, 0.18f, -7.08, 110.92),
+            MapCoordinate(0.048f, 0.14f, -6.90, 111.00),
+            kembangJoyo.coordinate
+        )
+    )
+
+    val segPtiSrgNonToll = RouteSegment(
+        id = "seg_pti_srg_nontoll",
+        fromTerminalId = kembangJoyo.id,
+        toTerminalId = pilangsari.id,
+        pathType = RoutePathType.NON_TOLL,
+        characteristic = RoadCharacteristic.FLAT,
+        distanceKm = 105.0,
+        baseDurationMinutes = 140,
+        tollFee = Money.ZERO,
+        waypoints = segSrgPtiNonToll.waypoints.reversed()
+    )
+
     fun getAllSegments(): List<RouteSegment> = listOf(
         segSbyMlgToll,
         segSbyMlgNonToll,
@@ -925,7 +1292,31 @@ class RouteDataSource(
         segNgwBjnNonToll,
         segBjnNgwNonToll,
         segBjnNgjNonToll,
-        segNgjBjnNonToll
+        segNgjBjnNonToll,
+        segProboLmjNonToll,
+        segLmjProboNonToll,
+        segLmjJbrNonToll,
+        segJbrLmjNonToll,
+        segMlgLmjNonToll,
+        segLmjMlgNonToll,
+        segStbBdwNonToll,
+        segBdwStbNonToll,
+        segBdwJbrNonToll,
+        segJbrBdwNonToll,
+        segProboBdwNonToll,
+        segBdwProboNonToll,
+        segPnrPctNonToll,
+        segPctPnrNonToll,
+        segTrgPctNonToll,
+        segPctTrgNonToll,
+        segNgwSrgToll,
+        segSrgNgwToll,
+        segNgwSrgNonToll,
+        segSrgNgwNonToll,
+        segBjnPtiNonToll,
+        segPtiBjnNonToll,
+        segSrgPtiNonToll,
+        segPtiSrgNonToll
     )
 
     fun getPredefinedRoutes(): List<BusRoute> = listOf(

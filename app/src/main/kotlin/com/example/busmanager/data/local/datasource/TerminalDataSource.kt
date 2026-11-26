@@ -247,6 +247,81 @@ class TerminalDataSource {
         passengerDemandMultiplier = 1.25f
     )
 
+    private val minakKoncar = Terminal(
+        id = "term_lumajang",
+        name = "Terminal Minak Koncar",
+        city = "Lumajang",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.61f,
+            y = 0.72f,
+            latitude = -8.1331,
+            longitude = 113.2248
+        ),
+        retributionFee = Money.rupiah(3000),
+        passengerDemandMultiplier = 1.2f
+    )
+
+    private val bondowoso = Terminal(
+        id = "term_bondowoso",
+        name = "Terminal Bondowoso",
+        city = "Bondowoso",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.78f,
+            y = 0.63f,
+            latitude = -7.9130,
+            longitude = 113.8210
+        ),
+        retributionFee = Money.rupiah(3000),
+        passengerDemandMultiplier = 1.15f
+    )
+
+    private val pacitan = Terminal(
+        id = "term_pacitan",
+        name = "Terminal Pacitan",
+        city = "Pacitan",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.05f,
+            y = 0.80f,
+            latitude = -8.1970,
+            longitude = 111.0980
+        ),
+        retributionFee = Money.rupiah(3000),
+        passengerDemandMultiplier = 1.2f
+    )
+
+    private val pilangsari = Terminal(
+        id = "term_sragen",
+        name = "Terminal Pilangsari",
+        city = "Sragen",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.04f,
+            y = 0.33f,
+            latitude = -7.4290,
+            longitude = 111.0180
+        ),
+        retributionFee = Money.rupiah(3500),
+        passengerDemandMultiplier = 1.3f
+    )
+
+    private val kembangJoyo = Terminal(
+        id = "term_pati",
+        name = "Terminal Kembang Joyo",
+        city = "Pati",
+        type = TerminalType.TIPE_A,
+        coordinate = MapCoordinate(
+            x = 0.05f,
+            y = 0.10f,
+            latitude = -6.7560,
+            longitude = 111.0380
+        ),
+        retributionFee = Money.rupiah(3500),
+        passengerDemandMultiplier = 1.25f
+    )
+
     fun getTerminals(): List<Terminal> = listOf(
         purabaya,
         arjosari,
@@ -263,7 +338,12 @@ class TerminalDataSource {
         purboyo,
         kertonegoro,
         anjukLadang,
-        rajekwesi
+        rajekwesi,
+        minakKoncar,
+        bondowoso,
+        pacitan,
+        pilangsari,
+        kembangJoyo
     )
 
     fun getTerminalById(id: String): Terminal? {

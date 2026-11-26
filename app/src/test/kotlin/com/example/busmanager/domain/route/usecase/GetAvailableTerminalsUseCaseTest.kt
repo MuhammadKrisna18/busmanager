@@ -19,7 +19,7 @@ class GetAvailableTerminalsUseCaseTest {
     @Test
     fun invoke_shouldReturnAllAvailableTerminals() {
         val terminals = useCase()
-        assertEquals(16, terminals.size)
+        assertEquals(21, terminals.size)
         assertTrue(terminals.any { it.city == "Surabaya" })
         assertTrue(terminals.any { it.city == "Malang" })
         assertTrue(terminals.any { it.city == "Probolinggo" })
@@ -36,5 +36,10 @@ class GetAvailableTerminalsUseCaseTest {
         assertTrue(terminals.any { it.city == "Ngawi" })
         assertTrue(terminals.any { it.city == "Nganjuk" })
         assertTrue(terminals.any { it.city == "Bojonegoro" })
+        assertTrue(terminals.any { it.city == "Lumajang" })
+        assertTrue(terminals.any { it.city == "Bondowoso" })
+        assertTrue(terminals.any { it.city == "Pacitan" })
+        assertTrue(terminals.any { it.city == "Sragen" })
+        assertTrue(terminals.any { it.city == "Pati" })
     }
 }

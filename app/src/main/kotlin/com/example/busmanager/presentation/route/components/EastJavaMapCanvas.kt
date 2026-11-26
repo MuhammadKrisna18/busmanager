@@ -71,7 +71,7 @@ fun EastJavaMapCanvas(
     allSegments: List<RouteSegment>,
     modifier: Modifier = Modifier
         .fillMaxWidth()
-        .height(290.dp),
+        .height(320.dp),
     openedRoutes: List<BusRoute> = emptyList(),
     selectedRoute: BusRoute? = null,
     selectedOrigin: Terminal? = null,
@@ -530,7 +530,8 @@ fun EastJavaMapCanvas(
 
 private fun DrawScope.drawEastJavaLandmass() {
     val path = Path().apply {
-        moveTo(size.width * 0.05f, size.height * 0.22f)
+        moveTo(size.width * 0.02f, size.height * 0.06f)
+        lineTo(size.width * 0.08f, size.height * 0.07f)
         lineTo(size.width * 0.18f, size.height * 0.10f)
         lineTo(size.width * 0.36f, size.height * 0.12f)
         lineTo(size.width * 0.50f, size.height * 0.22f)
@@ -538,16 +539,21 @@ private fun DrawScope.drawEastJavaLandmass() {
         lineTo(size.width * 0.64f, size.height * 0.46f)
         lineTo(size.width * 0.78f, size.height * 0.42f)
         lineTo(size.width * 0.86f, size.height * 0.44f)
-        lineTo(size.width * 0.97f, size.height * 0.60f)
-        lineTo(size.width * 0.98f, size.height * 0.82f)
-        lineTo(size.width * 0.90f, size.height * 0.90f)
+        lineTo(size.width * 0.97f, size.height * 0.58f)
+        lineTo(size.width * 0.98f, size.height * 0.78f)
+        lineTo(size.width * 0.96f, size.height * 0.86f)
+        lineTo(size.width * 0.88f, size.height * 0.90f)
         lineTo(size.width * 0.74f, size.height * 0.90f)
-        lineTo(size.width * 0.50f, size.height * 0.88f)
+        lineTo(size.width * 0.61f, size.height * 0.89f)
+        lineTo(size.width * 0.48f, size.height * 0.88f)
         lineTo(size.width * 0.32f, size.height * 0.88f)
-        lineTo(size.width * 0.20f, size.height * 0.86f)
-        lineTo(size.width * 0.05f, size.height * 0.86f)
-        lineTo(size.width * 0.04f, size.height * 0.62f)
-        lineTo(size.width * 0.05f, size.height * 0.42f)
+        lineTo(size.width * 0.20f, size.height * 0.87f)
+        lineTo(size.width * 0.14f, size.height * 0.86f)
+        lineTo(size.width * 0.04f, size.height * 0.86f)
+        lineTo(size.width * 0.02f, size.height * 0.75f)
+        lineTo(size.width * 0.02f, size.height * 0.50f)
+        lineTo(size.width * 0.02f, size.height * 0.32f)
+        lineTo(size.width * 0.02f, size.height * 0.18f)
         close()
     }
 

@@ -27,9 +27,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.presentation.route.wizard.RouteWizardStep
+import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.DisabledBackground
+import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
+import com.example.busmanager.ui.theme.PrimaryBlueDark
 import com.example.busmanager.ui.theme.SuccessGreen
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
@@ -54,18 +57,22 @@ fun WizardStepperHeader(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier.size(36.dp)
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(AppDimens.radiusPill))
+                    .background(IceBlue)
+                    .clickable(onClick = onBackClick)
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "←",
-                    fontSize = 22.sp,
+                    text = "Kembali",
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
-                    color = TextDark
+                    color = PrimaryBlueDark
                 )
             }
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             Column {
                 Text(
                     text = "Buka Trayek Baru",
@@ -115,7 +122,7 @@ fun WizardStepperHeader(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = if (isCompleted) "✓" else "${step.stepNumber}",
+                            text = "${step.stepNumber}",
                             color = textColor,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold

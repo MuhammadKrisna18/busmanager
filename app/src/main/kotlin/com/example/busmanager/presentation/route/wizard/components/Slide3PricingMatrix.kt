@@ -110,10 +110,19 @@ fun Slide3PricingMatrix(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(
-                            text = "💡",
-                            fontSize = 24.sp
-                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(AppDimens.radiusPill))
+                                .background(PrimaryBlue)
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "INFO",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
                             Text(
@@ -191,7 +200,7 @@ fun Slide3PricingMatrix(
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "${pricing.originCity} ⇄ ${pricing.destinationCity}",
+                                text = "${pricing.originCity} - ${pricing.destinationCity}",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = TextDark
@@ -283,8 +292,6 @@ private fun RevenueProjectionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(text = "📊", fontSize = 16.sp)
-                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "Proyeksi Pendapatan & Laba",
                         fontSize = 14.sp,
@@ -311,7 +318,7 @@ private fun RevenueProjectionCard(
             Spacer(modifier = Modifier.height(2.dp))
 
             Text(
-                text = "Simulasi pendapatan trayek $originCity ⇄ $destinationCity berdasarkan tarif utama ${projection.ticketPrice.formatRupiah()}",
+                text = "Simulasi pendapatan trayek $originCity - $destinationCity berdasarkan tarif utama ${projection.ticketPrice.formatRupiah()}",
                 fontSize = 11.sp,
                 color = TextMuted
             )

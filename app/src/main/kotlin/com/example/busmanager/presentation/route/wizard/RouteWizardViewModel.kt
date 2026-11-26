@@ -405,7 +405,11 @@ class RouteWizardViewModel(
         }
     }
 
-    fun selectBus(bus: Bus) {
+    fun selectBus(bus: Bus?) {
+        if (bus == null) {
+            _uiState.update { it.copy(selectedBus = null, errorMessage = null) }
+            return
+        }
         if (bus.isOperating || bus.hasRoute || bus.hasDriver) return
         _uiState.update { current ->
             val updated = current.copy(selectedBus = bus, errorMessage = null)
@@ -422,7 +426,11 @@ class RouteWizardViewModel(
         }
     }
 
-    fun selectDriver(driver: Driver) {
+    fun selectDriver(driver: Driver?) {
+        if (driver == null) {
+            _uiState.update { it.copy(selectedDriver = null) }
+            return
+        }
         val assignedBusCode = _uiState.value.driverAssignedBusCodes[driver.id]
         if (assignedBusCode != null || driver.isAssigned) return
         _uiState.update { it.copy(selectedDriver = driver) }

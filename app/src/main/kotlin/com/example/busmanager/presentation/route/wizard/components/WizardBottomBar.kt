@@ -65,7 +65,7 @@ fun WizardBottomBar(
                     modifier = Modifier.height(46.dp)
                 ) {
                     Text(
-                        text = "← Kembali",
+                        text = "Kembali",
                         color = TextDark,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
@@ -88,7 +88,7 @@ fun WizardBottomBar(
                             modifier = Modifier.height(46.dp)
                         ) {
                             Text(
-                                text = "💾 Simpan Standby",
+                                text = "Simpan Standby",
                                 color = TextDark,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -119,7 +119,7 @@ fun WizardBottomBar(
                                 )
                             } else {
                                 Text(
-                                    text = "🚀 Jalankan & Simpan",
+                                    text = "Jalankan & Simpan",
                                     color = Color.White,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold
@@ -140,7 +140,7 @@ fun WizardBottomBar(
                             modifier = Modifier.height(46.dp)
                         ) {
                             Text(
-                                text = "💾 Simpan Standby",
+                                text = "Simpan Standby",
                                 color = TextDark,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold
@@ -154,7 +154,7 @@ fun WizardBottomBar(
                             modifier = Modifier.height(46.dp)
                         ) {
                             Text(
-                                text = "Lanjut ke Armada →",
+                                text = "Lanjut ke Armada",
                                 color = Color.White,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
@@ -171,7 +171,7 @@ fun WizardBottomBar(
                         modifier = Modifier.height(46.dp)
                     ) {
                         Text(
-                            text = "Lanjut ke Jalur →",
+                            text = "Lanjut ke Jalur",
                             color = Color.White,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
@@ -187,7 +187,7 @@ fun WizardBottomBar(
                         modifier = Modifier.height(46.dp)
                     ) {
                         Text(
-                            text = "Lanjut ke Tarif →",
+                            text = "Lanjut ke Tarif",
                             color = Color.White,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold

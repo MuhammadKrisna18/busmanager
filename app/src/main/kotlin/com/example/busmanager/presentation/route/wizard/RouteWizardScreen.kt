@@ -176,7 +176,7 @@ fun RouteWizardScreen(
             onDismissRequest = { viewModel.dismissSuccessDialog() },
             title = {
                 Text(
-                    text = if (uiState.isStandbySaved) "💾 Trayek Berhasil Disimpan (Standby)" else "🎉 Trayek Berhasil Diluncurkan!",
+                    text = if (uiState.isStandbySaved) "Trayek Berhasil Disimpan (Standby)" else "Trayek Berhasil Diluncurkan",
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextDark

@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.presentation.route.wizard.RouteWizardUiState
+import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
 import com.example.busmanager.ui.theme.PrimaryBlueDark
@@ -57,12 +58,17 @@ fun RouteConfirmationDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(IceBlue),
+                        .clip(RoundedCornerShape(AppDimens.radiusPill))
+                        .background(IceBlue)
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "🚌", fontSize = 16.sp)
+                    Text(
+                        text = "TRAYEK",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
+                    )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -93,7 +99,7 @@ fun RouteConfirmationDialog(
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text(
-                            text = "$originCity ➔ $destCity",
+                            text = "$originCity - $destCity",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.Bold,
                             color = PrimaryBlueDark

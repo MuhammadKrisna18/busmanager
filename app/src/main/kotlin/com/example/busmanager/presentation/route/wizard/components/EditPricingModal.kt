@@ -62,7 +62,7 @@ fun EditPricingModal(
             Column(modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "${pricing.originCity} ⇄ ${pricing.destinationCity}",
+                        text = "${pricing.originCity} - ${pricing.destinationCity}",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlueDark

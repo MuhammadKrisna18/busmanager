@@ -255,7 +255,7 @@ fun Slide2PathAndStops(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "⚡ Tanpa Ampiran (Non-Stop)",
+                                text = "Tanpa Ampiran (Non-Stop)",
                                 fontSize = 11.sp,
                                 fontWeight = if (isNonStop) FontWeight.Bold else FontWeight.Medium,
                                 color = if (isNonStop) PrimaryBlueDark else TextDark
@@ -279,7 +279,7 @@ fun Slide2PathAndStops(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "🚏 Singgahi Semua",
+                                    text = "Singgahi Semua",
                                     fontSize = 11.sp,
                                     fontWeight = if (allSelected) FontWeight.Bold else FontWeight.Medium,
                                     color = if (allSelected) PrimaryBlueDark else TextDark
@@ -401,8 +401,8 @@ fun Slide2PathAndStops(
                                 text = when {
                                     isOrigin -> "Titik Keberangkatan Awal"
                                     isDestination -> "Titik Tujuan Akhir"
-                                    isTransitActive -> "🟢 Singgah (Naik & Turun Penumpang)"
-                                    else -> "⚪ Dilewati Saja (Bypass / Tanpa Singgah)"
+                                    isTransitActive -> "Singgah (Naik & Turun Penumpang)"
+                                    else -> "Dilewati Saja (Bypass / Tanpa Singgah)"
                                 },
                                 fontSize = 11.sp,
                                 color = if (isTransitActive || isOrigin || isDestination) PrimaryBlue else TextLight

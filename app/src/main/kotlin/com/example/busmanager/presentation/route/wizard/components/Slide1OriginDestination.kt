@@ -140,9 +140,9 @@ fun Slide1OriginDestination(
                     )
 
                     val guideStatusText = when {
-                        origin == null -> "👉 Sentuh kota keberangkatan asal (contoh: Jember)"
-                        destination == null -> "👉 Sentuh kota tujuan akhir (contoh: Ngawi)"
-                        else -> "✅ ${origin.city} ➔ ${destination.city} (${uiState.availablePaths.size} rute ditemukan)"
+                        origin == null -> "Sentuh kota keberangkatan asal (contoh: Jember)"
+                        destination == null -> "Sentuh kota tujuan akhir (contoh: Ngawi)"
+                        else -> "${origin.city} - ${destination.city} (${uiState.availablePaths.size} rute ditemukan)"
                     }
 
                     Box(
@@ -174,16 +174,12 @@ fun Slide1OriginDestination(
                                 .clickable { onResetClick() }
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "🔄", fontSize = 12.sp)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "Reset",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFDC2626)
-                                )
-                            }
+                            Text(
+                                text = "Reset",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFDC2626)
+                            )
                         }
                     }
                 }
@@ -235,8 +231,10 @@ fun Slide1OriginDestination(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "🟢",
-                                    fontSize = 14.sp
+                                    text = "A",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF15803D)
                                 )
                             }
                             Spacer(modifier = Modifier.width(10.dp))
@@ -264,7 +262,7 @@ fun Slide1OriginDestination(
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = if (origin != null) "Ganti ▾" else "Pilih ▾",
+                                text = if (origin != null) "Ganti" else "Pilih",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryBlue
@@ -287,16 +285,16 @@ fun Slide1OriginDestination(
 
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
+                                .clip(RoundedCornerShape(AppDimens.radiusPill))
                                 .background(SurfaceWhite)
-                                .border(1.dp, CardBorder, CircleShape)
-                                .clickable { onSwapClick() },
+                                .border(1.dp, CardBorder, RoundedCornerShape(AppDimens.radiusPill))
+                                .clickable { onSwapClick() }
+                                .padding(horizontal = 10.dp, vertical = 4.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "⇅",
-                                fontSize = 18.sp,
+                                text = "Tukar",
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryBlue
                             )
@@ -332,8 +330,10 @@ fun Slide1OriginDestination(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "🔴",
-                                    fontSize = 14.sp
+                                    text = "B",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB91C1C)
                                 )
                             }
                             Spacer(modifier = Modifier.width(10.dp))
@@ -361,7 +361,7 @@ fun Slide1OriginDestination(
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = if (destination != null) "Ganti ▾" else "Pilih ▾",
+                                text = if (destination != null) "Ganti" else "Pilih",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = PrimaryBlue
@@ -388,16 +388,12 @@ fun Slide1OriginDestination(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(text = "✨", fontSize = 16.sp)
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "Jalur Algoritma Terbentuk",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF15803D)
-                                )
-                            }
+                            Text(
+                                text = "Jalur Algoritma Terbentuk",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF15803D)
+                            )
 
                             Box(
                                 modifier = Modifier
@@ -456,7 +452,7 @@ fun Slide1OriginDestination(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = "💡 Tekan 'Lanjut' di bar bawah untuk memilih variasi jalur (Tol / Arteri) dan menentukan terminal singgah di Slide 2.",
+                            text = "Tekan 'Lanjut' di bar bawah untuk memilih variasi jalur (Tol / Arteri) dan menentukan terminal singgah di Slide 2.",
                             fontSize = 11.sp,
                             color = Color(0xFF166534),
                             fontWeight = FontWeight.Medium
@@ -552,7 +548,7 @@ private fun TerminalPickerModal(
 
                             if (isSelected) {
                                 Text(
-                                    text = "✓ Terpilih",
+                                    text = "Terpilih",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = PrimaryBlue

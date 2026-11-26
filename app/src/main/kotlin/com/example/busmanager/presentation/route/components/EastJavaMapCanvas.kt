@@ -84,6 +84,9 @@ fun EastJavaMapCanvas(
     parkedBuses: List<com.example.busmanager.presentation.simulation.ParkedBusInfo> = emptyList(),
     trackedTripId: String? = null,
     enableZoomAndPan: Boolean = true,
+    availablePaths: List<List<Terminal>> = emptyList(),
+    selectedPathIndex: Int = 0,
+    onSelectPath: (Int) -> Unit = {},
     onTerminalClick: (Terminal) -> Unit = {},
     onTripClick: (ActiveBusTrip) -> Unit = {},
     onParkedBusClick: (com.example.busmanager.domain.fleet.model.Bus) -> Unit = {},
@@ -281,7 +284,15 @@ fun EastJavaMapCanvas(
                     TerminalMarker(
                         terminal = terminal,
                         role = role,
-                        onClick = { onTerminalClick(terminal) },
+                        onClick = {
+                            if (availablePaths.size > 1) {
+                                val targetIdx = availablePaths.indexOfFirst { path -> path.any { it.id == terminal.id } }
+                                if (targetIdx >= 0 && targetIdx != selectedPathIndex) {
+                                    onSelectPath(targetIdx)
+                                }
+                            }
+                            onTerminalClick(terminal)
+                        },
                         zoomScale = currentZoom
                     )
                 }
@@ -394,6 +405,41 @@ fun EastJavaMapCanvas(
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
+                }
+            }
+        }
+
+        if (availablePaths.size > 1) {
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(start = AppDimens.paddingSmall, top = AppDimens.paddingSmall)
+                    .background(Color(0xEE0F172A), RoundedCornerShape(AppDimens.radiusPill))
+                    .padding(horizontal = 6.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                availablePaths.forEachIndexed { index, path ->
+                    val isSelected = index == selectedPathIndex
+                    val viaCity = if (path.size > 2) {
+                        path.subList(1, path.size - 1).joinToString(", ") { it.city }
+                    } else {
+                        "Langsung"
+                    }
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(AppDimens.radiusPill))
+                            .background(if (isSelected) PrimaryBlue else Color(0x33FFFFFF))
+                            .clickable { onSelectPath(index) }
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            text = if (isSelected) "✓ Koridor ${index + 1}: $viaCity" else "Koridor ${index + 1}: $viaCity",
+                            fontSize = 11.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }

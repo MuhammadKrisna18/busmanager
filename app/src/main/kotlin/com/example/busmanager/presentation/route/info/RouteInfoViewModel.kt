@@ -72,6 +72,7 @@ class RouteInfoViewModel(
                         allRoutes = items,
                         filteredRoutes = filterItems(items, currentFilter),
                         availableBuses = availableBuses,
+                        ownedBuses = ownedBuses,
                         availableDrivers = availableDrivers,
                         selectedFilter = currentFilter,
                         totalRouteCount = items.size,
@@ -203,6 +204,105 @@ class RouteInfoViewModel(
                     selectedRouteForDriverAssign = null,
                     targetBusForDriverAssign = null,
                     message = "Sopir ${driver?.name ?: ""} berhasil ditugaskan ke armada"
+                )
+            }
+        }
+    }
+
+    fun openEditScheduleDialog(route: BusRoute) {
+        viewModelScope.launch {
+            val schedules = routeScheduleRepository?.getSchedulesListForRoute(route.id) ?: emptyList()
+            _uiState.update {
+                it.copy(
+                    selectedRouteForScheduleEdit = route,
+                    activeSchedulesForEditing = schedules
+                )
+            }
+        }
+    }
+
+    fun closeEditScheduleDialog() {
+        _uiState.update {
+            it.copy(
+                selectedRouteForScheduleEdit = null,
+                activeSchedulesForEditing = emptyList()
+            )
+        }
+    }
+
+    fun updateRouteSchedule(schedule: RouteSchedule) {
+        viewModelScope.launch {
+            val repo = routeScheduleRepository ?: return@launch
+            val result = repo.updateSchedule(schedule)
+            result.fold(
+                onSuccess = {
+                    val updatedList = repo.getSchedulesListForRoute(schedule.routeId)
+                    _uiState.update {
+                        it.copy(
+                            activeSchedulesForEditing = updatedList,
+                            message = "Jadwal ${schedule.formattedTime} berhasil diperbarui"
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(errorMessage = error.message ?: "Gagal memperbarui jadwal")
+                    }
+                }
+            )
+        }
+    }
+
+    fun addRouteSchedule(
+        routeId: String,
+        hour: Int,
+        minute: Int,
+        direction: RouteDirection,
+        headwayMinutes: Int,
+        assignedBusId: String?
+    ) {
+        viewModelScope.launch {
+            val repo = routeScheduleRepository ?: return@launch
+            val scheduleId = "sched-$routeId-${direction.name.lowercase()}-${System.currentTimeMillis()}"
+            val newSchedule = RouteSchedule(
+                id = scheduleId,
+                routeId = routeId,
+                departureHour = hour,
+                departureMinute = minute,
+                direction = direction,
+                assignedBusId = assignedBusId,
+                headwayMinutes = headwayMinutes,
+                transitDwellMinutes = 10
+            )
+            val result = repo.addSchedule(newSchedule)
+            result.fold(
+                onSuccess = {
+                    val updatedList = repo.getSchedulesListForRoute(routeId)
+                    _uiState.update {
+                        it.copy(
+                            activeSchedulesForEditing = updatedList,
+                            message = "Jadwal ${newSchedule.formattedTime} berhasil ditambahkan"
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _uiState.update {
+                        it.copy(errorMessage = error.message ?: "Gagal menambah jadwal")
+                    }
+                }
+            )
+        }
+    }
+
+    fun deleteRouteSchedule(schedule: RouteSchedule) {
+        viewModelScope.launch {
+            val repo = routeScheduleRepository ?: return@launch
+            repo.deleteSchedule(schedule.id)
+            val updatedList = repo.getSchedulesListForRoute(schedule.routeId)
+            _uiState.update {
+                it.copy(
+                    activeSchedulesForEditing = updatedList,
+                    message = "Jadwal ${schedule.formattedTime} berhasil dihapus"
                 )
             }
         }

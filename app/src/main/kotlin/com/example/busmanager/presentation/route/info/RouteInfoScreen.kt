@@ -1,6 +1,7 @@
 package com.example.busmanager.presentation.route.info
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,12 +26,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.presentation.route.info.components.AssignBusModal
 import com.example.busmanager.presentation.route.info.components.AssignDriverModal
 import com.example.busmanager.presentation.route.info.components.DeleteRouteConfirmationDialog
+import com.example.busmanager.presentation.route.info.components.EditScheduleModal
 import com.example.busmanager.presentation.route.info.components.EmptyRouteInfoView
 import com.example.busmanager.presentation.route.info.components.RouteDetailCard
 import com.example.busmanager.presentation.route.info.components.RouteFilterRow
@@ -39,7 +42,9 @@ import com.example.busmanager.presentation.route.info.components.RouteInfoTopBar
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
 import com.example.busmanager.ui.theme.CardBorder
+import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
+import com.example.busmanager.ui.theme.PrimaryBlueDark
 import com.example.busmanager.ui.theme.SuccessGreen
 import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.SurfaceWhite
@@ -111,7 +116,12 @@ fun RouteInfoScreen(
                                     fontWeight = FontWeight.Medium,
                                     color = SuccessGreen
                                 )
-                                Text(text = "✕", fontSize = 12.sp, color = SuccessGreen)
+                                Text(
+                                    text = "Tutup",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = SuccessGreen
+                                )
                             }
                         }
                     }
@@ -143,7 +153,19 @@ fun RouteInfoScreen(
                                     .padding(24.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(text = "🗺️", fontSize = 36.sp)
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(AppDimens.radiusPill))
+                                        .background(IceBlue)
+                                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "KOSONG",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = PrimaryBlueDark
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = "Tidak Ada Trayek Sesuai Filter",
@@ -164,6 +186,7 @@ fun RouteInfoScreen(
                             onTogglePricings = { viewModel.togglePricingsExpanded(item.operationalInfo.route.id) },
                             onAssignBusClick = { viewModel.openAssignBusDialog(it) },
                             onAssignDriverClick = { route, bus -> viewModel.openAssignDriverDialog(route, bus) },
+                            onEditScheduleClick = { viewModel.openEditScheduleDialog(it) },
                             onDeleteRouteClick = { viewModel.requestDeleteRoute(it) }
                         )
                     }
@@ -204,6 +227,21 @@ fun RouteInfoScreen(
                     onDismiss = { viewModel.closeAssignDriverDialog() },
                     onDriverSelected = { driverId, busId ->
                         viewModel.assignDriverToBus(driverId, busId)
+                    }
+                )
+            }
+
+            uiState.selectedRouteForScheduleEdit?.let { route ->
+                EditScheduleModal(
+                    route = route,
+                    schedules = uiState.activeSchedulesForEditing,
+                    ownedBuses = uiState.ownedBuses,
+                    onDismiss = { viewModel.closeEditScheduleDialog() },
+                    onAddSchedule = { hour, minute, direction, headway, busId ->
+                        viewModel.addRouteSchedule(route.id, hour, minute, direction, headway, busId)
+                    },
+                    onDeleteSchedule = { schedule ->
+                        viewModel.deleteRouteSchedule(schedule)
                     }
                 )
             }

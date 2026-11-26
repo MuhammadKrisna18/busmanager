@@ -67,7 +67,7 @@ fun EditScheduleDialog(
                     .padding(AppDimens.paddingMedium)
             ) {
                 Text(
-                    text = "⚙️ Ubah Jadwal Operasional",
+                    text = "Ubah Jadwal Operasional",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextDark

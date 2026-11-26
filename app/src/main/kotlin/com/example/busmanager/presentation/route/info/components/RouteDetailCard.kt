@@ -48,6 +48,7 @@ fun RouteDetailCard(
     onTogglePricings: () -> Unit,
     onAssignBusClick: (BusRoute) -> Unit,
     onAssignDriverClick: (BusRoute, Bus?) -> Unit,
+    onEditScheduleClick: (BusRoute) -> Unit,
     onDeleteRouteClick: (BusRoute) -> Unit
 ) {
     val info = item.operationalInfo
@@ -72,7 +73,7 @@ fun RouteDetailCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${route.originTerminal.city} ➔ ${route.destinationTerminal.city}",
+                    text = "${route.originTerminal.city} - ${route.destinationTerminal.city}",
                     color = TextDark,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.ExtraBold
@@ -103,7 +104,7 @@ fun RouteDetailCard(
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Text(
-                            text = if (isOperating) "● ${info.activeTripsCount} Berdinas" else "Standby",
+                            text = if (isOperating) "${info.activeTripsCount} Berdinas" else "Standby",
                             color = if (isOperating) SuccessGreen else PrimaryBlueDark,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold
@@ -148,9 +149,9 @@ fun RouteDetailCard(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "🚏 Halte Transit: ", fontSize = 11.sp, color = TextMuted)
+                    Text(text = "Halte Transit: ", fontSize = 11.sp, color = TextMuted)
                     Text(
-                        text = route.transitTerminals.joinToString(" ➔ ") { it.city },
+                        text = route.transitTerminals.joinToString(" - ") { it.city },
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = PrimaryBlueDark
@@ -169,7 +170,7 @@ fun RouteDetailCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "🚌 Armada & Pengemudi Ditugaskan (${info.assignedBuses.size} Bus):",
+                    text = "Armada & Pengemudi Ditugaskan (${info.assignedBuses.size} Bus):",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextDark
@@ -184,7 +185,7 @@ fun RouteDetailCard(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "⚠️ Belum ada bus & pengemudi yang ditugaskan",
+                            text = "Belum ada bus & pengemudi yang ditugaskan",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color(0xFFB45309)
@@ -210,7 +211,7 @@ fun RouteDetailCard(
                                     color = TextDark
                                 )
                                 Text(
-                                    text = "👨‍✈️ ${driver?.name ?: "Belum ada sopir"} • Kelas ${bus.body.busClass.displayName} (${bus.body.passengerCapacity} Kursi)",
+                                    text = "${driver?.name ?: "Belum ada sopir"} • Kelas ${bus.body.busClass.displayName} (${bus.body.passengerCapacity} Kursi)",
                                     fontSize = 10.sp,
                                     color = TextMuted
                                 )
@@ -223,16 +224,16 @@ fun RouteDetailCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     OutlinedButton(
                         onClick = { onAssignBusClick(route) },
                         shape = RoundedCornerShape(AppDimens.radiusPill),
                         modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "🚌 Input Bus",
+                            text = "Input Bus",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = PrimaryBlue
@@ -245,10 +246,10 @@ fun RouteDetailCard(
                         shape = RoundedCornerShape(AppDimens.radiusPill),
                         modifier = Modifier.weight(1f),
                         enabled = info.assignedBuses.isNotEmpty(),
-                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "👨‍✈️ Input Driver",
+                            text = "Input Driver",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (info.assignedBuses.isNotEmpty()) PrimaryBlue else TextMuted
@@ -256,13 +257,27 @@ fun RouteDetailCard(
                     }
 
                     OutlinedButton(
+                        onClick = { onEditScheduleClick(route) },
+                        shape = RoundedCornerShape(AppDimens.radiusPill),
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "Atur Jadwal",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryBlueDark
+                        )
+                    }
+
+                    OutlinedButton(
                         onClick = { onDeleteRouteClick(route) },
                         shape = RoundedCornerShape(AppDimens.radiusPill),
-                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         border = BorderStroke(1.dp, Color(0xFFFCA5A5))
                     ) {
                         Text(
-                            text = "🗑️ Tutup",
+                            text = "Tutup",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFDC2626)
@@ -271,22 +286,42 @@ fun RouteDetailCard(
                 }
             }
 
-            if (info.departureSchedules.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(IceBlue)
-                        .padding(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+            Spacer(modifier = Modifier.height(6.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(IceBlue)
+                    .padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "🕒 Jadwal Keberangkatan:",
+                        text = "Jadwal Keberangkatan:",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlueDark
                     )
+                    Text(
+                        text = "Pengaturan Jadwal",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlue,
+                        modifier = Modifier.clickable { onEditScheduleClick(route) }
+                    )
+                }
+
+                if (info.departureSchedules.isEmpty()) {
+                    Text(
+                        text = "Belum ada jadwal keberangkatan yang diatur",
+                        fontSize = 10.sp,
+                        color = TextMuted
+                    )
+                } else {
                     info.departureSchedules.forEach { sched ->
                         Text(
                             text = "• $sched",
@@ -311,13 +346,13 @@ fun RouteDetailCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "🏷️ Daftar Tarif Tiket (${uniquePricings.size} Relasi)",
+                        text = "Daftar Tarif Tiket (${uniquePricings.size} Relasi)",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlue
                     )
                     Text(
-                        text = if (item.isPricingsExpanded) "▲ Tutup" else "▼ Lihat Tarif",
+                        text = if (item.isPricingsExpanded) "Tutup Tarif" else "Lihat Tarif",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlue
@@ -340,7 +375,7 @@ fun RouteDetailCard(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "${pricing.originCity} ⇄ ${pricing.destinationCity}",
+                                    text = "${pricing.originCity} - ${pricing.destinationCity}",
                                     fontSize = 10.sp,
                                     color = TextDark
                                 )

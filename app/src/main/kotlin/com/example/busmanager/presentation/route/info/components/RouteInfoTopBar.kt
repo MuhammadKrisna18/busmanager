@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -56,16 +54,16 @@ fun RouteInfoTopBar(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
+                        .clip(RoundedCornerShape(AppDimens.radiusPill))
                         .background(IceBlue)
-                        .clickable(onClick = onNavigateBack),
+                        .clickable(onClick = onNavigateBack)
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "◀",
+                        text = "Kembali",
                         color = PrimaryBlueDark,
-                        fontSize = 16.sp,
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -74,7 +72,7 @@ fun RouteInfoTopBar(
 
                 Column {
                     Text(
-                        text = "📋 Informasi Trayek",
+                        text = "Informasi Trayek",
                         color = TextDark,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold

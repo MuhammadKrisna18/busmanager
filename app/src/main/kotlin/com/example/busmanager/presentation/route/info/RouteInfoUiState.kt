@@ -5,6 +5,7 @@ import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RouteOperationalInfo
 import com.example.busmanager.domain.route.model.RoutePricing
+import com.example.busmanager.domain.route.model.RouteSchedule
 
 enum class RouteInfoFilter(val displayName: String) {
     ALL("Semua"),
@@ -22,11 +23,14 @@ data class RouteInfoUiState(
     val allRoutes: List<RouteDetailItem> = emptyList(),
     val filteredRoutes: List<RouteDetailItem> = emptyList(),
     val availableBuses: List<Bus> = emptyList(),
+    val ownedBuses: List<Bus> = emptyList(),
     val availableDrivers: List<Driver> = emptyList(),
     val selectedFilter: RouteInfoFilter = RouteInfoFilter.ALL,
     val selectedRouteForBusAssign: BusRoute? = null,
     val selectedRouteForDriverAssign: BusRoute? = null,
     val targetBusForDriverAssign: Bus? = null,
+    val selectedRouteForScheduleEdit: BusRoute? = null,
+    val activeSchedulesForEditing: List<RouteSchedule> = emptyList(),
     val totalRouteCount: Int = 0,
     val operatingRouteCount: Int = 0,
     val standbyRouteCount: Int = 0,

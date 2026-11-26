@@ -67,7 +67,7 @@ class HomeScreenViewModelTest {
     }
 
     @Test
-    fun initialStateLoadsCompanyData() = runTest {
+    fun initialStateLoadsCompanyData() = runTest(testDispatcher) {
         testDispatcher.scheduler.advanceUntilIdle()
 
         val state = viewModel.uiState.first()
@@ -77,7 +77,7 @@ class HomeScreenViewModelTest {
     }
 
     @Test
-    fun resetGame_resetsCompanyBalanceAndState() = runTest {
+    fun resetGame_resetsCompanyBalanceAndState() = runTest(testDispatcher) {
         testDispatcher.scheduler.advanceUntilIdle()
 
         fakeCompanyRepo.updateBalance(Money.rupiah(10_000L))
@@ -90,7 +90,7 @@ class HomeScreenViewModelTest {
     }
 
     @Test
-    fun togglePlaySimulationChangesState() = runTest {
+    fun togglePlaySimulationChangesState() = runTest(testDispatcher) {
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.isPlaying)
@@ -101,7 +101,7 @@ class HomeScreenViewModelTest {
     }
 
     @Test
-    fun routeInfoModal_opensAndDismissesCorrectly() = runTest {
+    fun routeInfoModal_opensAndDismissesCorrectly() = runTest(testDispatcher) {
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertFalse(viewModel.uiState.value.showRouteInfoModal)
@@ -114,7 +114,7 @@ class HomeScreenViewModelTest {
     }
 
     @Test
-    fun offlineProgressionDialog_dismissesCorrectly() = runTest {
+    fun offlineProgressionDialog_dismissesCorrectly() = runTest(testDispatcher) {
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertNull(viewModel.uiState.value.offlineProgressionResult)

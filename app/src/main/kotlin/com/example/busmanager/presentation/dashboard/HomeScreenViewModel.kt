@@ -17,6 +17,7 @@ import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseC
 import com.example.busmanager.domain.simulation.model.PassengerQueueManager
 import com.example.busmanager.domain.simulation.usecase.GetSimulationTimeUseCase
 import com.example.busmanager.domain.simulation.usecase.ProcessOfflineProgressionUseCase
+import com.example.busmanager.domain.simulation.usecase.ToggleSimulationPlayUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,6 +37,7 @@ class HomeScreenViewModel(
     private val processOfflineProgressionUseCase: ProcessOfflineProgressionUseCase? = null,
     private val reconcileBusOperatingStateUseCase: ReconcileBusOperatingStateUseCase? = null,
     private val getSimulationTimeUseCase: GetSimulationTimeUseCase? = null,
+    private val toggleSimulationPlayUseCase: ToggleSimulationPlayUseCase? = null,
     private val passengerQueueManager: PassengerQueueManager? = null,
     private val calculateCompanyReputationUseCase: CalculateCompanyReputationUseCase = CalculateCompanyReputationUseCase(),
     private val calculateCompanyTierUseCase: CalculateCompanyTierUseCase = CalculateCompanyTierUseCase()
@@ -53,6 +55,13 @@ class HomeScreenViewModel(
             viewModelScope.launch {
                 getSimulationTimeUseCase.invoke().collect { cal ->
                     _uiState.update { it.copy(gameCalendar = cal) }
+                }
+            }
+        }
+        if (toggleSimulationPlayUseCase != null) {
+            viewModelScope.launch {
+                toggleSimulationPlayUseCase.isPlaying().collect { playing ->
+                    _uiState.update { it.copy(isPlaying = playing) }
                 }
             }
         }
@@ -126,7 +135,11 @@ class HomeScreenViewModel(
     }
 
     fun togglePlaySimulation() {
-        _uiState.update { it.copy(isPlaying = !it.isPlaying) }
+        if (toggleSimulationPlayUseCase != null) {
+            toggleSimulationPlayUseCase()
+        } else {
+            _uiState.update { it.copy(isPlaying = !it.isPlaying) }
+        }
     }
 
     fun resetGame() {

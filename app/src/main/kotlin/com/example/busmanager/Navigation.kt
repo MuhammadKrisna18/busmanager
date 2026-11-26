@@ -60,6 +60,7 @@ fun MainNavigation(appContainer: AppContainer) {
                         processOfflineProgressionUseCase = appContainer.processOfflineProgressionUseCase,
                         reconcileBusOperatingStateUseCase = appContainer.reconcileBusOperatingStateUseCase,
                         getSimulationTimeUseCase = appContainer.getSimulationTimeUseCase,
+                        toggleSimulationPlayUseCase = appContainer.toggleSimulationPlayUseCase,
                         passengerQueueManager = appContainer.simulationTripRepository.passengerQueueManager,
                         calculateCompanyReputationUseCase = appContainer.calculateCompanyReputationUseCase,
                         calculateCompanyTierUseCase = appContainer.calculateCompanyTierUseCase

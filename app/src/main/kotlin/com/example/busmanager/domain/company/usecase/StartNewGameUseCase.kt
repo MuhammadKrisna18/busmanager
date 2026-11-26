@@ -14,10 +14,6 @@ class StartNewGameUseCase(
         driverRepository?.seedCandidateDriversIfEmpty()
         val existing = companyRepository.getCompany().first()
         if (existing != null) {
-            if (existing.balance < DEFAULT_STARTING_BALANCE) {
-                companyRepository.addBalance(DEFAULT_STARTING_BALANCE - existing.balance)
-                return companyRepository.getCompany().first() ?: existing
-            }
             return existing
         }
         return companyRepository.createCompany(

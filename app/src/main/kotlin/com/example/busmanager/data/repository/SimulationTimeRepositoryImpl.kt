@@ -6,6 +6,7 @@ import com.example.busmanager.domain.simulation.model.SimulationSpeed
 import com.example.busmanager.domain.simulation.repository.SimulationStateRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTimeRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
+import com.example.busmanager.domain.simulation.usecase.ProcessCompletedTripsUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,23 +25,49 @@ class SimulationTimeRepositoryImpl(
     private val minutesPerTick: Int = 1,
     private val simulationTripRepository: SimulationTripRepository? = null,
     private val simulationStateRepository: SimulationStateRepository? = null,
+    private val processCompletedTripsUseCase: ProcessCompletedTripsUseCase? = null,
     initialPlayState: Boolean = false
 ) : SimulationTimeRepository {
 
-    private val _currentTime = MutableStateFlow(initialTime)
+    private val savedState: SavedSimulationState? = simulationStateRepository?.loadState()
+
+    private val _currentTime = MutableStateFlow(savedState?.gameCalendar ?: initialTime)
     override val currentTime: StateFlow<GameCalendar> = _currentTime.asStateFlow()
 
-    private val _isPlaying = MutableStateFlow(initialPlayState)
+    private val _isPlaying = MutableStateFlow(savedState?.isPlaying ?: initialPlayState)
     override val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
-    private val _currentSpeed = MutableStateFlow(SimulationSpeed.NORMAL)
+    private val _currentSpeed = MutableStateFlow(savedState?.speed ?: SimulationSpeed.NORMAL)
     override val currentSpeed: StateFlow<SimulationSpeed> = _currentSpeed.asStateFlow()
 
     private var tickerJob: Job? = null
 
     init {
-        if (initialPlayState) {
+        restoreAndAdvanceOfflineState()
+        if (_isPlaying.value) {
             startTicker()
+        }
+    }
+
+    private fun restoreAndAdvanceOfflineState() {
+        val state = savedState ?: return
+        if (state.lastWallClockMillis <= 0L) return
+        val nowMillis = System.currentTimeMillis()
+        val deltaMillis = (nowMillis - state.lastWallClockMillis).coerceAtLeast(0L)
+        if (state.isPlaying && deltaMillis > 1000L) {
+            val gameMinutesElapsed = ((deltaMillis / 1000.0) * state.speed.multiplier).toLong().toInt().coerceIn(0, 2880)
+            if (gameMinutesElapsed > 0) {
+                val advancedTime = state.gameCalendar.advanceMinutes(gameMinutesElapsed)
+                _currentTime.value = advancedTime
+                simulationTripRepository?.advanceTripsTime(gameMinutesElapsed, advancedTime)
+                val completed = simulationTripRepository?.activeTrips?.value?.filter { it.isCompleted } ?: emptyList()
+                if (completed.isNotEmpty() && processCompletedTripsUseCase != null) {
+                    scope.launch {
+                        processCompletedTripsUseCase.invoke(completed, advancedTime)
+                    }
+                }
+                persistCurrentState()
+            }
         }
     }
 
@@ -73,7 +100,13 @@ class SimulationTimeRepositoryImpl(
     override fun advanceMinutes(minutes: Int) {
         _currentTime.update { it.advanceMinutes(minutes) }
         simulationTripRepository?.advanceTripsTime(minutes, _currentTime.value)
-        if (_currentTime.value.minute % 10 == 0) {
+        val completed = simulationTripRepository?.activeTrips?.value?.filter { it.isCompleted } ?: emptyList()
+        if (completed.isNotEmpty() && processCompletedTripsUseCase != null) {
+            scope.launch {
+                processCompletedTripsUseCase.invoke(completed, _currentTime.value)
+            }
+        }
+        if (_currentTime.value.minute % 5 == 0) {
             persistCurrentState()
         }
     }

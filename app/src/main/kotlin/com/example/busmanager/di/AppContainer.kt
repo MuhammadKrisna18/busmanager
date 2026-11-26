@@ -88,14 +88,6 @@ class AppContainer(context: Context) {
         routeScheduleDao = database.routeScheduleDao(),
         routePricingDao = database.routePricingDao()
     )
-    val simulationStateRepository: SimulationStateRepository = SimulationStateRepositoryImpl(context)
-    val simulationTripRepository: SimulationTripRepository = SimulationTripRepositoryImpl()
-    val simulationTimeRepository: SimulationTimeRepository = SimulationTimeRepositoryImpl(
-        simulationTripRepository = simulationTripRepository,
-        simulationStateRepository = simulationStateRepository,
-        initialPlayState = true
-    )
-
     val companyRepository: CompanyRepository = CompanyRepositoryImpl(database.companyDao())
     val fleetRepository: FleetRepository = FleetRepositoryImpl(
         database.ownedBusDao(),
@@ -118,6 +110,28 @@ class AppContainer(context: Context) {
     )
     val terminalPassengerRepository: TerminalPassengerRepository = TerminalPassengerRepositoryImpl(
         database.terminalPassengerRecordDao()
+    )
+
+    val simulationStateRepository: SimulationStateRepository = SimulationStateRepositoryImpl(context)
+    val simulationTripRepository: SimulationTripRepository = SimulationTripRepositoryImpl(
+        activeTripDao = database.activeTripDao(),
+        routeRepository = routeRepository
+    )
+    val processCompletedTripsUseCase: com.example.busmanager.domain.simulation.usecase.ProcessCompletedTripsUseCase =
+        com.example.busmanager.domain.simulation.usecase.ProcessCompletedTripsUseCase(
+            fleetRepository = fleetRepository,
+            simulationTripRepository = simulationTripRepository,
+            companyRepository = companyRepository,
+            financialTransactionRepository = financialTransactionRepository,
+            terminalPassengerRepository = terminalPassengerRepository,
+            routeScheduleRepository = routeScheduleRepository,
+            driverRepository = driverRepository
+        )
+    val simulationTimeRepository: SimulationTimeRepository = SimulationTimeRepositoryImpl(
+        simulationTripRepository = simulationTripRepository,
+        simulationStateRepository = simulationStateRepository,
+        processCompletedTripsUseCase = processCompletedTripsUseCase,
+        initialPlayState = true
     )
 
     val startNewGameUseCase = StartNewGameUseCase(companyRepository, driverRepository)

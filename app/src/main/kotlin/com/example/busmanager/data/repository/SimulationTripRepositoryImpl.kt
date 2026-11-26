@@ -1,8 +1,12 @@
 package com.example.busmanager.data.repository
 
+import com.example.busmanager.data.local.dao.ActiveTripDao
+import com.example.busmanager.data.mapper.toDomain
+import com.example.busmanager.data.mapper.toEntity
 import com.example.busmanager.domain.company.model.Money
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.BusMovementInterpolator
 import com.example.busmanager.domain.simulation.model.GameCalendar
@@ -11,19 +15,37 @@ import com.example.busmanager.domain.simulation.model.PassengerQueueManager
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import com.example.busmanager.domain.simulation.model.TransitExchangeInfo
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.util.UUID
 
 class SimulationTripRepositoryImpl(
     override val passengerQueueManager: PassengerQueueManager = PassengerQueueManager(),
-    private val passengerDemandGenerator: PassengerDemandGenerator = PassengerDemandGenerator()
+    private val passengerDemandGenerator: PassengerDemandGenerator = PassengerDemandGenerator(),
+    private val activeTripDao: ActiveTripDao? = null,
+    private val routeRepository: RouteRepository? = null,
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : SimulationTripRepository {
 
     private val _activeTrips = MutableStateFlow<List<ActiveBusTrip>>(emptyList())
     override val activeTrips: StateFlow<List<ActiveBusTrip>> = _activeTrips.asStateFlow()
+
+    init {
+        if (activeTripDao != null && routeRepository != null) {
+            try {
+                val entities = activeTripDao.getAllTripsSync()
+                val loadedTrips = entities.mapNotNull { it.toDomain(routeRepository) }
+                if (loadedTrips.isNotEmpty()) {
+                    _activeTrips.value = loadedTrips
+                }
+            } catch (_: Exception) {}
+        }
+    }
 
     override fun dispatchBus(
         bus: Bus,
@@ -97,6 +119,12 @@ class SimulationTripRepositoryImpl(
 
         _activeTrips.update { current ->
             current.filterNot { it.busId == bus.id } + newTrip
+        }
+
+        if (activeTripDao != null) {
+            scope.launch {
+                activeTripDao.insertTrip(newTrip.toEntity())
+            }
         }
 
         return newTrip
@@ -250,26 +278,57 @@ class SimulationTripRepositoryImpl(
                 }
             }
         }
+
+        if (activeTripDao != null && _activeTrips.value.isNotEmpty()) {
+            val entities = _activeTrips.value.map { it.toEntity() }
+            scope.launch {
+                activeTripDao.insertTrips(entities)
+            }
+        }
+
         return _activeTrips.value
     }
 
     override fun cancelTrip(tripId: String) {
         _activeTrips.update { it.filterNot { trip -> trip.id == tripId } }
+        if (activeTripDao != null) {
+            scope.launch {
+                activeTripDao.deleteTrip(tripId)
+            }
+        }
     }
 
     override fun clearTrips() {
         _activeTrips.value = emptyList()
+        if (activeTripDao != null) {
+            scope.launch {
+                activeTripDao.deleteAllTrips()
+            }
+        }
     }
 
     override fun markCancelNextSchedule(tripId: String, cancel: Boolean) {
         _activeTrips.update { list ->
             list.map { if (it.id == tripId) it.copy(cancelNextSchedule = cancel) else it }
         }
+        if (activeTripDao != null) {
+            val target = _activeTrips.value.find { it.id == tripId }
+            if (target != null) {
+                scope.launch {
+                    activeTripDao.updateTrip(target.toEntity())
+                }
+            }
+        }
     }
 
     override fun completeTrip(tripId: String) {
         _activeTrips.update { list ->
             list.filterNot { it.id == tripId }
+        }
+        if (activeTripDao != null) {
+            scope.launch {
+                activeTripDao.deleteTrip(tripId)
+            }
         }
     }
 }

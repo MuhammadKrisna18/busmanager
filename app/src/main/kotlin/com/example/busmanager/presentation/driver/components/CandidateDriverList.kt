@@ -32,6 +32,7 @@ import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.PrimaryBlue
+import com.example.busmanager.ui.theme.PrimaryBlueDark
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextMuted
@@ -51,14 +52,13 @@ fun CandidateDriverList(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(AppDimens.paddingLarge)
             ) {
-                Text(text = "💼", fontSize = 48.sp)
-                Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
                 Text(
                     text = "Tidak Ada Pelamar Baru",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextDark
                 )
+                Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
                 Text(
                     text = "Semua kandidat sopir telah direkrut ke dalam armada.",
                     fontSize = 12.sp,
@@ -108,7 +108,12 @@ fun CandidateDriverCard(
                         .background(AccentBlue),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "👨‍💼", fontSize = 22.sp)
+                    Text(
+                        text = candidate.name.take(1).uppercase(),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = PrimaryBlueDark
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(AppDimens.paddingSmall))

@@ -43,19 +43,16 @@ fun DriverMetricsSummary(
             MetricItem(
                 label = "Total Sopir",
                 value = "$totalHired Orang",
-                emoji = "👨‍✈️",
                 modifier = Modifier.weight(1f)
             )
             MetricItem(
                 label = "Bertugas",
                 value = "$totalAssigned Bus",
-                emoji = "🚌",
                 modifier = Modifier.weight(1f)
             )
             MetricItem(
                 label = "Beban Gaji",
                 value = "$totalDailyWageFormatted/hr",
-                emoji = "💵",
                 modifier = Modifier.weight(1.2f)
             )
         }
@@ -66,25 +63,24 @@ fun DriverMetricsSummary(
 fun MetricItem(
     label: String,
     value: String,
-    emoji: String,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = emoji, fontSize = 20.sp)
+        Text(
+            text = label.uppercase(),
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = TextMuted
+        )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = value,
-            fontSize = 13.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.Bold,
             color = PrimaryBlueDark
-        )
-        Text(
-            text = label,
-            fontSize = 11.sp,
-            color = TextMuted
         )
     }
 }

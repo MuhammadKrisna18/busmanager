@@ -36,6 +36,7 @@ import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.IceBlue
 import com.example.busmanager.ui.theme.PrimaryBlue
+import com.example.busmanager.ui.theme.PrimaryBlueDark
 import com.example.busmanager.ui.theme.SuccessGreen
 import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.SurfaceWhite
@@ -62,16 +63,15 @@ fun HiredDriverList(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(AppDimens.paddingLarge)
             ) {
-                Text(text = "📭", fontSize = 48.sp)
-                Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
                 Text(
                     text = "Belum Ada Sopir yang Direkrut",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextDark
                 )
+                Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
                 Text(
-                    text = "Buka tab 'Bursa Pelamar' untuk merekrut sopir ke armada Anda.",
+                    text = "Buka tab Bursa Pelamar untuk merekrut sopir ke armada Anda.",
                     fontSize = 12.sp,
                     color = TextMuted,
                     textAlign = TextAlign.Center
@@ -79,6 +79,10 @@ fun HiredDriverList(
             }
         }
         return
+    }
+
+    val hasAvailableBus = buses.any { bus ->
+        drivers.none { it.assignedBusId == bus.id }
     }
 
     LazyColumn(
@@ -90,6 +94,7 @@ fun HiredDriverList(
             HiredDriverCard(
                 driver = driver,
                 assignedBus = assignedBus,
+                hasAvailableBus = hasAvailableBus,
                 onAssignClick = { onAssignClick(driver) },
                 onUnassignClick = { onUnassignClick(driver.id) },
                 onFireClick = { onFireClick(driver) }
@@ -102,6 +107,7 @@ fun HiredDriverList(
 fun HiredDriverCard(
     driver: Driver,
     assignedBus: Bus?,
+    hasAvailableBus: Boolean,
     onAssignClick: () -> Unit,
     onUnassignClick: () -> Unit,
     onFireClick: () -> Unit
@@ -128,7 +134,12 @@ fun HiredDriverCard(
                             .background(IceBlue),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "👨‍✈️", fontSize = 22.sp)
+                        Text(
+                            text = driver.name.take(1).uppercase(),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = PrimaryBlueDark
+                        )
                     }
 
                     Spacer(modifier = Modifier.width(AppDimens.paddingSmall))
@@ -183,20 +194,28 @@ fun HiredDriverCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall)
+                horizontalArrangement = Arrangement.spacedBy(AppDimens.paddingSmall),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
-                    onClick = onAssignClick,
-                    shape = RoundedCornerShape(AppDimens.radiusPill),
-                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        text = if (assignedBus != null) "Ganti Bus" else "Tugaskan Bus",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                if (assignedBus == null) {
+                    Button(
+                        onClick = onAssignClick,
+                        enabled = hasAvailableBus,
+                        shape = RoundedCornerShape(AppDimens.radiusPill),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PrimaryBlue,
+                            disabledContainerColor = Color(0xFFE2E8F0),
+                            disabledContentColor = TextMuted
+                        ),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = if (hasAvailableBus) "Tugaskan Bus" else "Bus Tidak Tersedia",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 if (driver.isPendingRelease) {
@@ -204,11 +223,11 @@ fun HiredDriverCard(
                         modifier = Modifier
                             .clip(RoundedCornerShape(AppDimens.radiusPill))
                             .background(Color(0xFFFEF3C7))
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
                     ) {
                         Text(
-                            text = "⏳ Menunggu Tiba di Terminal",
-                            fontSize = 10.sp,
+                            text = "Menunggu Tiba di Terminal",
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFD97706)
                         )
@@ -220,11 +239,13 @@ fun HiredDriverCard(
                         onClick = onUnassignClick,
                         enabled = !driver.isPendingRelease,
                         shape = RoundedCornerShape(AppDimens.radiusPill),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                        modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = if (driver.isPendingRelease) "Menunggu Tiba" else "Lepas",
+                            text = if (driver.isPendingRelease) "Menunggu Tiba" else "Lepas Tugas",
                             fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
                             color = if (driver.isPendingRelease) TextMuted else Color(0xFFD97706)
                         )
                     }
@@ -233,14 +254,24 @@ fun HiredDriverCard(
                 OutlinedButton(
                     onClick = onFireClick,
                     shape = RoundedCornerShape(AppDimens.radiusPill),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Text(
                         text = "PHK",
                         fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
                         color = Color(0xFFDC2626)
                     )
                 }
+            }
+
+            if (assignedBus == null && !hasAvailableBus) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Semua bus sudah ditugaskan ke sopir lain atau belum ada bus di garasi.",
+                    fontSize = 11.sp,
+                    color = TextMuted
+                )
             }
         }
     }

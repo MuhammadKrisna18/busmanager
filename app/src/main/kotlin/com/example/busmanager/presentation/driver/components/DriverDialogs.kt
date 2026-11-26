@@ -38,7 +38,6 @@ import com.example.busmanager.ui.theme.SuccessGreenLight
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
 import com.example.busmanager.ui.theme.TextMuted
-import com.example.busmanager.ui.theme.WarningAmber
 
 @Composable
 fun AssignBusDialog(
@@ -48,6 +47,10 @@ fun AssignBusDialog(
     onDismiss: () -> Unit,
     onAssignConfirm: (busId: String) -> Unit
 ) {
+    val availableBuses = buses.filter { bus ->
+        drivers.none { it.assignedBusId == bus.id && it.id != driver.id }
+    }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
@@ -66,9 +69,9 @@ fun AssignBusDialog(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                if (buses.isEmpty()) {
+                if (availableBuses.isEmpty()) {
                     Text(
-                        text = "Perusahaan belum memiliki bus. Beli bus terlebih dahulu di Showroom.",
+                        text = "Tidak ada armada bus yang tersedia. Semua bus sudah memiliki pengemudi atau Anda belum memiliki bus.",
                         fontSize = 13.sp,
                         color = Color(0xFFDC2626)
                     )
@@ -77,11 +80,9 @@ fun AssignBusDialog(
                         modifier = Modifier.height(240.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(buses, key = { it.id }) { bus ->
-                            val currentDriver = drivers.find { it.assignedBusId == bus.id }
+                        items(availableBuses, key = { it.id }) { bus ->
                             BusSelectionItem(
                                 bus = bus,
-                                currentDriver = currentDriver,
                                 isAssignedToThisDriver = driver.assignedBusId == bus.id,
                                 onSelect = { onAssignConfirm(bus.id) }
                             )
@@ -101,7 +102,6 @@ fun AssignBusDialog(
 @Composable
 fun BusSelectionItem(
     bus: Bus,
-    currentDriver: Driver?,
     isAssignedToThisDriver: Boolean,
     onSelect: () -> Unit
 ) {
@@ -113,10 +113,7 @@ fun BusSelectionItem(
         colors = CardDefaults.cardColors(
             containerColor = if (isAssignedToThisDriver) IceBlue else SurfaceWhite
         ),
-        border = BorderStroke(
-            1.dp,
-            if (isAssignedToThisDriver) PrimaryBlue else CardBorder
-        )
+        border = BorderStroke(1.dp, if (isAssignedToThisDriver) PrimaryBlue else CardBorder)
     ) {
         Column(modifier = Modifier.padding(10.dp)) {
             Row(
@@ -132,7 +129,7 @@ fun BusSelectionItem(
                 )
                 if (isAssignedToThisDriver) {
                     Text(
-                        text = "✓ Ditugaskan",
+                        text = "Ditugaskan",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = PrimaryBlue
@@ -145,14 +142,6 @@ fun BusSelectionItem(
                 fontSize = 12.sp,
                 color = TextDark
             )
-
-            if (currentDriver != null && !isAssignedToThisDriver) {
-                Text(
-                    text = "Sopir saat ini: ${currentDriver.name} (akan digantikan)",
-                    fontSize = 11.sp,
-                    color = WarningAmber
-                )
-            }
         }
     }
 }
@@ -265,7 +254,7 @@ fun MessageBanner(
                 color = SuccessGreen
             )
             Text(
-                text = "✕",
+                text = "Tutup",
                 fontSize = 12.sp,
                 color = SuccessGreen
             )

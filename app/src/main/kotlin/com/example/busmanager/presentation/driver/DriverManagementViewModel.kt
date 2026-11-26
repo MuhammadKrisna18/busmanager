@@ -72,7 +72,7 @@ class DriverManagementViewModel(
                     it.copy(
                         message = "Sopir berhasil direkrut ke armada!",
                         feedbackToast = FeedbackToastData(
-                            iconEmoji = "👨‍✈️",
+                            iconEmoji = "",
                             title = "$driverName Berhasil Direkrut!",
                             subtitle = "Siap ditugaskan berdinas pada armada bus",
                             durationMillis = 1000L
@@ -102,7 +102,7 @@ class DriverManagementViewModel(
                         selectedDriverForAssignment = null,
                         message = "Sopir berhasil ditugaskan ke armada!",
                         feedbackToast = FeedbackToastData(
-                            iconEmoji = "📋",
+                            iconEmoji = "",
                             title = "Penugasan Berhasil!",
                             subtitle = "${driver?.name ?: "Sopir"} ditugaskan ke ${bus?.busCode ?: "armada"}",
                             durationMillis = 1000L

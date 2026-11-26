@@ -93,17 +93,20 @@ fun GameFeedbackToast(
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape)
-                                .background(Color(0xFF1E293B)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = currentData?.iconEmoji ?: "✨", fontSize = 17.sp)
-                        }
+                        val emoji = currentData?.iconEmoji ?: ""
+                        if (emoji.isNotBlank()) {
+                            Box(
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFF1E293B)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(text = emoji, fontSize = 17.sp)
+                            }
 
-                        Spacer(modifier = Modifier.width(10.dp))
+                            Spacer(modifier = Modifier.width(10.dp))
+                        }
 
                         Column(
                             modifier = Modifier.weight(1f),

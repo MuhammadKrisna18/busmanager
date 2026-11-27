@@ -113,47 +113,64 @@ $$\text{Level BVA} = f(\text{Durasi Mentah}) \implies [30, 45, 60, \dots, 270\te
 
 ---
 
-## ✨ Fitur-Fitur Utama
+## ✨ Fitur-Fitur Utama (Current Features)
 
-### 1. Showroom Bus & Pembelian Instan
-- **Pembelian Instan Siap Pakai**: Beli bus baru langsung pakai dengan spesifikasi asli pabrikan terkemuka (Hino RK8, Mercedes-Benz OH 1626, Scania K410IB, Volvo B11R) lengkap dengan bodi dan kapasitas kursi aslinya.
-- **Perakitan Kustom**: Rancang sendiri kombinasi sasis (Hino, Mercedes-Benz, Scania) dan bodi karoseri mewah (Adiputro Jetbus, Laksana Legacy, Tentrem Avante).
-- **Pembelian Borongan (Banyak Unit Sekaligus)**: Tambah armada dalam jumlah banyak dengan satu kali konfirmasi untuk mempercepat ekspansi bisnis.
-- **Beragam Kelas Layanan**: Sediakan kelas perjalanan Ekonomi, Bisnis AC, VIP, Eksekutif, Super Eksekutif, hingga Sleeper Suite.
+### 1. Showroom Bus & Karoseri Resmi
+- **Pembelian Instan Siap Pakai**: Beli armada bus langsung operasional dari pabrikan terkemuka (Hino RK8, Mercedes-Benz OH 1626, Scania K410IB, Volvo B11R) lengkap dengan bodi karoseri asli dan spesifikasi kapasitas kursinya.
+- **Perakitan Kustom**: Rancang sendiri kombinasi sasis premium dan bodi karoseri mewah (Adiputro Jetbus 3+ SHD/MHD, Laksana Legacy SR2, Tentrem Avante).
+- **Pembelian Borongan (Batch Purchase)**: Tambah armada dalam jumlah banyak sekaligus hanya dengan satu kali konfirmasi untuk ekspansi armada secara cepat.
+- **Beragam Kelas Layanan**: Sediakan variasi kelas perjalanan untuk melayani berbagai segmen penumpang: Ekonomi, Bisnis AC, VIP, Eksekutif, Super Eksekutif, hingga Sleeper Suite.
 
-### 2. Garasi Armada & Fleksibilitas Jadwal
-- **Pemantauan Status Armada**: Lihat armada yang sedang bertugas di jalan raya, armada yang sedang beristirahat menunggu jadwal di terminal, maupun armada yang menganggur di garasi.
-- **Penugasan Cepat (Quick Assign)**: Pasang sopir, rute, dan pilih slot keberangkatan terminal secara instan langsung dari daftar armada di garasi.
-- **Jual Armada**: Jual kembali bus lama untuk menambah kas usaha dan meremajakan armada.
+### 2. Garasi Armada & Dialog Penugasan Cepat (Quick Assign)
+- **Pemantauan Status Armada Real-Time**: Pantau armada yang sedang berdinas di jalan raya, armada yang sedang beristirahat menunggu jadwal di terminal, maupun armada yang standby di garasi.
+- **Dialog Penugasan Cepat 3-Langkah**:
+  1. *Pilih Rute & Arah Dinas:* Tentukan trayek dan arah keberangkatan (Asal ➔ Tujuan atau Tujuan ➔ Asal) secara mudah melalui tombol chip arah.
+  2. *Pilih Pengemudi:* Pilih pengemudi siap dinas dari bursa pelamar yang belum memiliki bus.
+  3. *Pilih Slot Terminal:* Grid 96 slot 15-menit interaktif dengan filter waktu (Pagi, Siang, Sore, Malam, Semua).
+- **Indikator Keterisian Slot Terbaca**: Slot yang telah terisi armada lain ditandai dengan warna merah dan mencantumkan kode armada yang bertugas (misal: `11:00 • TN-14`).
+- **Pengalihan Slot Otomatis Cerdas**: Jika slot terisi diklik, sistem secara otomatis mengalihkan pilihan ke slot kosong terdekat (*next available slot*) dengan notifikasi transparan dan tombol konfirmasi tetap aktif (*enabled*).
+- **Pratinjau Rencana Jadwal Harian (Daily Plan Preview)**: Menampilkan rincian 4 trip leg (Rit 1 Pergi, Rit 1 Pulang, Rit 2 Pergi, Rit 2 Pulang) beserta jam berangkat, jam tiba, dan waktu jeda istirahat sebelum disimpan.
+- **Jual Armada Bekas**: Jual kembali bus lama dengan nilai jual proporsional untuk peremajaan armada.
 
 ### 3. Bursa Kerja & Manajemen Pengemudi
-- **100 Pilihan Sopir Berpengalaman**: Bursa pelamar kerja menyediakan hingga 100 pilihan pengemudi dengan variasi lisensi dan pengalaman kerja.
-- **Sistem Bagi Hasil Transparan**: Pembagian hasil upah 30% pengemudi dan 70% kas perusahaan tercatat otomatis di buku kas.
-- **Filter Sopir Siap Dinas**: Hanya sopir yang belum memiliki armada yang muncul pada menu penugasan bus.
+- **100 Pilihan Sopir Berpengalaman**: Bursa pelamar kerja menyediakan hingga 100 pilihan pengemudi dengan variasi lisensi, pengalaman dinas, dan foto profil pengemudi.
+- **Sistem Bagi Hasil Adil & Otomatis**: Pengemudi memperoleh upah bagi hasil sebesar 30% dari omzet tiket perjalanan, dan 70% masuk kas perusahaan.
+- **Filter Sopir Siap Dinas**: Hanya sopir yang belum memiliki tugas dinas yang tampil pada menu penugasan cepat, mencegah penugasan ganda.
 
 ### 4. Perancangan Trayek Antarkota & Proyeksi Laba Live
-- **Pemetaan Otomatis Jalur Rute**: Sistem otomatis membentuk rute perjalanan lengkap dengan titik transit dan terminal tujuan.
-- **Kalkulator Proyeksi Laba Langsung**: Estimasi pendapatan harian dan bulanan langsung terkalkulasi saat tarif tiket diatur.
-- **Tampilan Informasi Trayek Rapi**: Menampilkan peta visual koridor, armada yang berdinas, jadwal keberangkatan terurut rapi, dan tarif resmi.
+- **3-Tahap Wizard Rute**:
+  - *Tahap 1 (Asal & Tujuan):* Pilih kota asal dan kota tujuan di wilayah Jawa Timur dan sekitarnya.
+  - *Tahap 2 (Terminal Transit):* Tambah terminal perantara (*via*) untuk menaikkan dan menurunkan penumpang sepanjang perjalanan.
+  - *Tahap 3 (Penetapan Tarif):* Tentukan harga tiket per penumpang.
+- **Kalkulator Proyeksi Laba Langsung**: Sistem langsung mengalkulasi estimasi omzet kotor harian, komisi pengemudi (30%), dan estimasi laba bersih kas perusahaan (70%) saat harga tiket diketik.
+- **Jalur Tunggal Efisien**: Menggunakan jaringan jalan terintegrasi tanpa pusing memilih jalan tol atau arteri non-tol.
 
 ### 5. Peta Simulasi & Pelacakan Bus Nyata (Real-Line Tracking)
-- **Berjalan Presisi di Atas Jalur Jalan**: Bus bergerak halus dan tepat menyusuri lekukan jalan raya Jawa Timur.
-- **Simulasi Otomatis Berjalan**: Game langsung aktif berjalan saat dibuka dengan kontrol jeda (*pause*) dan pilihan percepatan simulasi (1x, 3x, 5x).
-- **Visualisasi Armada Istirahat**: Bus yang menunggu jam keberangkatan berikutnya parkir rapi di terminal keberangkatannya.
-- **Pelacakan Kamera Mulus**: Fitur kunci kamera mengikuti armada di peta tanpa lonjakan posisi.
+- **Pergerakan Halus di Atas Lekukan Jalan**: Bus bergerak menyusuri garis jalan raya Jawa Timur secara halus menggunakan interpolasi *waypoint* koordinat nyata.
+- **Kontrol Kecepatan Simulasi Interaktif**: Game berjalan otomatis saat dibuka dengan kontrol jeda (*pause*) dan pilihan percepatan waktu (1x, 3x, 5x).
+- **BottomSheet Overview Trayek**:
+  - Menampilkan ringkasan seluruh trayek aktif, jarak tempuh, durasi tersistem, dan armada yang bertugas.
+  - Urutan jadwal keberangkatan bus tersusun rapi secara kronologis.
+  - Tombol pintas "⚙️ Ubah Jadwal" untuk penyesuaian jadwal dinas langsung dari peta.
+- **Visualisasi Armada Istirahat**: Bus yang menunggu jadwal berikutnya terlihat parkir tertib di terminal keberangkatannya.
+- **Pelacakan Kamera Mulus**: Fitur kunci kamera mengikuti bus di peta secara stabil tanpa hentakan posisi.
 
-### 6. Waktu Permainan Terintegrasi & Penghasilan Luar Jaringan (Offline Earnings)
-- **Waktu Terpadu**: Jam dashboard utama berdetak serasi secara langsung mengikuti jam simulasi operasional bus.
-- **Penghasilan Otomatis saat Game Ditutup**: Buka kembali aplikasi untuk menerima laporan pemasukan tiket dan keuntungan bersih yang diraih selama game ditutup.
+### 6. Waktu Permainan Terintegrasi & Penghasilan Luar Jaringan (Offline Progression)
+- **Waktu Terpadu 24-Jam**: Jam operasional di dashboard utama berdetak serasi secara langsung mengikuti jam simulasi bus di peta.
+- **Penghasilan Otomatis Saat Game Ditutup**: Saat aplikasi ditutup, seluruh armada tetap berdinas melayani penumpang. Saat aplikasi dibuka kembali, dialog laporan penghasilan offline menampilkan total omzet, upah sopir, dan keuntungan bersih yang diraih selama game ditutup.
 
-### 7. Laporan Operasional Seluruh Terminal
-- **Pencatatan Menyeluruh**: Merekam aktivitas naik dan turun penumpang di terminal asal, terminal tujuan, serta seluruh terminal transit perantara yang disinggahi.
-- **Riwayat Harian**: Tinjau kembali performa dan kepadatan penumpang harian di setiap terminal.
+### 7. Laporan Operasional Terminal Menyeluruh
+- **Pencatatan Penumpang Komprehensif**: Merekam volume naik dan turun penumpang di terminal asal, terminal tujuan, serta terminal transit perantara.
+- **Monitoring Riwayat Harian**: Tinjau kembali performa dan kepadatan penumpang harian di setiap terminal jaringan Anda.
 
 ### 8. Buku Kas Keuangan & Pengelolaan Modal
-- **Pencatatan Keuangan Bersih**: Pantau mutasi kas dari pemasukan tiket, pengeluaran komisi pengemudi, dan pembelian armada bus.
-- **Modal Awal Rp 50.000.000.000**: Keleluasaan penuh membangun jaringan trayek bus impian Anda.
-- **Fitur Mulai Baru (Reset Akun)**: Kembalikan kondisi permainan ke awal kapan saja Anda ingin mencoba strategi operasional yang baru.
+- **Pencatatan Mutasi Kas Bersih**: Rekam jejak seluruh transaksi dari penerimaan tiket, pembayaran bagi hasil sopir, serta pembelian/penjualan bus.
+- **Modal Awal Rp 50.000.000.000**: Keleluasaan penuh membangun konglomerasi transportasi bus impian Anda.
+- **Fitur Mulai Baru (Reset Akun)**: Kembalikan kondisi permainan ke awal kapan saja Anda ingin menguji coba strategi operasional yang baru.
+
+### 9. Sistem Pembaruan Aplikasi Otomatis (In-App Auto Update)
+- **Pengecekan Otomatis Versi Terbaru**: Terhubung langsung dengan GitHub Releases untuk memeriksa ketersediaan versi rilis APK terbaru.
+- **Dialog Pembaruan Resmi**: Menampilkan nomor versi baru, ringkasan catatan pembaruan (*release notes/changelog*), dan tombol unduh langsung pembaruan APK ke perangkat.
 
 ---
 

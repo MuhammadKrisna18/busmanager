@@ -52,7 +52,7 @@ class AssignBusToActiveRouteUseCase(
             return Result.failure(IllegalStateException(conflictCheck.errorMessage))
         }
 
-        val terminalLocation = bus.currentTerminalId ?: if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+        val departureTerminalId = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
             route.originTerminal.id
         } else {
             route.destinationTerminal.id
@@ -63,9 +63,11 @@ class AssignBusToActiveRouteUseCase(
         val updatedBus = bus.copy(
             routeId = route.id,
             driverId = driverId,
-            currentTerminalId = terminalLocation
+            currentTerminalId = departureTerminalId
         )
         fleetRepository.updateBus(updatedBus)
+
+        routeScheduleRepository.deleteSchedulesForBus(busId)
 
         val baseTime = System.currentTimeMillis()
         if (dailySchedulePlan != null && dailySchedulePlan.legs.isNotEmpty()) {

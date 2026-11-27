@@ -61,6 +61,9 @@ class GarageViewModelTest {
     private lateinit var fakePricingRepo: FakeRoutePricingRepository
     private lateinit var fakeCompanyRepo: FakeCompanyRepository
     private lateinit var fakeScheduleRepo: FakeRouteScheduleRepository
+    private lateinit var sellBusUseCase: SellBusUseCase
+    private lateinit var validateConflictUseCase: ValidateScheduleConflictUseCase
+    private lateinit var assignBusUseCase: AssignBusToActiveRouteUseCase
 
     private lateinit var viewModel: GarageViewModel
 
@@ -112,15 +115,15 @@ class GarageViewModelTest {
         )
         fakeDriverRepo.setDrivers(listOf(driver1, driver2))
 
-        val sellBusUseCase = SellBusUseCase(
+        sellBusUseCase = SellBusUseCase(
             fleetRepository = fakeFleetRepo,
             companyRepository = fakeCompanyRepo,
             driverRepository = fakeDriverRepo,
             routeScheduleRepository = fakeScheduleRepo
         )
 
-        val validateConflictUseCase = ValidateScheduleConflictUseCase(fakeScheduleRepo, routeRepository)
-        val assignBusUseCase = AssignBusToActiveRouteUseCase(
+        validateConflictUseCase = ValidateScheduleConflictUseCase(fakeScheduleRepo, routeRepository)
+        assignBusUseCase = AssignBusToActiveRouteUseCase(
             fleetRepository = fakeFleetRepo,
             routeRepository = routeRepository,
             driverRepository = fakeDriverRepo,
@@ -444,6 +447,54 @@ class GarageViewModelTest {
         assertEquals(busItemWithDriver.bus.driverId, assignState?.selectedDriver?.id)
         assertTrue(assignState?.availableDrivers?.any { it.id == busItemWithDriver.bus.driverId } == true)
         assertTrue(assignState?.canSubmit == true)
+    }
+
+    @Test
+    fun openQuickAssignDialog_includesStandbyOpenedRoutes() = runTest {
+        val operationalStatusUseCase = com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase(
+            routeRepository = routeRepository,
+            routeScheduleRepository = fakeScheduleRepo,
+            routePricingRepository = fakePricingRepo,
+            fleetRepository = fakeFleetRepo,
+            driverRepository = fakeDriverRepo
+        )
+        val vmWithOperationalStatus = GarageViewModel(
+            fleetRepository = fakeFleetRepo,
+            driverRepository = fakeDriverRepo,
+            routeRepository = routeRepository,
+            routePricingRepository = fakePricingRepo,
+            companyRepository = fakeCompanyRepo,
+            sellBusUseCase = sellBusUseCase,
+            routeScheduleRepository = fakeScheduleRepo,
+            assignBusToActiveRouteUseCase = assignBusUseCase,
+            validateScheduleConflictUseCase = validateConflictUseCase,
+            getRouteOperationalStatusUseCase = operationalStatusUseCase
+        )
+        advanceUntilIdle()
+
+        val customRoute = routeRepository.getAllRoutes().first { it.id != "route_sby_mlg_toll" }
+        fakePricingRepo.savePricings(
+            listOf(
+                RoutePricing(
+                    id = "p-custom",
+                    routeId = customRoute.id,
+                    originTerminalId = customRoute.originTerminal.id,
+                    destinationTerminalId = customRoute.destinationTerminal.id,
+                    originCity = customRoute.originTerminal.city,
+                    destinationCity = customRoute.destinationTerminal.city,
+                    price = Money.rupiah(50_000L)
+                )
+            )
+        )
+        advanceUntilIdle()
+
+        val standbyBus = vmWithOperationalStatus.uiState.value.allBuses.first { it.bus.id == "bus-2" }
+        vmWithOperationalStatus.openQuickAssignDialog(standbyBus)
+        advanceUntilIdle()
+
+        val availableRouteIds = vmWithOperationalStatus.uiState.value.quickAssignState?.availableRoutes?.map { it.id } ?: emptyList()
+        assertTrue(availableRouteIds.contains(customRoute.id))
+        assertTrue(availableRouteIds.contains("route_sby_mlg_toll"))
     }
 
     private class FakeFleetRepository : FleetRepository {

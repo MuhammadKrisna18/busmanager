@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -99,6 +100,7 @@ class LaunchCustomRouteUseCaseTest {
         assertNotNull(updatedBus)
         assertEquals(testRoute.id, updatedBus?.routeId)
         assertEquals(testDriver.id, updatedBus?.driverId)
+        assertEquals(testRoute.originTerminal.id, updatedBus?.currentTerminalId)
 
         assertEquals(1, fakeScheduleRepo.addedSchedules.size)
         val outbound = fakeScheduleRepo.addedSchedules.first()
@@ -143,6 +145,44 @@ class LaunchCustomRouteUseCaseTest {
         assertEquals(14, inbound.departureHour)
         assertEquals(30, inbound.departureMinute)
         assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, inbound.direction)
+    }
+
+    @Test
+    fun launchRoute_whenBusHasPreviousSchedules_clearsOldSchedules() = runTest {
+        fakeScheduleRepo.addedSchedules.add(
+            RouteSchedule(
+                id = "old-sched",
+                routeId = "old-route",
+                departureHour = 5,
+                departureMinute = 0,
+                direction = RouteDirection.ORIGIN_TO_DESTINATION,
+                assignedBusId = testBus.id
+            )
+        )
+
+        val pricings = listOf(
+            RoutePricing("p1", testRoute.id, testRoute.originTerminal.id, testRoute.destinationTerminal.id, "Surabaya", "Malang", Money.rupiah(45000))
+        )
+
+        val params = LaunchCustomRouteParams(
+            route = testRoute,
+            pricings = pricings,
+            bus = testBus,
+            driver = testDriver,
+            departureHour = 9,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            headwayMinutes = 60,
+            transitDwellMinutes = 10,
+            isRoundTrip = false
+        )
+
+        useCase(params)
+
+        val oldSchedules = fakeScheduleRepo.addedSchedules.filter { it.routeId == "old-route" }
+        assertTrue(oldSchedules.isEmpty())
+        val newSchedules = fakeScheduleRepo.addedSchedules.filter { it.routeId == testRoute.id }
+        assertEquals(1, newSchedules.size)
     }
 
     private class FakeRouteRepository : RouteRepository {
@@ -223,7 +263,9 @@ class LaunchCustomRouteUseCaseTest {
         override suspend fun assignBusToSchedule(scheduleId: String, busId: String) = true
         override suspend fun unassignBusFromSchedule(scheduleId: String) {}
         override suspend fun deleteSchedule(scheduleId: String) {}
-        override suspend fun deleteSchedulesForBus(busId: String) {}
+        override suspend fun deleteSchedulesForBus(busId: String) {
+            addedSchedules.removeAll { it.assignedBusId == busId }
+        }
         override suspend fun deleteSchedulesForRoute(routeId: String) {}
         override suspend fun deleteAllSchedules() { addedSchedules.clear() }
         override suspend fun checkConflict(routeId: String, direction: RouteDirection, hour: Int, minute: Int, excludeScheduleId: String?) = false

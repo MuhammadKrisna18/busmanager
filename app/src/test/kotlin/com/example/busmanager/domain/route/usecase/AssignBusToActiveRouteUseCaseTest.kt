@@ -164,6 +164,49 @@ class AssignBusToActiveRouteUseCaseTest {
         assertTrue(result.exceptionOrNull()?.message?.contains("sudah bertugas") == true)
     }
 
+    @Test
+    fun assignBus_whenReassigned_clearsOldSchedulesAndUpdatesDepartureTerminal() = runBlocking {
+        fakeScheduleRepository.addSchedule(
+            RouteSchedule(
+                id = "old-sched",
+                routeId = "route-old",
+                departureHour = 6,
+                departureMinute = 0,
+                direction = RouteDirection.ORIGIN_TO_DESTINATION,
+                assignedBusId = sampleBus.id
+            )
+        )
+        fakeFleetRepository.updateBus(
+            sampleBus.copy(
+                routeId = "route-old",
+                currentTerminalId = "terminal-old"
+            )
+        )
+
+        val result = useCase(
+            busId = sampleBus.id,
+            routeId = sampleRoute.id,
+            driverId = sampleDriver.id,
+            departureHour = 9,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION
+        )
+
+        assertTrue(result.isSuccess)
+
+        val updatedBus = fakeFleetRepository.getBusById(sampleBus.id)
+        assertEquals(sampleRoute.id, updatedBus?.routeId)
+        assertEquals(sampleRoute.originTerminal.id, updatedBus?.currentTerminalId)
+
+        val oldRouteSchedules = fakeScheduleRepository.getSchedulesListForRoute("route-old")
+            .filter { it.assignedBusId == sampleBus.id && it.routeId == "route-old" }
+        assertTrue(oldRouteSchedules.isEmpty())
+
+        val newRouteSchedules = fakeScheduleRepository.getSchedulesListForRoute(sampleRoute.id)
+            .filter { it.assignedBusId == sampleBus.id && it.routeId == sampleRoute.id }
+        assertEquals(1, newRouteSchedules.size)
+    }
+
     private class FakeFleetRepository : FleetRepository {
         private val list = mutableListOf<Bus>()
         private val flow = MutableStateFlow<List<Bus>>(emptyList())
@@ -249,7 +292,10 @@ class AssignBusToActiveRouteUseCaseTest {
         ): Boolean = false
         override suspend fun getSchedulesForBus(busId: String): List<com.example.busmanager.domain.route.model.RouteSchedule> = emptyList()
     override fun getSchedulesForBusFlow(busId: String): kotlinx.coroutines.flow.Flow<List<com.example.busmanager.domain.route.model.RouteSchedule>> = kotlinx.coroutines.flow.emptyFlow()
-    override suspend fun deleteSchedulesForBus(busId: String) {}
+    override suspend fun deleteSchedulesForBus(busId: String) {
+        list.removeAll { it.assignedBusId == busId }
+        flow.value = list.toList()
+    }
     override suspend fun deleteSchedulesForRoute(routeId: String) {}
     override suspend fun deleteAllSchedules() {}
 }

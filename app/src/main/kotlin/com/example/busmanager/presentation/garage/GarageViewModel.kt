@@ -298,8 +298,8 @@ class GarageViewModel(
             val selectedDriver = currentBusDriver ?: availableDrivers.firstOrNull()
 
             val operationalRoutes = getRouteOperationalStatusUseCase?.invoke()?.firstOrNull() ?: emptyList()
-            val activeRoutes = operationalRoutes.filter { it.isActive }.map { it.route }
-            val availableRoutes = if (activeRoutes.isNotEmpty()) activeRoutes else routeRepository.getAllRoutes()
+            val openedRoutes = operationalRoutes.map { it.route }
+            val availableRoutes = if (openedRoutes.isNotEmpty()) openedRoutes else routeRepository.getAllRoutes()
             val selectedRoute = item.bus.routeId?.let { rId -> availableRoutes.find { it.id == rId } }
                 ?: availableRoutes.firstOrNull()
 

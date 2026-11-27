@@ -41,11 +41,17 @@ class LaunchCustomRouteUseCase(
         routeRepository.saveRoute(params.route)
         routePricingRepository.savePricings(params.pricings)
         driverRepository.assignDriverToBus(params.driver.id, params.bus.id)
+        routeScheduleRepository.deleteSchedulesForBus(params.bus.id)
+        val initialTerminalId = if (params.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+            params.route.originTerminal.id
+        } else {
+            params.route.destinationTerminal.id
+        }
         fleetRepository.updateBus(
             params.bus.copy(
                 routeId = params.route.id,
                 driverId = params.driver.id,
-                currentTerminalId = params.bus.currentTerminalId ?: params.route.originTerminal.id
+                currentTerminalId = initialTerminalId
             )
         )
 

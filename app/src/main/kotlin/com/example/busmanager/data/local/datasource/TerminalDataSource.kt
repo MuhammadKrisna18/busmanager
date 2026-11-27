@@ -133,7 +133,7 @@ class TerminalDataSource {
         city = "Tulungagung",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.23f,
+            x = 0.25f,
             y = 0.73f,
             latitude = -8.0645,
             longitude = 111.9056
@@ -148,8 +148,8 @@ class TerminalDataSource {
         city = "Blitar",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.30f,
-            y = 0.75f,
+            x = 0.33f,
+            y = 0.73f,
             latitude = -8.0983,
             longitude = 112.1608
         ),
@@ -163,8 +163,8 @@ class TerminalDataSource {
         city = "Trenggalek",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.18f,
-            y = 0.72f,
+            x = 0.17f,
+            y = 0.70f,
             latitude = -8.0580,
             longitude = 111.7160
         ),

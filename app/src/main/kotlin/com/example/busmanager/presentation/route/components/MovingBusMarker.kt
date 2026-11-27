@@ -75,21 +75,21 @@ fun MovingBusMarker(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "⏱️ ${trip.remainingMinutes}m",
+                                        text = "${trip.remainingMinutes} mnt",
                                         color = Color(0xFF1D4ED8),
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.ExtraBold
                                     )
                                     Spacer(modifier = Modifier.width(3.dp))
                                     Text(
-                                        text = "➔ ${trip.currentDestinationName}",
+                                        text = "ke ${trip.currentDestinationName.removePrefix("Terminal ")}",
                                         color = Color(0xFF1E293B),
                                         fontSize = 9.sp,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
                                 Text(
-                                    text = "👥 ${trip.passengerCount} pnp",
+                                    text = "${trip.passengerCount} Penumpang",
                                     color = Color(0xFF64748B),
                                     fontSize = 8.sp,
                                     fontWeight = FontWeight.Medium
@@ -113,7 +113,7 @@ fun MovingBusMarker(
                             .padding(horizontal = 4.dp, vertical = 1.dp)
                     ) {
                         Text(
-                            text = "⏳ ${trip.dwellingTerminalName ?: "Transit"}",
+                            text = "Singgah: ${(trip.dwellingTerminalName ?: "Transit").removePrefix("Terminal ")}",
                             color = Color.White,
                             fontSize = 7.sp,
                             fontWeight = FontWeight.Bold
@@ -130,7 +130,7 @@ fun MovingBusMarker(
                         .padding(horizontal = if (isTracking) 6.dp else 4.dp, vertical = 1.dp)
                 ) {
                     Text(
-                        text = if (isTracking) "🎯 ${trip.busCode}" else trip.busCode,
+                        text = if (isTracking) "[Lacak] ${trip.busCode}" else trip.busCode,
                         color = Color.White,
                         fontSize = if (isTracking) 8.5.sp else 7.5.sp,
                         fontWeight = FontWeight.Bold

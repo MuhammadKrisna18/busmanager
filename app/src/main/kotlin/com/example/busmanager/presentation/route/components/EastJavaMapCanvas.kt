@@ -352,10 +352,12 @@ fun EastJavaMapCanvas(
 
                 val parkedGroupedByTerminal = parkedBuses.groupBy { it.terminal.id }
                 parkedGroupedByTerminal.forEach { (_, busesAtTerminal) ->
-                    busesAtTerminal.forEachIndexed { index, parked ->
-                        val baseXPx = parked.terminal.coordinate.x * worldWidth
-                        val baseYPx = parked.terminal.coordinate.y * worldHeight
-                        val offsetXPx = baseXPx + 20.dp.value + (index * 22.dp.value)
+                    val firstParked = busesAtTerminal.first()
+                    val baseXPx = firstParked.terminal.coordinate.x * worldWidth
+                    val baseYPx = firstParked.terminal.coordinate.y * worldHeight
+
+                    if (busesAtTerminal.size > 2) {
+                        val offsetXPx = baseXPx + 22.dp.value
                         val posYPx = baseYPx - 10.dp.value
 
                         Box(
@@ -366,13 +368,34 @@ fun EastJavaMapCanvas(
                                 .size(0.dp)
                                 .wrapContentSize(Alignment.Center, unbounded = true)
                         ) {
-                            ParkedBusMarker(
-                                bus = parked.bus,
-                                terminal = parked.terminal,
-                                route = parked.route,
-                                onClick = { onParkedBusClick(parked.bus) },
+                            ParkedBusClusterMarker(
+                                terminal = firstParked.terminal,
+                                count = busesAtTerminal.size,
+                                onClick = { onParkedBusClick(firstParked.bus) },
                                 zoomScale = currentZoom
                             )
+                        }
+                    } else {
+                        busesAtTerminal.forEachIndexed { index, parked ->
+                            val offsetXPx = baseXPx + 20.dp.value + (index * 22.dp.value)
+                            val posYPx = baseYPx - 10.dp.value
+
+                            Box(
+                                modifier = Modifier
+                                    .offset {
+                                        IntOffset(offsetXPx.roundToInt(), posYPx.roundToInt())
+                                    }
+                                    .size(0.dp)
+                                    .wrapContentSize(Alignment.Center, unbounded = true)
+                            ) {
+                                ParkedBusMarker(
+                                    bus = parked.bus,
+                                    terminal = parked.terminal,
+                                    route = parked.route,
+                                    onClick = { onParkedBusClick(parked.bus) },
+                                    zoomScale = currentZoom
+                                )
+                            }
                         }
                     }
                 }

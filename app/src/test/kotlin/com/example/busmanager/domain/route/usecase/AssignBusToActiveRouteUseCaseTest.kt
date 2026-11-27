@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -165,6 +166,31 @@ class AssignBusToActiveRouteUseCaseTest {
     }
 
     @Test
+    fun assignBus_whenScheduleAdditionFails_rollsBackAndDoesNotUpdateBus() = runBlocking {
+        fakeScheduleRepository.failOnAdd = true
+
+        val result = useCase(
+            busId = sampleBus.id,
+            routeId = sampleRoute.id,
+            driverId = sampleDriver.id,
+            departureHour = 7,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            headwayMinutes = 60,
+            transitDwellMinutes = 10
+        )
+
+        assertTrue(result.isFailure)
+
+        val bus = fakeFleetRepository.getBusById(sampleBus.id)
+        assertNull(bus?.routeId)
+        assertNull(bus?.driverId)
+
+        val schedules = fakeScheduleRepository.getSchedulesListForRoute(sampleRoute.id)
+        assertTrue(schedules.isEmpty())
+    }
+
+    @Test
     fun assignBus_whenReassigned_clearsOldSchedulesAndUpdatesDepartureTerminal() = runBlocking {
         fakeScheduleRepository.addSchedule(
             RouteSchedule(
@@ -265,6 +291,7 @@ class AssignBusToActiveRouteUseCaseTest {
 }
 
     private class FakeRouteScheduleRepository : RouteScheduleRepository {
+        var failOnAdd = false
         private val list = mutableListOf<RouteSchedule>()
         private val flow = MutableStateFlow<List<RouteSchedule>>(emptyList())
 
@@ -274,6 +301,9 @@ class AssignBusToActiveRouteUseCaseTest {
         override suspend fun getScheduleById(id: String): RouteSchedule? = list.find { it.id == id }
 
         override suspend fun addSchedule(schedule: RouteSchedule): Result<Unit> {
+            if (failOnAdd) {
+                return Result.failure(IllegalStateException("Simulated DB failure"))
+            }
             list.add(schedule)
             flow.value = list.toList()
             return Result.success(Unit)
@@ -282,7 +312,10 @@ class AssignBusToActiveRouteUseCaseTest {
         override suspend fun updateSchedule(schedule: RouteSchedule): Result<Unit> = Result.success(Unit)
         override suspend fun assignBusToSchedule(scheduleId: String, busId: String): Boolean = true
         override suspend fun unassignBusFromSchedule(scheduleId: String) {}
-        override suspend fun deleteSchedule(scheduleId: String) {}
+        override suspend fun deleteSchedule(scheduleId: String) {
+            list.removeAll { it.id == scheduleId }
+            flow.value = list.toList()
+        }
         override suspend fun checkConflict(
             routeId: String,
             direction: RouteDirection,

@@ -58,20 +58,12 @@ class AssignBusToActiveRouteUseCase(
             route.destinationTerminal.id
         }
 
-        driverRepository.assignDriverToBus(driverId, busId)
-
-        val updatedBus = bus.copy(
-            routeId = route.id,
-            driverId = driverId,
-            currentTerminalId = departureTerminalId
-        )
-        fleetRepository.updateBus(updatedBus)
-
         routeScheduleRepository.deleteSchedulesForBus(busId)
 
         val baseTime = System.currentTimeMillis()
         if (dailySchedulePlan != null && dailySchedulePlan.legs.isNotEmpty()) {
-            dailySchedulePlan.legs.forEachIndexed { index, leg ->
+            val insertedScheduleIds = mutableListOf<String>()
+            for ((index, leg) in dailySchedulePlan.legs.withIndex()) {
                 val scheduleId = "sched-${route.id}-$busId-$index-${baseTime + index}"
                 val schedule = RouteSchedule(
                     id = scheduleId,
@@ -83,10 +75,13 @@ class AssignBusToActiveRouteUseCase(
                     headwayMinutes = headwayMinutes,
                     transitDwellMinutes = transitDwellMinutes
                 )
-                routeScheduleRepository.addSchedule(schedule)
-                routeScheduleRepository.assignBusToSchedule(scheduleId, busId)
+                val addResult = routeScheduleRepository.addSchedule(schedule)
+                if (addResult.isFailure) {
+                    insertedScheduleIds.forEach { routeScheduleRepository.deleteSchedule(it) }
+                    return Result.failure(addResult.exceptionOrNull() ?: IllegalStateException("Gagal menambahkan jadwal keberangkatan"))
+                }
+                insertedScheduleIds.add(scheduleId)
             }
-            return Result.success(Unit)
         } else {
             val scheduleId = "sched-${route.id}-$busId-$baseTime"
             val schedule = RouteSchedule(
@@ -100,9 +95,20 @@ class AssignBusToActiveRouteUseCase(
                 transitDwellMinutes = transitDwellMinutes
             )
             val addResult = routeScheduleRepository.addSchedule(schedule)
-            if (addResult.isFailure) return addResult
-            routeScheduleRepository.assignBusToSchedule(scheduleId, busId)
-            return Result.success(Unit)
+            if (addResult.isFailure) {
+                return Result.failure(addResult.exceptionOrNull() ?: IllegalStateException("Gagal menambahkan jadwal keberangkatan"))
+            }
         }
+
+        driverRepository.assignDriverToBus(driverId, busId)
+
+        val updatedBus = bus.copy(
+            routeId = route.id,
+            driverId = driverId,
+            currentTerminalId = departureTerminalId
+        )
+        fleetRepository.updateBus(updatedBus)
+
+        return Result.success(Unit)
     }
 }

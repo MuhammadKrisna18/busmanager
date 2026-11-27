@@ -61,7 +61,8 @@ data class GarageBusItem(
     val activeTripDirection: String? = null,
     val activeTripProgressPercent: Int? = null,
     val headwayMinutes: Int = 60,
-    val transitDwellMinutes: Int = 10
+    val transitDwellMinutes: Int = 10,
+    val hasSchedules: Boolean = false
 ) {
     val canOperate: Boolean
         get() = bus.routeId != null && bus.driverId != null && hasPricings

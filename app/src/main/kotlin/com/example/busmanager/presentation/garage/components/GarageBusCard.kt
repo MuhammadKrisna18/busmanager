@@ -219,7 +219,7 @@ fun GarageBusCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (item.routeName == null) {
+                if (item.routeName == null || !item.hasSchedules) {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Button(
                             onClick = onQuickAssignClick,
@@ -272,12 +272,12 @@ fun GarageBusCard(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         OutlinedButton(
-                            onClick = onEditScheduleClick,
+                            onClick = onQuickAssignClick,
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = "⚙️ Ubah Jadwal",
+                                text = "⚡ Ganti Trayek / Jadwal",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = PrimaryBlue

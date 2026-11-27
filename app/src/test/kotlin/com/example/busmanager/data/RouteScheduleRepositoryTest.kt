@@ -112,6 +112,65 @@ class RouteScheduleRepositoryTest {
     }
 
     @Test
+    fun addScheduleSucceedsForConsecutive15MinuteSlots() = runBlocking {
+        val slot1 = RouteSchedule(
+            id = "sched-15m-1",
+            routeId = "route-sby-pacitan",
+            departureHour = 6,
+            departureMinute = 15,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION
+        )
+        val slot2 = RouteSchedule(
+            id = "sched-15m-2",
+            routeId = "route-sby-pacitan",
+            departureHour = 7,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION
+        )
+        val result1 = addRouteScheduleUseCase(slot1)
+        val result2 = addRouteScheduleUseCase(slot2)
+        assertTrue(result1.isSuccess)
+        assertTrue(result2.isSuccess)
+    }
+
+    @Test
+    fun assignBusToSchedule_keepsMultipleLegsAssignedOnSameRoute() = runBlocking {
+        fakeBusDao.insertBus(
+            OwnedBusEntity(
+                id = "bus-multi",
+                busCode = "TN-MULTI",
+                chassisId = "chassis-1",
+                bodyId = "body-1",
+                purchasedAtTimestamp = 1000L
+            )
+        )
+        val leg1 = RouteSchedule(
+            id = "sched-leg-1",
+            routeId = "route-sby-pacitan",
+            departureHour = 7,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION
+        )
+        val leg2 = RouteSchedule(
+            id = "sched-leg-2",
+            routeId = "route-sby-pacitan",
+            departureHour = 11,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION
+        )
+        scheduleRepository.addSchedule(leg1)
+        scheduleRepository.addSchedule(leg2)
+
+        scheduleRepository.assignBusToSchedule("sched-leg-1", "bus-multi")
+        scheduleRepository.assignBusToSchedule("sched-leg-2", "bus-multi")
+
+        val busSchedules = scheduleRepository.getSchedulesForBus("bus-multi")
+        assertEquals(2, busSchedules.size)
+        assertEquals("bus-multi", scheduleRepository.getScheduleById("sched-leg-1")?.assignedBusId)
+        assertEquals("bus-multi", scheduleRepository.getScheduleById("sched-leg-2")?.assignedBusId)
+    }
+
+    @Test
     fun assignBusToScheduleUpdatesBothScheduleAndBusRoute() = runBlocking {
         val schedule = RouteSchedule(
             id = "sched-1",

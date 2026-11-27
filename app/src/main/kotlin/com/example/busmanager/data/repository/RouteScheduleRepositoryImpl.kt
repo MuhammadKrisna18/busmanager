@@ -4,6 +4,7 @@ import com.example.busmanager.data.local.dao.OwnedBusDao
 import com.example.busmanager.data.local.dao.RouteScheduleDao
 import com.example.busmanager.data.mapper.toDomain
 import com.example.busmanager.data.mapper.toEntity
+import com.example.busmanager.domain.route.model.DepartureSlotCalculator
 import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.simulation.model.RouteDirection
@@ -70,11 +71,7 @@ class RouteScheduleRepositoryImpl(
         val existingSchedulesForBus = scheduleDao.getSchedulesByBusId(busId)
         for (existing in existingSchedulesForBus) {
             val isDifferentRoute = existing.routeId != scheduleEntity.routeId
-            val isSameRouteAndSameDirection = existing.routeId == scheduleEntity.routeId &&
-                    existing.direction == scheduleEntity.direction &&
-                    existing.id != scheduleId
-
-            if (isDifferentRoute || isSameRouteAndSameDirection) {
+            if (isDifferentRoute) {
                 scheduleDao.updateSchedule(existing.copy(assignedBusId = null))
             }
         }
@@ -116,7 +113,7 @@ class RouteScheduleRepositoryImpl(
             val schedTotalMinutes = sched.departureHour * 60 + sched.departureMinute
             val diff = kotlin.math.abs(targetTotalMinutes - schedTotalMinutes)
             val circularDiff = kotlin.math.min(diff, 1440 - diff)
-            if (circularDiff < 60) {
+            if (circularDiff < DepartureSlotCalculator.SLOT_INTERVAL_MINUTES) {
                 return true
             }
         }

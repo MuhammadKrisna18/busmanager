@@ -80,6 +80,7 @@ class GarageViewModel(
                         routePricingRepository.getPricingsListForRoute(rId)
                     } ?: emptyList()
                     val schedule = schedules.find { it.assignedBusId == bus.id }
+                    val hasSchedules = schedules.any { it.assignedBusId == bus.id }
 
                     GarageBusItem(
                         bus = bus,
@@ -90,7 +91,8 @@ class GarageViewModel(
                         activeTripDirection = activeTrip?.let { "Menuju ${it.currentDestinationName} dari ${it.currentOriginName}" },
                         activeTripProgressPercent = activeTrip?.let { (it.progressFraction * 100).toInt() },
                         headwayMinutes = schedule?.headwayMinutes ?: 60,
-                        transitDwellMinutes = schedule?.transitDwellMinutes ?: 10
+                        transitDwellMinutes = schedule?.transitDwellMinutes ?: 10,
+                        hasSchedules = hasSchedules
                     )
                 }
 

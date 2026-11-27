@@ -12,30 +12,38 @@ import com.example.busmanager.domain.route.model.RouteSegment
 
 fun DrawScope.drawEastJavaLandmass() {
     val path = Path().apply {
-        moveTo(size.width * 0.02f, size.height * 0.06f)
-        lineTo(size.width * 0.08f, size.height * 0.07f)
-        lineTo(size.width * 0.18f, size.height * 0.10f)
-        lineTo(size.width * 0.36f, size.height * 0.12f)
-        lineTo(size.width * 0.50f, size.height * 0.22f)
-        lineTo(size.width * 0.54f, size.height * 0.40f)
-        lineTo(size.width * 0.64f, size.height * 0.46f)
-        lineTo(size.width * 0.78f, size.height * 0.42f)
-        lineTo(size.width * 0.86f, size.height * 0.44f)
-        lineTo(size.width * 0.97f, size.height * 0.58f)
-        lineTo(size.width * 0.98f, size.height * 0.78f)
-        lineTo(size.width * 0.96f, size.height * 0.86f)
-        lineTo(size.width * 0.88f, size.height * 0.90f)
+        moveTo(size.width * 0.02f, size.height * 0.12f)
+        lineTo(size.width * 0.06f, size.height * 0.08f)
+        lineTo(size.width * 0.14f, size.height * 0.09f)
+        lineTo(size.width * 0.22f, size.height * 0.12f)
+        lineTo(size.width * 0.34f, size.height * 0.13f)
+        lineTo(size.width * 0.44f, size.height * 0.16f)
+        lineTo(size.width * 0.49f, size.height * 0.24f)
+        lineTo(size.width * 0.51f, size.height * 0.28f)
+        lineTo(size.width * 0.53f, size.height * 0.35f)
+        lineTo(size.width * 0.58f, size.height * 0.41f)
+        lineTo(size.width * 0.66f, size.height * 0.46f)
+        lineTo(size.width * 0.75f, size.height * 0.43f)
+        lineTo(size.width * 0.85f, size.height * 0.43f)
+        lineTo(size.width * 0.93f, size.height * 0.43f)
+        lineTo(size.width * 0.97f, size.height * 0.50f)
+        lineTo(size.width * 0.96f, size.height * 0.62f)
+        lineTo(size.width * 0.96f, size.height * 0.76f)
+        lineTo(size.width * 0.97f, size.height * 0.86f)
+        lineTo(size.width * 0.94f, size.height * 0.90f)
+        lineTo(size.width * 0.85f, size.height * 0.90f)
         lineTo(size.width * 0.74f, size.height * 0.90f)
         lineTo(size.width * 0.61f, size.height * 0.89f)
         lineTo(size.width * 0.48f, size.height * 0.88f)
-        lineTo(size.width * 0.32f, size.height * 0.88f)
-        lineTo(size.width * 0.20f, size.height * 0.87f)
-        lineTo(size.width * 0.14f, size.height * 0.86f)
-        lineTo(size.width * 0.04f, size.height * 0.86f)
-        lineTo(size.width * 0.02f, size.height * 0.75f)
+        lineTo(size.width * 0.35f, size.height * 0.88f)
+        lineTo(size.width * 0.24f, size.height * 0.88f)
+        lineTo(size.width * 0.15f, size.height * 0.87f)
+        lineTo(size.width * 0.06f, size.height * 0.86f)
+        lineTo(size.width * 0.03f, size.height * 0.82f)
+        lineTo(size.width * 0.02f, size.height * 0.70f)
         lineTo(size.width * 0.02f, size.height * 0.50f)
-        lineTo(size.width * 0.02f, size.height * 0.32f)
-        lineTo(size.width * 0.02f, size.height * 0.18f)
+        lineTo(size.width * 0.02f, size.height * 0.35f)
+        lineTo(size.width * 0.03f, size.height * 0.22f)
         close()
     }
 
@@ -47,17 +55,22 @@ fun DrawScope.drawEastJavaLandmass() {
     drawPath(
         path = path,
         color = Color(0xFFD1E7DD),
-        style = Stroke(width = 1.5f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+        style = Stroke(width = 1.8f, cap = StrokeCap.Round, join = StrokeJoin.Round)
     )
 }
 
 fun DrawScope.drawMaduraIsland() {
     val path = Path().apply {
-        moveTo(size.width * 0.45f, size.height * 0.08f)
-        lineTo(size.width * 0.76f, size.height * 0.07f)
-        lineTo(size.width * 0.78f, size.height * 0.16f)
-        lineTo(size.width * 0.60f, size.height * 0.18f)
-        lineTo(size.width * 0.45f, size.height * 0.16f)
+        moveTo(size.width * 0.48f, size.height * 0.19f)
+        lineTo(size.width * 0.55f, size.height * 0.14f)
+        lineTo(size.width * 0.68f, size.height * 0.13f)
+        lineTo(size.width * 0.80f, size.height * 0.13f)
+        lineTo(size.width * 0.88f, size.height * 0.15f)
+        lineTo(size.width * 0.90f, size.height * 0.18f)
+        lineTo(size.width * 0.84f, size.height * 0.20f)
+        lineTo(size.width * 0.72f, size.height * 0.21f)
+        lineTo(size.width * 0.58f, size.height * 0.21f)
+        lineTo(size.width * 0.48f, size.height * 0.21f)
         close()
     }
 
@@ -69,7 +82,7 @@ fun DrawScope.drawMaduraIsland() {
     drawPath(
         path = path,
         color = Color(0xFFC7E2D5),
-        style = Stroke(width = 1.2f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+        style = Stroke(width = 1.4f, cap = StrokeCap.Round, join = StrokeJoin.Round)
     )
 }
 

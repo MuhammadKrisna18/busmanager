@@ -160,8 +160,7 @@ class GarageViewModel(
                 editingScheduleTarget = GarageScheduleTarget(
                     bus = item.bus,
                     routeName = routeName,
-                    currentHeadwayMinutes = item.headwayMinutes,
-                    currentTransitDwellMinutes = item.transitDwellMinutes
+                    currentHeadwayMinutes = item.headwayMinutes
                 )
             )
         }
@@ -171,7 +170,7 @@ class GarageViewModel(
         _uiState.update { it.copy(editingScheduleTarget = null) }
     }
 
-    fun saveSchedule(headwayMinutes: Int, transitDwellMinutes: Int) {
+    fun saveSchedule(headwayMinutes: Int) {
         val target = _uiState.value.editingScheduleTarget ?: return
         viewModelScope.launch {
             val busId = target.bus.id
@@ -181,7 +180,7 @@ class GarageViewModel(
                     routeScheduleRepository?.updateSchedule(
                         sched.copy(
                             headwayMinutes = headwayMinutes,
-                            transitDwellMinutes = transitDwellMinutes
+                            transitDwellMinutes = BusRoute.STANDARD_TRANSIT_DWELL_MINUTES
                         )
                     )
                 }
@@ -192,7 +191,7 @@ class GarageViewModel(
                         routeScheduleRepository?.updateSchedule(
                             sched.copy(
                                 headwayMinutes = headwayMinutes,
-                                transitDwellMinutes = transitDwellMinutes
+                                transitDwellMinutes = BusRoute.STANDARD_TRANSIT_DWELL_MINUTES
                             )
                         )
                     }
@@ -255,13 +254,15 @@ class GarageViewModel(
                 minute = schedule.departureMinute,
                 destinationCity = scheduleDestCity,
                 routeId = schedule.routeId,
-                busCode = schedule.assignedBusId
+                busCode = schedule.assignedBusId,
+                corridor = r.pathType
             )
         }
 
         val slots = DepartureSlotCalculator.generate24HourSlots(
             terminalId = depTerminal.id,
             targetDestinationCity = destTerminal.city,
+            targetCorridor = route.pathType,
             existingOccupiedSlots = occupiedSlots
         )
 
@@ -274,7 +275,7 @@ class GarageViewModel(
                 routeCategory = category,
                 originTerminalId = route.originTerminal.id,
                 destTerminalId = route.destinationTerminal.id,
-                estimatedDurationMinutes = route.totalEstimatedDurationMinutes,
+                estimatedDurationMinutes = route.totalDurationWithDwellMinutes,
                 departureHour = chosenSlot.hour,
                 departureMinute = chosenSlot.minute,
                 targetRitCount = effectiveRitCount,
@@ -430,7 +431,7 @@ class GarageViewModel(
             routeCategory = current.routeCategory,
             originTerminalId = route.originTerminal.id,
             destTerminalId = route.destinationTerminal.id,
-            estimatedDurationMinutes = route.totalEstimatedDurationMinutes,
+            estimatedDurationMinutes = route.totalDurationWithDwellMinutes,
             departureHour = slot.hour,
             departureMinute = slot.minute,
             targetRitCount = current.targetRitCount,
@@ -459,7 +460,7 @@ class GarageViewModel(
             routeCategory = current.routeCategory,
             originTerminalId = route.originTerminal.id,
             destTerminalId = route.destinationTerminal.id,
-            estimatedDurationMinutes = route.totalEstimatedDurationMinutes,
+            estimatedDurationMinutes = route.totalDurationWithDwellMinutes,
             departureHour = slot.hour,
             departureMinute = slot.minute,
             targetRitCount = safeCount,
@@ -504,12 +505,6 @@ class GarageViewModel(
         }
     }
 
-    fun setQuickAssignTransitDwell(minutes: Int) {
-        _uiState.update { state ->
-            state.copy(quickAssignState = state.quickAssignState?.copy(transitDwellMinutes = minutes.coerceIn(0, 15)))
-        }
-    }
-
     fun confirmQuickAssign() {
         val target = _uiState.value.quickAssignState ?: return
         val route = target.selectedRoute ?: return
@@ -527,7 +522,7 @@ class GarageViewModel(
                 departureMinute = slot.minute,
                 direction = target.direction,
                 headwayMinutes = target.headwayMinutes,
-                transitDwellMinutes = target.transitDwellMinutes,
+                transitDwellMinutes = BusRoute.STANDARD_TRANSIT_DWELL_MINUTES,
                 dailySchedulePlan = target.dailySchedulePlan
             )
 

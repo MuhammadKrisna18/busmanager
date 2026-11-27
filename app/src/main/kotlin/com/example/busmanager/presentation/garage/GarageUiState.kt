@@ -19,8 +19,7 @@ enum class GarageFilter(val displayName: String) {
 data class GarageScheduleTarget(
     val bus: Bus,
     val routeName: String,
-    val currentHeadwayMinutes: Int = 60,
-    val currentTransitDwellMinutes: Int = 10
+    val currentHeadwayMinutes: Int = 60
 )
 
 data class QuickAssignState(

@@ -67,7 +67,6 @@ fun QuickAssignDialog(
     onSetDirection: (RouteDirection) -> Unit,
     onSelectSlot: (TerminalDepartureSlot) -> Unit,
     onSetTimeFilter: (SlotTimeFilter) -> Unit,
-    onSetTransitDwell: (Int) -> Unit,
     onConfirm: () -> Unit
 ) {
     Dialog(
@@ -133,11 +132,7 @@ fun QuickAssignDialog(
 
                     item {
                         QuickAssignScheduleSection(
-                            plan = state.dailySchedulePlan,
-                            category = state.routeCategory,
-                            transitDwellMinutes = state.transitDwellMinutes,
-                            hasStops = state.selectedRoute?.transitTerminals?.isNotEmpty() == true,
-                            onSetTransitDwell = onSetTransitDwell
+                            plan = state.dailySchedulePlan
                         )
                     }
 
@@ -505,11 +500,7 @@ private fun QuickAssignSlotSection(
 
 @Composable
 private fun QuickAssignScheduleSection(
-    plan: DailySchedulePlan?,
-    category: RouteCategory,
-    transitDwellMinutes: Int,
-    hasStops: Boolean,
-    onSetTransitDwell: (Int) -> Unit
+    plan: DailySchedulePlan?
 ) {
     Column {
         Text(
@@ -523,63 +514,6 @@ private fun QuickAssignScheduleSection(
         plan?.let {
             ScheduleTimelineCard(plan = it)
             Spacer(modifier = Modifier.height(8.dp))
-        }
-
-        if (hasStops) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F5F9))
-            ) {
-                Column(modifier = Modifier.padding(10.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Waktu Singgah Ampiran:",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = TextDark
-                        )
-                        Text(
-                            text = if (transitDwellMinutes == 0) "Langsung" else "$transitDwellMinutes Menit",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryBlueDark
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        listOf(0, 5, 10, 15).forEach { dwell ->
-                            val isSel = transitDwellMinutes == dwell
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (isSel) PrimaryBlue else SurfaceWhite)
-                                    .border(0.5.dp, if (isSel) PrimaryBlue else CardBorder, RoundedCornerShape(6.dp))
-                                    .clickable { onSetTransitDwell(dwell) }
-                                    .padding(vertical = 4.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = if (dwell == 0) "0 m" else "$dwell m",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isSel) Color.White else TextDark
-                                )
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 }

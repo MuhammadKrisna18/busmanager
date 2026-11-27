@@ -6,5 +6,6 @@ data class OccupiedSlotInfo(
     val minute: Int,
     val destinationCity: String,
     val routeId: String,
-    val busCode: String? = null
+    val busCode: String? = null,
+    val corridor: RoutePathType? = null
 )

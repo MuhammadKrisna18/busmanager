@@ -124,6 +124,9 @@ class RouteModelTest {
         assertEquals(290.0, route.totalDistanceKm, 0.001)
         assertEquals(Money.rupiah(65000), route.totalTollFee)
         assertEquals(315, route.totalEstimatedDurationMinutes)
+        assertEquals(10, route.totalTransitDwellMinutes)
+        assertEquals(325, route.totalDurationWithDwellMinutes)
+        assertEquals(10, BusRoute.STANDARD_TRANSIT_DWELL_MINUTES)
         assertEquals(2, route.allWaypoints.size)
 
         assertTrue(route.containsTerminal("term_purabaya"))

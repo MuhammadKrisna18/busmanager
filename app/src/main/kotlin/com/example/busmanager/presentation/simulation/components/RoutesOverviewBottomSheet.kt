@@ -64,7 +64,7 @@ fun RoutesOverviewBottomSheet(
     schedules: List<RouteSchedule> = emptyList(),
     drivers: List<Driver> = emptyList(),
     onSelectRoute: (BusRoute) -> Unit,
-    onEditSchedule: (Bus, BusRoute, Int, Int) -> Unit = { _, _, _, _ -> },
+    onEditSchedule: (Bus, BusRoute, Int) -> Unit = { _, _, _ -> },
     onDismiss: () -> Unit,
     onNavigateToRoutePlanner: () -> Unit = {},
     onNavigateToRouteInfo: () -> Unit = {}
@@ -215,7 +215,7 @@ private fun ActiveRouteItemCard(
     activeTrips: List<ActiveBusTrip>,
     isSelected: Boolean,
     onSelect: () -> Unit,
-    onEditSchedule: (Bus, BusRoute, Int, Int) -> Unit
+    onEditSchedule: (Bus, BusRoute, Int) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -404,8 +404,7 @@ private fun ActiveRouteItemCard(
                                     .background(Color(0xFFE0E7FF))
                                     .clickable {
                                         val currentHeadway = busSchedules.firstOrNull()?.headwayMinutes ?: 60
-                                        val currentDwell = busSchedules.firstOrNull()?.transitDwellMinutes ?: 10
-                                        onEditSchedule(bus, route, currentHeadway, currentDwell)
+                                        onEditSchedule(bus, route, currentHeadway)
                                     }
                                     .padding(horizontal = 8.dp, vertical = 4.dp),
                                 contentAlignment = Alignment.Center

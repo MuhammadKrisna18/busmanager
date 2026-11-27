@@ -425,14 +425,13 @@ class SimulationMapViewModel(
         dispatchBusUseCase.markCancelNextSchedule(tripId, true)
     }
 
-    fun openEditSchedule(bus: Bus, route: BusRoute, headway: Int, dwell: Int) {
+    fun openEditSchedule(bus: Bus, route: BusRoute, headway: Int) {
         _uiState.update {
             it.copy(
                 editingScheduleTarget = SimulationScheduleEditTarget(
                     bus = bus,
                     route = route,
-                    currentHeadwayMinutes = headway,
-                    currentTransitDwellMinutes = dwell
+                    currentHeadwayMinutes = headway
                 )
             )
         }
@@ -442,7 +441,7 @@ class SimulationMapViewModel(
         _uiState.update { it.copy(editingScheduleTarget = null) }
     }
 
-    fun saveSchedule(headwayMinutes: Int, transitDwellMinutes: Int) {
+    fun saveSchedule(headwayMinutes: Int) {
         val target = _uiState.value.editingScheduleTarget ?: return
         viewModelScope.launch {
             val busId = target.bus.id
@@ -452,7 +451,7 @@ class SimulationMapViewModel(
                     routeScheduleRepository?.updateSchedule(
                         sched.copy(
                             headwayMinutes = headwayMinutes,
-                            transitDwellMinutes = transitDwellMinutes
+                            transitDwellMinutes = BusRoute.STANDARD_TRANSIT_DWELL_MINUTES
                         )
                     )
                 }
@@ -463,7 +462,7 @@ class SimulationMapViewModel(
                         routeScheduleRepository?.updateSchedule(
                             sched.copy(
                                 headwayMinutes = headwayMinutes,
-                                transitDwellMinutes = transitDwellMinutes
+                                transitDwellMinutes = BusRoute.STANDARD_TRANSIT_DWELL_MINUTES
                             )
                         )
                     }
@@ -476,7 +475,7 @@ class SimulationMapViewModel(
                         if (sched.assignedBusId == busId || (sched.routeId == target.route.id && sched.assignedBusId == null)) {
                             sched.copy(
                                 headwayMinutes = headwayMinutes,
-                                transitDwellMinutes = transitDwellMinutes
+                                transitDwellMinutes = BusRoute.STANDARD_TRANSIT_DWELL_MINUTES
                             )
                         } else sched
                     }

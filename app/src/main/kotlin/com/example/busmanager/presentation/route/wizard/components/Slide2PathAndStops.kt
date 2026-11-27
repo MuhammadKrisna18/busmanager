@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.busmanager.domain.route.model.RouteCategory
 import com.example.busmanager.presentation.route.components.EastJavaMapCanvas
 import com.example.busmanager.presentation.route.components.MapTerminalToggle
 import com.example.busmanager.presentation.route.wizard.RouteWizardUiState
@@ -125,8 +126,8 @@ fun Slide2PathAndStops(
 
         if (route != null) {
             item {
-                val hours = route.totalEstimatedDurationMinutes / 60
-                val mins = route.totalEstimatedDurationMinutes % 60
+                val hours = route.totalDurationWithDwellMinutes / 60
+                val mins = route.totalDurationWithDwellMinutes % 60
                 val durationStr = if (hours > 0) "${hours}j ${mins}m" else "${mins} mnt"
                 val transitCount = route.transitTerminals.size
 
@@ -228,62 +229,72 @@ fun Slide2PathAndStops(
                         fontWeight = FontWeight.Bold,
                         color = TextDark
                     )
-                    Spacer(modifier = Modifier.height(3.dp))
-                    Text(
-                        text = "Bebas menentukan terminal singgah untuk menaik-turunkan penumpang, atau tanpa ampiran sama sekali (langsung non-stop).",
-                        fontSize = 11.sp,
-                        color = TextMuted
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    if (uiState.routeCategory == RouteCategory.AKDP) {
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "Mode AKDP: Wajib singgah di setiap terminal kota yang dilewati koridor (Paten 10 menit/terminal).",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = PrimaryBlueDark
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "Bebas menentukan terminal singgah untuk menaik-turunkan penumpang, atau tanpa ampiran sama sekali (langsung non-stop).",
+                            fontSize = 11.sp,
+                            color = TextMuted
+                        )
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isNonStop) IceBlue else Color(0xFFF8FAFC))
-                                .border(
-                                    width = 1.dp,
-                                    color = if (isNonStop) PrimaryBlue else CardBorder,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .clickable { onClearAllTransit() }
-                                .padding(vertical = 10.dp, horizontal = 8.dp),
-                            contentAlignment = Alignment.Center
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = "Tanpa Ampiran (Non-Stop)",
-                                fontSize = 11.sp,
-                                fontWeight = if (isNonStop) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isNonStop) PrimaryBlueDark else TextDark
-                            )
-                        }
-
-                        if (totalIntermediate > 0) {
-                            val allSelected = !isNonStop && activeCount == totalIntermediate
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(if (allSelected) IceBlue else Color(0xFFF8FAFC))
+                                    .background(if (isNonStop) IceBlue else Color(0xFFF8FAFC))
                                     .border(
                                         width = 1.dp,
-                                        color = if (allSelected) PrimaryBlue else CardBorder,
+                                        color = if (isNonStop) PrimaryBlue else CardBorder,
                                         shape = RoundedCornerShape(8.dp)
                                     )
-                                    .clickable { onSelectAllTransit() }
+                                    .clickable { onClearAllTransit() }
                                     .padding(vertical = 10.dp, horizontal = 8.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "Singgahi Semua",
+                                    text = "Tanpa Ampiran (Non-Stop)",
                                     fontSize = 11.sp,
-                                    fontWeight = if (allSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (allSelected) PrimaryBlueDark else TextDark
+                                    fontWeight = if (isNonStop) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isNonStop) PrimaryBlueDark else TextDark
                                 )
+                            }
+
+                            if (totalIntermediate > 0) {
+                                val allSelected = !isNonStop && activeCount == totalIntermediate
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (allSelected) IceBlue else Color(0xFFF8FAFC))
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (allSelected) PrimaryBlue else CardBorder,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .clickable { onSelectAllTransit() }
+                                        .padding(vertical = 10.dp, horizontal = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Singgahi Semua",
+                                        fontSize = 11.sp,
+                                        fontWeight = if (allSelected) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (allSelected) PrimaryBlueDark else TextDark
+                                    )
+                                }
                             }
                         }
                     }
@@ -411,11 +422,28 @@ fun Slide2PathAndStops(
                     }
 
                     if (isIntermediate) {
-                        Checkbox(
-                            checked = isTransitActive,
-                            onCheckedChange = { onToggleTransitStop(terminal.id) },
-                            colors = CheckboxDefaults.colors(checkedColor = PrimaryBlue)
-                        )
+                        if (uiState.routeCategory == RouteCategory.AKDP) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFFDCFCE7))
+                                    .border(1.dp, Color(0xFF86EFAC), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Text(
+                                    text = "Wajib 10 mnt",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF166534)
+                                )
+                            }
+                        } else {
+                            Checkbox(
+                                checked = isTransitActive,
+                                onCheckedChange = { onToggleTransitStop(terminal.id) },
+                                colors = CheckboxDefaults.colors(checkedColor = PrimaryBlue)
+                            )
+                        }
                     }
                 }
             }

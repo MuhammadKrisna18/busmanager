@@ -45,15 +45,12 @@ fun EditScheduleDialog(
     busCode: String,
     routeName: String,
     initialHeadwayMinutes: Int,
-    initialTransitDwellMinutes: Int,
     onDismiss: () -> Unit,
-    onSave: (headwayMinutes: Int, transitDwellMinutes: Int) -> Unit
+    onSave: (headwayMinutes: Int) -> Unit
 ) {
     var headway by remember { mutableIntStateOf(initialHeadwayMinutes.coerceAtLeast(30)) }
-    var dwell by remember { mutableIntStateOf(initialTransitDwellMinutes) }
 
     val headwayOptions = listOf(30, 40, 50, 60, 90, 120)
-    val dwellOptions = listOf(0, 5, 10, 15)
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
@@ -160,52 +157,6 @@ fun EditScheduleDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Text(
-                    text = "Waktu Pemberhentian di Terminal Ampiran:",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextDark
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = "Waktu naik & turun penumpang saat singgah di terminal transit",
-                    fontSize = 10.sp,
-                    color = TextMuted
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    dwellOptions.forEach { minutes ->
-                        val isSelected = dwell == minutes
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSelected) PrimaryBlue else IceBlue)
-                                .border(
-                                    width = 1.dp,
-                                    color = if (isSelected) PrimaryBlueDark else Color(0xFFBFDBFE),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .clickable { dwell = minutes }
-                                .padding(vertical = 8.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (minutes == 0) "Langsung" else "$minutes mnt",
-                                fontSize = 10.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) Color.White else PrimaryBlueDark
-                            )
-                        }
-                    }
-                }
-
                 Spacer(modifier = Modifier.height(18.dp))
 
                 Row(
@@ -220,7 +171,7 @@ fun EditScheduleDialog(
                         Text(text = "Batal", color = TextDark, fontSize = 12.sp)
                     }
                     Button(
-                        onClick = { onSave(headway, dwell) },
+                        onClick = { onSave(headway) },
                         shape = RoundedCornerShape(AppDimens.radiusMedium),
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
                         modifier = Modifier.weight(1f)

@@ -16,6 +16,7 @@ object DepartureSlotCalculator {
     fun generate24HourSlots(
         terminalId: String,
         targetDestinationCity: String,
+        targetCorridor: RoutePathType? = null,
         existingOccupiedSlots: List<OccupiedSlotInfo> = emptyList()
     ): List<TerminalDepartureSlot> {
         val slots = mutableListOf<TerminalDepartureSlot>()
@@ -27,7 +28,8 @@ object DepartureSlotCalculator {
                     it.terminalId == terminalId &&
                             it.hour == hour &&
                             it.minute == minute &&
-                            it.destinationCity.equals(targetDestinationCity, ignoreCase = true)
+                            it.destinationCity.equals(targetDestinationCity, ignoreCase = true) &&
+                            (targetCorridor == null || it.corridor == null || it.corridor == targetCorridor)
                 }
 
                 if (matchingConflict != null) {

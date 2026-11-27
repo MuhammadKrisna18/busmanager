@@ -78,7 +78,7 @@ data class RouteWizardUiState(
         }
 
     val estimatedDurationMinutes: Int
-        get() = builtRoute?.totalEstimatedDurationMinutes ?: 0
+        get() = builtRoute?.totalDurationWithDwellMinutes ?: 0
 
     val outboundDepartureTotalMinutes: Int
         get() = departureHour * 60 + departureMinute

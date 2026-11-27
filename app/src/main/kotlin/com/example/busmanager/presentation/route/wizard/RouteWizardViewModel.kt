@@ -7,6 +7,7 @@ import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.repository.FleetRepository
+import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.DepartureSlotCalculator
 import com.example.busmanager.domain.route.model.OccupiedSlotInfo
 import com.example.busmanager.domain.route.model.RouteCategory
@@ -259,6 +260,7 @@ class RouteWizardViewModel(
 
     fun toggleTransitStop(terminalId: String) {
         _uiState.update { state ->
+            if (state.routeCategory == RouteCategory.AKDP) return@update state
             val updatedTransit = if (terminalId in state.activeTransitIds && !state.isExpress) {
                 state.activeTransitIds - terminalId
             } else {
@@ -285,6 +287,7 @@ class RouteWizardViewModel(
 
     fun clearAllTransitStops() {
         _uiState.update { state ->
+            if (state.routeCategory == RouteCategory.AKDP) return@update state
             val updated = state.copy(activeTransitIds = emptySet(), isExpress = true)
             rebuildRouteInternal(updated)
         }
@@ -303,11 +306,21 @@ class RouteWizardViewModel(
             return state.copy(builtRoute = null, pricings = emptyList())
         }
         val currentPath = state.availablePaths[state.selectedPathIndex]
+        val intermediateTerminals = if (currentPath.size > 2) {
+            currentPath.subList(1, currentPath.size - 1).map { it.id }.toSet()
+        } else {
+            emptySet()
+        }
+        val effectiveTransitIds = if (state.routeCategory == RouteCategory.AKDP) {
+            intermediateTerminals
+        } else {
+            state.activeTransitIds
+        }
         val buildResult = buildCustomRouteUseCase(
             terminals = currentPath,
             preferredSegmentPathTypes = state.segmentPathTypes,
-            activeTransitTerminalIds = state.activeTransitIds,
-            isExpress = state.isExpress
+            activeTransitTerminalIds = effectiveTransitIds,
+            isExpress = if (state.routeCategory == RouteCategory.AKDP) false else state.isExpress
         )
 
         return if (buildResult.isSuccess) {
@@ -545,10 +558,6 @@ class RouteWizardViewModel(
         _uiState.update { it.copy(headwayMinutes = minutes.coerceIn(30, 240)) }
     }
 
-    fun setTransitDwellMinutes(minutes: Int) {
-        _uiState.update { it.copy(transitDwellMinutes = minutes.coerceIn(0, 15)) }
-    }
-
     private fun checkScheduleConflict() {
         val state = _uiState.value
         val routeId = state.builtRoute?.id ?: return
@@ -694,13 +703,15 @@ class RouteWizardViewModel(
                     minute = schedule.departureMinute,
                     destinationCity = scheduleDestCity,
                     routeId = schedule.routeId,
-                    busCode = schedule.assignedBusId
+                    busCode = schedule.assignedBusId,
+                    corridor = r.pathType
                 )
             }
 
             val slots = DepartureSlotCalculator.generate24HourSlots(
                 terminalId = origin.id,
                 targetDestinationCity = dest.city,
+                targetCorridor = route.pathType,
                 existingOccupiedSlots = occupiedSlots
             )
 
@@ -852,7 +863,7 @@ class RouteWizardViewModel(
                         departureMinute = state.departureMinute,
                         direction = state.direction,
                         headwayMinutes = state.headwayMinutes,
-                        transitDwellMinutes = state.transitDwellMinutes,
+                        transitDwellMinutes = BusRoute.STANDARD_TRANSIT_DWELL_MINUTES,
                         isRoundTrip = state.isRoundTrip,
                         returnHour = state.returnHour,
                         returnMinute = state.returnMinute,

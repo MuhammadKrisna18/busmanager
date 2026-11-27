@@ -284,7 +284,7 @@ class RouteWizardViewModelTest {
         viewModel.toggleTransitStop(firstTransitId)
 
         val updatedTransit = viewModel.uiState.value.builtRoute?.transitTerminals?.map { it.id } ?: emptyList()
-        assertFalse(updatedTransit.contains(firstTransitId))
+        assertTrue(updatedTransit.contains(firstTransitId))
     }
 
     @Test

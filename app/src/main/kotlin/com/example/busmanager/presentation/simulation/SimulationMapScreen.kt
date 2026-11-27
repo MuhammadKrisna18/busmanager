@@ -173,8 +173,8 @@ fun SimulationMapScreen(
                 schedules = state.schedules,
                 drivers = state.drivers,
                 onSelectRoute = { viewModel.selectRoute(it) },
-                onEditSchedule = { bus, route, headway, dwell ->
-                    viewModel.openEditSchedule(bus, route, headway, dwell)
+                onEditSchedule = { bus, route, headway ->
+                    viewModel.openEditSchedule(bus, route, headway)
                 },
                 onDismiss = { viewModel.dismissBottomSheet() },
                 onNavigateToRoutePlanner = onNavigateToRoutes,
@@ -190,10 +190,9 @@ fun SimulationMapScreen(
             busCode = target.bus.busCode,
             routeName = target.route.name,
             initialHeadwayMinutes = target.currentHeadwayMinutes,
-            initialTransitDwellMinutes = target.currentTransitDwellMinutes,
             onDismiss = { viewModel.dismissEditSchedule() },
-            onSave = { headway, dwell ->
-                viewModel.saveSchedule(headway, dwell)
+            onSave = { headway ->
+                viewModel.saveSchedule(headway)
             }
         )
     }

@@ -2,6 +2,8 @@ package com.example.busmanager.domain.route.model
 
 import com.example.busmanager.domain.company.model.Money
 
+const val STANDARD_TRANSIT_DWELL_MINUTES = 10
+
 data class BusRoute(
     val id: String,
     val name: String,
@@ -12,11 +14,18 @@ data class BusRoute(
     val transitTerminals: List<Terminal> = emptyList(),
     val category: RouteCategory = RouteCategory.AKDP
 ) {
+    companion object {
+        const val STANDARD_TRANSIT_DWELL_MINUTES = 10
+    }
     val totalDistanceKm: Double get() = segments.sumOf { it.distanceKm }
 
     val totalTollFee: Money get() = segments.fold(Money.ZERO) { acc, segment -> acc + segment.tollFee }
 
     val totalEstimatedDurationMinutes: Int get() = segments.sumOf { it.baseDurationMinutes }
+
+    val totalTransitDwellMinutes: Int get() = transitTerminals.size * STANDARD_TRANSIT_DWELL_MINUTES
+
+    val totalDurationWithDwellMinutes: Int get() = totalEstimatedDurationMinutes + totalTransitDwellMinutes
 
     val allWaypoints: List<MapCoordinate>
         get() {

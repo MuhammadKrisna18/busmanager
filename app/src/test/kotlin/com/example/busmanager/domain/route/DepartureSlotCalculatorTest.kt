@@ -4,6 +4,7 @@ import com.example.busmanager.domain.route.model.DailySchedulePlan
 import com.example.busmanager.domain.route.model.DepartureSlotCalculator
 import com.example.busmanager.domain.route.model.OccupiedSlotInfo
 import com.example.busmanager.domain.route.model.RouteCategory
+import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -304,5 +305,58 @@ class DepartureSlotCalculatorTest {
         assertEquals(RouteCategory.AKDP, RouteCategory.determineCategory(150, 180.0))
         assertEquals(RouteCategory.AKDP, RouteCategory.determineCategory(300, 220.0))
         assertEquals(RouteCategory.AKDP, RouteCategory.determineCategory(200, 350.0))
+    }
+
+    @Test
+    fun generate24HourSlots_allowsSameDepartureTimeWhenCorridorsAreDifferent() {
+        val occupied = listOf(
+            OccupiedSlotInfo(
+                terminalId = "term_bwi",
+                hour = 7,
+                minute = 0,
+                destinationCity = "Surabaya",
+                routeId = "route_bwi_sby_situbondo",
+                busCode = "TN-01",
+                corridor = RoutePathType.NON_TOLL
+            )
+        )
+
+        val slots = DepartureSlotCalculator.generate24HourSlots(
+            terminalId = "term_bwi",
+            targetDestinationCity = "Surabaya",
+            existingOccupiedSlots = occupied,
+            targetCorridor = RoutePathType.TOLL
+        )
+
+        val slot0700 = slots.find { it.hour == 7 && it.minute == 0 }
+        assertNotNull(slot0700)
+        assertTrue(slot0700!!.isAvailable)
+    }
+
+    @Test
+    fun generate24HourSlots_blocksSameDepartureTimeWhenCorridorsAreIdentical() {
+        val occupied = listOf(
+            OccupiedSlotInfo(
+                terminalId = "term_bwi",
+                hour = 7,
+                minute = 0,
+                destinationCity = "Surabaya",
+                routeId = "route_bwi_sby_situbondo",
+                busCode = "TN-01",
+                corridor = RoutePathType.NON_TOLL
+            )
+        )
+
+        val slots = DepartureSlotCalculator.generate24HourSlots(
+            terminalId = "term_bwi",
+            targetDestinationCity = "Surabaya",
+            existingOccupiedSlots = occupied,
+            targetCorridor = RoutePathType.NON_TOLL
+        )
+
+        val slot0700 = slots.find { it.hour == 7 && it.minute == 0 }
+        assertNotNull(slot0700)
+        assertFalse(slot0700!!.isAvailable)
+        assertEquals("route_bwi_sby_situbondo", slot0700.occupiedByRouteId)
     }
 }

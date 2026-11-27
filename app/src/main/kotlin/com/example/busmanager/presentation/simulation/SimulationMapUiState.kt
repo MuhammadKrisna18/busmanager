@@ -88,6 +88,5 @@ data class ParkedBusInfo(
 data class SimulationScheduleEditTarget(
     val bus: Bus,
     val route: BusRoute,
-    val currentHeadwayMinutes: Int = 60,
-    val currentTransitDwellMinutes: Int = 10
+    val currentHeadwayMinutes: Int = 60
 )

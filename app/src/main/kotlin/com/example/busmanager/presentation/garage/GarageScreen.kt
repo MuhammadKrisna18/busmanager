@@ -86,10 +86,9 @@ fun GarageScreen(
             busCode = target.bus.busCode,
             routeName = target.routeName,
             initialHeadwayMinutes = target.currentHeadwayMinutes,
-            initialTransitDwellMinutes = target.currentTransitDwellMinutes,
             onDismiss = { viewModel.dismissEditSchedule() },
-            onSave = { headway, dwell ->
-                viewModel.saveSchedule(headway, dwell)
+            onSave = { headway ->
+                viewModel.saveSchedule(headway)
             }
         )
     }
@@ -103,7 +102,6 @@ fun GarageScreen(
             onSetDirection = { viewModel.setQuickAssignDirection(it) },
             onSelectSlot = { viewModel.selectQuickAssignSlot(it) },
             onSetTimeFilter = { viewModel.setQuickAssignTimeFilter(it) },
-            onSetTransitDwell = { viewModel.setQuickAssignTransitDwell(it) },
             onConfirm = { viewModel.confirmQuickAssign() }
         )
     }

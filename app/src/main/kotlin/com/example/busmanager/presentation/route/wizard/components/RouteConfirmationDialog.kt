@@ -159,16 +159,30 @@ fun RouteConfirmationDialog(
                             color = TextDark
                         )
                         Text(
-                            text = "• Jam Keberangkatan: ${String.format("%02d:%02d WIB", uiState.departureHour, uiState.departureMinute)} (${uiState.departureTimeDescription})",
+                            text = "• Slot Terminal $originCity: ${String.format("%02d:%02d WIB", uiState.departureHour, uiState.departureMinute)}",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = PrimaryBlueDark
                         )
-                        Text(
-                            text = "• Jeda Istirahat (PP): ${uiState.headwayMinutes} Menit (Min. 30 mnt)",
-                            fontSize = 11.sp,
-                            color = TextMuted
-                        )
+                        val plan = uiState.dailySchedulePlan
+                        if (plan != null) {
+                            Text(
+                                text = "• Pola Operasi: ${plan.targetRitCount} PP (${plan.legs.size} Perjalanan)",
+                                fontSize = 11.sp,
+                                color = TextDark,
+                                fontWeight = FontWeight.Medium
+                            )
+                            val layoverNote = if (uiState.routeCategory == com.example.busmanager.domain.route.model.RouteCategory.AKAP) {
+                                "Jeda tujuan 5 Jam"
+                            } else {
+                                "Jeda tujuan 30 mnt, jeda asal 1 jam"
+                            }
+                            Text(
+                                text = "• Ketentuan Jeda: $layoverNote",
+                                fontSize = 11.sp,
+                                color = TextMuted
+                            )
+                        }
                     }
                 }
             }

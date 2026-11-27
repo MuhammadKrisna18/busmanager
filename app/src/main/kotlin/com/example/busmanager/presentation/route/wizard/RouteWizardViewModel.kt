@@ -708,7 +708,7 @@ class RouteWizardViewModel(
             val stillAvailable = currentSelected != null && slots.any { it.slotId == currentSelected.slotId && it.isAvailable }
 
             val chosenSlot = if (stillAvailable) {
-                slots.first { it.slotId == currentSelected?.slotId }
+                slots.first { it.slotId == currentSelected.slotId }
             } else {
                 DepartureSlotCalculator.findNextAvailableSlot(slots, state.departureHour, state.departureMinute)
                     ?: slots.firstOrNull { it.isAvailable }

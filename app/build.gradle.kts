@@ -12,8 +12,8 @@ android {
     applicationId = "com.example.busmanager"
     minSdk = 24
     targetSdk = 36
-    versionCode = 34
-    versionName = "2.26.0"
+    versionCode = 35
+    versionName = "2.27.0"
   }
 
   signingConfigs {

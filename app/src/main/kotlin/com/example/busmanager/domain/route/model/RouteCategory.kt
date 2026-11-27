@@ -5,18 +5,10 @@ enum class RouteCategory {
     AKAP;
 
     companion object {
-        private const val AKAP_MIN_DURATION_MINUTES = 270
-        private const val AKAP_MIN_DISTANCE_KM = 200.0
-
-        fun determineCategory(estimatedDurationMinutes: Int, distanceKm: Double): RouteCategory {
-            return if (estimatedDurationMinutes >= AKAP_MIN_DURATION_MINUTES || distanceKm >= AKAP_MIN_DISTANCE_KM) {
-                AKAP
-            } else {
-                AKDP
-            }
+        fun determineCategory(estimatedDurationMinutes: Int = 0, distanceKm: Double = 0.0): RouteCategory {
+            return AKDP
         }
 
-        fun fromRoute(route: BusRoute): RouteCategory =
-            determineCategory(route.totalEstimatedDurationMinutes, route.totalDistanceKm)
+        fun fromRoute(route: BusRoute): RouteCategory = route.category
     }
 }

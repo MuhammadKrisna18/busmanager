@@ -139,7 +139,8 @@ data class RouteWizardUiState(
         }
 
     val canProceedFromStep1: Boolean
-        get() = (selectedOrigin != null && selectedDestination != null && selectedOrigin.id != selectedDestination.id && builtRoute != null) || (selectedPathNodes.size >= 2 && builtRoute != null)
+        get() = routeCategory == RouteCategory.AKDP &&
+                (((selectedOrigin != null && selectedDestination != null && selectedOrigin.id != selectedDestination.id && builtRoute != null) || (selectedPathNodes.size >= 2 && builtRoute != null)))
 
     val canProceedFromStep2: Boolean
         get() = builtRoute != null

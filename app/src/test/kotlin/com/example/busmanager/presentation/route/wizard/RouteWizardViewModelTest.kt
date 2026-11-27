@@ -689,6 +689,28 @@ class RouteWizardViewModelTest {
         assertNull(freeDriver!!.assignedBusId)
     }
 
+    @Test
+    fun selectRouteCategory_switchesCategoryAndGatesStep1() = runTest {
+        advanceUntilIdle()
+        assertEquals(com.example.busmanager.domain.route.model.RouteCategory.AKDP, viewModel.uiState.value.routeCategory)
+
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        advanceUntilIdle()
+
+        assertTrue(viewModel.uiState.value.canProceedFromStep1)
+
+        viewModel.selectRouteCategory(com.example.busmanager.domain.route.model.RouteCategory.AKAP)
+        assertEquals(com.example.busmanager.domain.route.model.RouteCategory.AKAP, viewModel.uiState.value.routeCategory)
+        assertFalse(viewModel.uiState.value.canProceedFromStep1)
+
+        viewModel.selectRouteCategory(com.example.busmanager.domain.route.model.RouteCategory.AKDP)
+        assertEquals(com.example.busmanager.domain.route.model.RouteCategory.AKDP, viewModel.uiState.value.routeCategory)
+        assertTrue(viewModel.uiState.value.canProceedFromStep1)
+    }
+
     private class FakeRoutePricingRepository : RoutePricingRepository {
         private val list = mutableListOf<RoutePricing>()
         private val flow = MutableStateFlow<List<RoutePricing>>(emptyList())

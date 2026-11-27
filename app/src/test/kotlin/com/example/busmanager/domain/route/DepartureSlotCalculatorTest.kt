@@ -264,10 +264,10 @@ class DepartureSlotCalculatorTest {
     }
 
     @Test
-    fun determineCategory_distinguishesAkdpAndAkap() {
+    fun determineCategory_ensuresCurrentRoutesAreAkdp() {
         assertEquals(RouteCategory.AKDP, RouteCategory.determineCategory(90, 85.0))
         assertEquals(RouteCategory.AKDP, RouteCategory.determineCategory(150, 180.0))
-        assertEquals(RouteCategory.AKAP, RouteCategory.determineCategory(300, 220.0))
-        assertEquals(RouteCategory.AKAP, RouteCategory.determineCategory(200, 350.0))
+        assertEquals(RouteCategory.AKDP, RouteCategory.determineCategory(300, 220.0))
+        assertEquals(RouteCategory.AKDP, RouteCategory.determineCategory(200, 350.0))
     }
 }

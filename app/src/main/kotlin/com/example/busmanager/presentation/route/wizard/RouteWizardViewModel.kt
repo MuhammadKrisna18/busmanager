@@ -910,6 +910,10 @@ class RouteWizardViewModel(
         }
     }
 
+    fun selectRouteCategory(category: RouteCategory) {
+        _uiState.update { it.copy(routeCategory = category) }
+    }
+
     fun dismissSuccessDialog() {
         resetWizard()
     }

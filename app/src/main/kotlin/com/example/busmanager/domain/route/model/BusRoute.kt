@@ -9,7 +9,8 @@ data class BusRoute(
     val destinationTerminal: Terminal,
     val pathType: RoutePathType,
     val segments: List<RouteSegment>,
-    val transitTerminals: List<Terminal> = emptyList()
+    val transitTerminals: List<Terminal> = emptyList(),
+    val category: RouteCategory = RouteCategory.AKDP
 ) {
     val totalDistanceKm: Double get() = segments.sumOf { it.distanceKm }
 

@@ -112,6 +112,7 @@ fun RouteWizardScreen(
                     RouteWizardStep.ORIGIN_DESTINATION -> {
                         Slide1OriginDestination(
                             uiState = uiState,
+                            onSelectCategory = { viewModel.selectRouteCategory(it) },
                             onSelectOrigin = { viewModel.selectOrigin(it) },
                             onSelectDestination = { viewModel.selectDestination(it) },
                             onTerminalMapClick = { viewModel.onTerminalMapClick(it) },

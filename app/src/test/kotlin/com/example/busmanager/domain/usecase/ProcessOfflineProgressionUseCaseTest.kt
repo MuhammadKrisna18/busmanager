@@ -22,6 +22,7 @@ import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.MapCoordinate
 import com.example.busmanager.domain.route.model.RoadCharacteristic
+import com.example.busmanager.domain.route.model.RouteCategory
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.model.RouteSchedule
@@ -321,7 +322,8 @@ class ProcessOfflineProgressionUseCaseTest {
                     baseDurationMinutes = 600
                 )
             ),
-            pathType = RoutePathType.TOLL
+            pathType = RoutePathType.TOLL,
+            category = RouteCategory.AKAP
         )
         fakeRouteRepo.routesList = listOf(testRoute, akapRoute)
 

@@ -5,6 +5,7 @@ import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.model.DailySchedulePlan
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
@@ -25,7 +26,8 @@ data class LaunchCustomRouteParams(
     val isRoundTrip: Boolean,
     val returnHour: Int = 0,
     val returnMinute: Int = 0,
-    val returnDirection: RouteDirection = RouteDirection.DESTINATION_TO_ORIGIN
+    val returnDirection: RouteDirection = RouteDirection.DESTINATION_TO_ORIGIN,
+    val dailySchedulePlan: DailySchedulePlan? = null
 )
 
 class LaunchCustomRouteUseCase(
@@ -76,6 +78,41 @@ class LaunchCustomRouteUseCase(
             )
             routeScheduleRepository.addSchedule(returnSchedule)
             routeScheduleRepository.assignBusToSchedule(returnScheduleId, params.bus.id)
+        }
+
+        val plan = params.dailySchedulePlan
+        if (plan != null && plan.legs.size > 2) {
+            val leg3 = plan.legs[2]
+            val rit2OutboundId = "sched-${params.route.id}-rit2-outbound-${baseTime + 2}"
+            val rit2Outbound = RouteSchedule(
+                id = rit2OutboundId,
+                routeId = params.route.id,
+                departureHour = leg3.departureHour,
+                departureMinute = leg3.departureMinute,
+                direction = leg3.direction,
+                assignedBusId = params.bus.id,
+                headwayMinutes = params.headwayMinutes,
+                transitDwellMinutes = params.transitDwellMinutes
+            )
+            routeScheduleRepository.addSchedule(rit2Outbound)
+            routeScheduleRepository.assignBusToSchedule(rit2OutboundId, params.bus.id)
+
+            if (plan.legs.size > 3) {
+                val leg4 = plan.legs[3]
+                val rit2ReturnId = "sched-${params.route.id}-rit2-return-${baseTime + 3}"
+                val rit2Return = RouteSchedule(
+                    id = rit2ReturnId,
+                    routeId = params.route.id,
+                    departureHour = leg4.departureHour,
+                    departureMinute = leg4.departureMinute,
+                    direction = leg4.direction,
+                    assignedBusId = params.bus.id,
+                    headwayMinutes = params.headwayMinutes,
+                    transitDwellMinutes = params.transitDwellMinutes
+                )
+                routeScheduleRepository.addSchedule(rit2Return)
+                routeScheduleRepository.assignBusToSchedule(rit2ReturnId, params.bus.id)
+            }
         }
     }
 }

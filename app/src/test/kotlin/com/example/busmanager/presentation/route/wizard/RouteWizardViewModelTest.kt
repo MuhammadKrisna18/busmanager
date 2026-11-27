@@ -14,6 +14,7 @@ import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.model.RouteSchedule
+import com.example.busmanager.domain.route.model.TerminalDepartureSlot
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.usecase.BuildCustomRouteUseCase
@@ -163,13 +164,100 @@ class RouteWizardViewModelTest {
         assertEquals(RouteWizardStep.PRICING_MATRIX, viewModel.uiState.value.currentStep)
 
         viewModel.nextStep()
-        assertEquals(RouteWizardStep.BUS_DRIVER_SCHEDULE, viewModel.uiState.value.currentStep)
+        assertEquals(RouteWizardStep.DEPARTURE_SCHEDULE, viewModel.uiState.value.currentStep)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.availableDepartureSlots.isNotEmpty())
+        assertNotNull(viewModel.uiState.value.selectedDepartureSlot)
+        assertTrue(viewModel.uiState.value.canProceedFromStep4)
+
+        viewModel.nextStep()
+        assertEquals(RouteWizardStep.BUS_DRIVER_ASSIGNMENT, viewModel.uiState.value.currentStep)
+
+        viewModel.previousStep()
+        assertEquals(RouteWizardStep.DEPARTURE_SCHEDULE, viewModel.uiState.value.currentStep)
 
         viewModel.previousStep()
         assertEquals(RouteWizardStep.PRICING_MATRIX, viewModel.uiState.value.currentStep)
 
         viewModel.goToStep(RouteWizardStep.ORIGIN_DESTINATION)
         assertEquals(RouteWizardStep.ORIGIN_DESTINATION, viewModel.uiState.value.currentStep)
+    }
+
+    @Test
+    fun departureSlots_selectionAndFiltering_worksCorrectly() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.goToStep(RouteWizardStep.DEPARTURE_SCHEDULE)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value
+        assertEquals(96, state.availableDepartureSlots.size)
+        assertNotNull(state.selectedDepartureSlot)
+        assertNotNull(state.dailySchedulePlan)
+
+        val targetSlot = state.availableDepartureSlots.first { it.hour == 8 && it.minute == 30 }
+        viewModel.selectDepartureSlot(targetSlot)
+
+        val updatedState = viewModel.uiState.value
+        assertEquals(8, updatedState.departureHour)
+        assertEquals(30, updatedState.departureMinute)
+        assertEquals(targetSlot.slotId, updatedState.selectedDepartureSlot?.slotId)
+        assertNotNull(updatedState.dailySchedulePlan)
+
+        viewModel.setSlotTimeFilter(SlotTimeFilter.NIGHT)
+        assertEquals(SlotTimeFilter.NIGHT, viewModel.uiState.value.selectedTimeFilter)
+    }
+
+    @Test
+    fun selectOccupiedSlot_redirectsToNextAvailableSlot() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        val occupiedSlot = TerminalDepartureSlot(
+            slotId = "term_purabaya_0800",
+            terminalId = "term_purabaya",
+            hour = 8,
+            minute = 0,
+            isAvailable = false,
+            occupiedByRouteId = "other-route",
+            occupiedDestinationCity = "Malang"
+        )
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.goToStep(RouteWizardStep.DEPARTURE_SCHEDULE)
+        advanceUntilIdle()
+
+        viewModel.selectDepartureSlot(occupiedSlot)
+        val state = viewModel.uiState.value
+        assertEquals(8, state.departureHour)
+        assertEquals(15, state.departureMinute)
+        assertNotNull(state.errorMessage)
+    }
+
+    @Test
+    fun setTargetRitCount_updatesPlan() = runTest {
+        advanceUntilIdle()
+        val purabaya = terminalRepository.getTerminalById("term_purabaya")!!
+        val arjosari = terminalRepository.getTerminalById("term_arjosari")!!
+
+        viewModel.selectOrigin(purabaya)
+        viewModel.selectDestination(arjosari)
+        viewModel.goToStep(RouteWizardStep.DEPARTURE_SCHEDULE)
+        advanceUntilIdle()
+
+        viewModel.setTargetRitCount(1)
+        assertEquals(1, viewModel.uiState.value.targetRitCount)
+        assertEquals(2, viewModel.uiState.value.dailySchedulePlan?.legs?.size)
+
+        viewModel.setTargetRitCount(2)
+        assertEquals(2, viewModel.uiState.value.targetRitCount)
+        assertEquals(4, viewModel.uiState.value.dailySchedulePlan?.legs?.size)
     }
 
     @Test

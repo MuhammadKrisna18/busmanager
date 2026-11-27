@@ -81,7 +81,7 @@ fun WizardStepperHeader(
                     color = TextDark
                 )
                 Text(
-                    text = "Langkah ${currentStep.stepNumber} dari 4: ${currentStep.title}",
+                    text = "Langkah ${currentStep.stepNumber} dari ${RouteWizardStep.entries.size}: ${currentStep.title}",
                     fontSize = 12.sp,
                     color = TextMuted
                 )

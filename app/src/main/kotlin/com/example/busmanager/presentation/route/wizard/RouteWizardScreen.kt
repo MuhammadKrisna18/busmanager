@@ -28,7 +28,8 @@ import com.example.busmanager.presentation.route.wizard.components.RouteConfirma
 import com.example.busmanager.presentation.route.wizard.components.Slide1OriginDestination
 import com.example.busmanager.presentation.route.wizard.components.Slide2PathAndStops
 import com.example.busmanager.presentation.route.wizard.components.Slide3PricingMatrix
-import com.example.busmanager.presentation.route.wizard.components.Slide4BusDriverSchedule
+import com.example.busmanager.presentation.route.wizard.components.Slide4DepartureSlots
+import com.example.busmanager.presentation.route.wizard.components.Slide5BusDriverAssignment
 import com.example.busmanager.presentation.route.wizard.components.WizardBottomBar
 import com.example.busmanager.presentation.route.wizard.components.WizardStepperHeader
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -57,7 +58,8 @@ fun RouteWizardScreen(
         RouteWizardStep.ORIGIN_DESTINATION -> uiState.canProceedFromStep1
         RouteWizardStep.PATH_AND_STOPS -> uiState.canProceedFromStep2
         RouteWizardStep.PRICING_MATRIX -> uiState.canProceedFromStep3
-        RouteWizardStep.BUS_DRIVER_SCHEDULE -> uiState.canLaunchFromStep4
+        RouteWizardStep.DEPARTURE_SCHEDULE -> uiState.canProceedFromStep4
+        RouteWizardStep.BUS_DRIVER_ASSIGNMENT -> uiState.canLaunchFromStep5
     }
 
     Scaffold(
@@ -138,19 +140,19 @@ fun RouteWizardScreen(
                             onResetPricingsToDefault = { viewModel.resetPricingsToDefault() }
                         )
                     }
-                    RouteWizardStep.BUS_DRIVER_SCHEDULE -> {
-                        Slide4BusDriverSchedule(
+                    RouteWizardStep.DEPARTURE_SCHEDULE -> {
+                        Slide4DepartureSlots(
+                            uiState = uiState,
+                            onSelectSlot = { viewModel.selectDepartureSlot(it) },
+                            onSetTargetRitCount = { viewModel.setTargetRitCount(it) },
+                            onSetTimeFilter = { viewModel.setSlotTimeFilter(it) }
+                        )
+                    }
+                    RouteWizardStep.BUS_DRIVER_ASSIGNMENT -> {
+                        Slide5BusDriverAssignment(
                             uiState = uiState,
                             onSelectBus = { viewModel.selectBus(it) },
-                            onSelectDriver = { viewModel.selectDriver(it) },
-                            onSetDepartureTime = { h, m -> viewModel.setDepartureTime(h, m) },
-                            onSetDepartureTimeInput = { viewModel.setDepartureTimeInput(it) },
-                            onSetDirection = { viewModel.setDirection(it) },
-                            onSetIsRoundTrip = { viewModel.setIsRoundTrip(it) },
-                            onSetReturnTime = { h, m -> viewModel.setReturnTime(h, m) },
-                            onResetReturnTime = { viewModel.resetReturnTimeToRecommendation() },
-                            onSetHeadwayMinutes = { viewModel.setHeadwayMinutes(it) },
-                            onSetTransitDwellMinutes = { viewModel.setTransitDwellMinutes(it) }
+                            onSelectDriver = { viewModel.selectDriver(it) }
                         )
                     }
                 }

@@ -1,6 +1,5 @@
 package com.example.busmanager.presentation.route.wizard.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,12 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.busmanager.presentation.route.wizard.RouteWizardStep
-import com.example.busmanager.ui.theme.CardBorder
 import com.example.busmanager.ui.theme.PrimaryBlue
 import com.example.busmanager.ui.theme.SuccessGreen
 import com.example.busmanager.ui.theme.SurfaceWhite
 import com.example.busmanager.ui.theme.TextDark
-import com.example.busmanager.ui.theme.TextMuted
 
 @Composable
 fun WizardBottomBar(
@@ -76,7 +73,7 @@ fun WizardBottomBar(
             }
 
             when (currentStep) {
-                RouteWizardStep.BUS_DRIVER_SCHEDULE -> {
+                RouteWizardStep.BUS_DRIVER_ASSIGNMENT -> {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -128,7 +125,7 @@ fun WizardBottomBar(
                         }
                     }
                 }
-                RouteWizardStep.PRICING_MATRIX -> {
+                RouteWizardStep.DEPARTURE_SCHEDULE -> {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -155,6 +152,40 @@ fun WizardBottomBar(
                         ) {
                             Text(
                                 text = "Lanjut ke Armada",
+                                color = Color.White,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+                RouteWizardStep.PRICING_MATRIX -> {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedButton(
+                            onClick = onSaveStandbyClick,
+                            enabled = canSaveStandby && !isSaving,
+                            shape = RoundedCornerShape(24.dp),
+                            modifier = Modifier.height(46.dp)
+                        ) {
+                            Text(
+                                text = "Simpan Standby",
+                                color = TextDark,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        Button(
+                            onClick = onNextClick,
+                            enabled = canProceed && !isSaving,
+                            shape = RoundedCornerShape(24.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue),
+                            modifier = Modifier.height(46.dp)
+                        ) {
+                            Text(
+                                text = "Lanjut ke Jadwal",
                                 color = Color.White,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold

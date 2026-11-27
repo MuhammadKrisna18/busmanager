@@ -7,10 +7,14 @@ import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.repository.FleetRepository
+import com.example.busmanager.domain.route.model.DepartureSlotCalculator
+import com.example.busmanager.domain.route.model.OccupiedSlotInfo
+import com.example.busmanager.domain.route.model.RouteCategory
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.model.SmartScheduleTimeParser
 import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.domain.route.model.TerminalDepartureSlot
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.route.repository.TerminalRepository
@@ -25,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -307,9 +312,11 @@ class RouteWizardViewModel(
 
         return if (buildResult.isSuccess) {
             val route = buildResult.getOrThrow()
+            val category = RouteCategory.fromRoute(route)
             val generatedPricings = generateHopPricings(route, state.pricings)
             val intermediate = state.copy(
                 builtRoute = route,
+                routeCategory = category,
                 pricings = generatedPricings,
                 errorMessage = null
             )
@@ -590,13 +597,21 @@ class RouteWizardViewModel(
             }
             RouteWizardStep.PRICING_MATRIX -> {
                 if (state.canProceedFromStep3) {
-                    _uiState.update { it.copy(currentStep = RouteWizardStep.BUS_DRIVER_SCHEDULE, errorMessage = null) }
-                    checkScheduleConflict()
+                    _uiState.update { it.copy(currentStep = RouteWizardStep.DEPARTURE_SCHEDULE, errorMessage = null) }
+                    refreshDepartureSlots()
                 } else {
                     _uiState.update { it.copy(errorMessage = "Daftar tarif tiket belum siap") }
                 }
             }
-            RouteWizardStep.BUS_DRIVER_SCHEDULE -> {}
+            RouteWizardStep.DEPARTURE_SCHEDULE -> {
+                if (state.canProceedFromStep4) {
+                    _uiState.update { it.copy(currentStep = RouteWizardStep.BUS_DRIVER_ASSIGNMENT, errorMessage = null) }
+                    checkScheduleConflict()
+                } else {
+                    _uiState.update { it.copy(errorMessage = "Pilih slot keberangkatan terminal yang tersedia") }
+                }
+            }
+            RouteWizardStep.BUS_DRIVER_ASSIGNMENT -> {}
         }
     }
 
@@ -606,7 +621,8 @@ class RouteWizardViewModel(
                 RouteWizardStep.ORIGIN_DESTINATION -> RouteWizardStep.ORIGIN_DESTINATION
                 RouteWizardStep.PATH_AND_STOPS -> RouteWizardStep.ORIGIN_DESTINATION
                 RouteWizardStep.PRICING_MATRIX -> RouteWizardStep.PATH_AND_STOPS
-                RouteWizardStep.BUS_DRIVER_SCHEDULE -> RouteWizardStep.PRICING_MATRIX
+                RouteWizardStep.DEPARTURE_SCHEDULE -> RouteWizardStep.PRICING_MATRIX
+                RouteWizardStep.BUS_DRIVER_ASSIGNMENT -> RouteWizardStep.DEPARTURE_SCHEDULE
             }
             state.copy(currentStep = prev, errorMessage = null)
         }
@@ -632,13 +648,187 @@ class RouteWizardViewModel(
                     _uiState.update { it.copy(currentStep = step, errorMessage = null) }
                 }
             }
-            RouteWizardStep.BUS_DRIVER_SCHEDULE -> {
+            RouteWizardStep.DEPARTURE_SCHEDULE -> {
                 if (state.canProceedFromStep1 && state.canProceedFromStep2 && state.canProceedFromStep3) {
+                    _uiState.update { it.copy(currentStep = step, errorMessage = null) }
+                    refreshDepartureSlots()
+                }
+            }
+            RouteWizardStep.BUS_DRIVER_ASSIGNMENT -> {
+                if (state.canProceedFromStep1 && state.canProceedFromStep2 && state.canProceedFromStep3 && state.canProceedFromStep4) {
                     _uiState.update { it.copy(currentStep = step, errorMessage = null) }
                     checkScheduleConflict()
                 }
             }
         }
+    }
+
+    fun refreshDepartureSlots() {
+        val state = _uiState.value
+        val route = state.builtRoute ?: return
+        val origin = state.selectedOrigin ?: return
+        val dest = state.selectedDestination ?: return
+        val category = RouteCategory.fromRoute(route)
+
+        viewModelScope.launch {
+            val allSchedules = routeScheduleRepository.getAllSchedules().first()
+            val allRoutes = routeRepository.getAllRoutes()
+            val routesMap = allRoutes.associateBy { it.id }
+
+            val occupiedSlots = allSchedules.mapNotNull { schedule ->
+                val r = routesMap[schedule.routeId] ?: return@mapNotNull null
+                val scheduleOriginTerminalId = if (schedule.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                    r.originTerminal.id
+                } else {
+                    r.destinationTerminal.id
+                }
+                val scheduleDestCity = if (schedule.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                    r.destinationTerminal.city
+                } else {
+                    r.originTerminal.city
+                }
+
+                OccupiedSlotInfo(
+                    terminalId = scheduleOriginTerminalId,
+                    hour = schedule.departureHour,
+                    minute = schedule.departureMinute,
+                    destinationCity = scheduleDestCity,
+                    routeId = schedule.routeId,
+                    busCode = schedule.assignedBusId
+                )
+            }
+
+            val slots = DepartureSlotCalculator.generate24HourSlots(
+                terminalId = origin.id,
+                targetDestinationCity = dest.city,
+                existingOccupiedSlots = occupiedSlots
+            )
+
+            val currentSelected = state.selectedDepartureSlot
+            val stillAvailable = currentSelected != null && slots.any { it.slotId == currentSelected.slotId && it.isAvailable }
+
+            val chosenSlot = if (stillAvailable) {
+                slots.first { it.slotId == currentSelected?.slotId }
+            } else {
+                DepartureSlotCalculator.findNextAvailableSlot(slots, state.departureHour, state.departureMinute)
+                    ?: slots.firstOrNull { it.isAvailable }
+            }
+
+            val targetRit = if (category == RouteCategory.AKAP) 1 else state.targetRitCount.coerceIn(1, 2)
+            val updatedPlan = if (chosenSlot != null) {
+                DepartureSlotCalculator.calculateDailyPlan(
+                    routeCategory = category,
+                    originTerminalId = origin.id,
+                    destTerminalId = dest.id,
+                    estimatedDurationMinutes = state.estimatedDurationMinutes,
+                    departureHour = chosenSlot.hour,
+                    departureMinute = chosenSlot.minute,
+                    targetRitCount = targetRit
+                )
+            } else null
+
+            val returnLeg = updatedPlan?.legs?.firstOrNull { it.direction == RouteDirection.DESTINATION_TO_ORIGIN }
+
+            _uiState.update { curr ->
+                curr.copy(
+                    routeCategory = category,
+                    targetRitCount = targetRit,
+                    availableDepartureSlots = slots,
+                    selectedDepartureSlot = chosenSlot,
+                    departureHour = chosenSlot?.hour ?: curr.departureHour,
+                    departureMinute = chosenSlot?.minute ?: curr.departureMinute,
+                    departureTimeInputText = chosenSlot?.formattedTime ?: curr.departureTimeInputText,
+                    departureTimeDescription = chosenSlot?.let { "${it.formattedTime} WIB (${it.formattedClockPeriod})" } ?: curr.departureTimeDescription,
+                    isRoundTrip = true,
+                    returnHour = returnLeg?.departureHour ?: curr.returnHour,
+                    returnMinute = returnLeg?.departureMinute ?: curr.returnMinute,
+                    dailySchedulePlan = updatedPlan
+                )
+            }
+        }
+    }
+
+    fun selectDepartureSlot(slot: TerminalDepartureSlot) {
+        val state = _uiState.value
+        val slots = state.availableDepartureSlots
+        val effectiveSlot = if (slot.isAvailable) {
+            slot
+        } else {
+            val (nextH, nextM) = DepartureSlotCalculator.alignToNext15MinuteSlot(slot.totalMinutesOfDay + DepartureSlotCalculator.SLOT_INTERVAL_MINUTES)
+            val nextSlot = DepartureSlotCalculator.findNextAvailableSlot(slots, nextH, nextM)
+                ?: DepartureSlotCalculator.findNextAvailableSlot(slots, slot.hour, slot.minute)
+            if (nextSlot != null) {
+                _uiState.update { it.copy(errorMessage = "Slot ${slot.formattedTime} tujuan ${slot.occupiedDestinationCity ?: "sama"} telah terisi. Dialihkan ke slot ${nextSlot.formattedTime}.") }
+                nextSlot
+            } else {
+                _uiState.update { it.copy(errorMessage = "Slot ${slot.formattedTime} telah terisi dan tidak ada slot alternatif.") }
+                return
+            }
+        }
+        applyDepartureSlot(effectiveSlot)
+    }
+
+    private fun applyDepartureSlot(slot: TerminalDepartureSlot) {
+        val state = _uiState.value
+        val origin = state.selectedOrigin ?: return
+        val dest = state.selectedDestination ?: return
+        val category = state.routeCategory
+
+        val targetRit = if (category == RouteCategory.AKAP) 1 else state.targetRitCount.coerceIn(1, 2)
+        val plan = DepartureSlotCalculator.calculateDailyPlan(
+            routeCategory = category,
+            originTerminalId = origin.id,
+            destTerminalId = dest.id,
+            estimatedDurationMinutes = state.estimatedDurationMinutes,
+            departureHour = slot.hour,
+            departureMinute = slot.minute,
+            targetRitCount = targetRit
+        )
+
+        val returnLeg = plan.legs.firstOrNull { it.direction == RouteDirection.DESTINATION_TO_ORIGIN }
+
+        _uiState.update { curr ->
+            curr.copy(
+                selectedDepartureSlot = slot,
+                departureHour = slot.hour,
+                departureMinute = slot.minute,
+                departureTimeInputText = slot.formattedTime,
+                departureTimeDescription = "${slot.formattedTime} WIB (${slot.formattedClockPeriod})",
+                isRoundTrip = true,
+                returnHour = returnLeg?.departureHour ?: curr.returnHour,
+                returnMinute = returnLeg?.departureMinute ?: curr.returnMinute,
+                dailySchedulePlan = plan
+            )
+        }
+    }
+
+    fun setTargetRitCount(ritCount: Int) {
+        _uiState.update { curr ->
+            if (curr.routeCategory == RouteCategory.AKAP) return@update curr
+            val safeCount = ritCount.coerceIn(1, 2)
+            val slot = curr.selectedDepartureSlot ?: return@update curr.copy(targetRitCount = safeCount)
+            val origin = curr.selectedOrigin ?: return@update curr.copy(targetRitCount = safeCount)
+            val dest = curr.selectedDestination ?: return@update curr.copy(targetRitCount = safeCount)
+
+            val updatedPlan = DepartureSlotCalculator.calculateDailyPlan(
+                routeCategory = curr.routeCategory,
+                originTerminalId = origin.id,
+                destTerminalId = dest.id,
+                estimatedDurationMinutes = curr.estimatedDurationMinutes,
+                departureHour = slot.hour,
+                departureMinute = slot.minute,
+                targetRitCount = safeCount
+            )
+
+            curr.copy(
+                targetRitCount = safeCount,
+                dailySchedulePlan = updatedPlan
+            )
+        }
+    }
+
+    fun setSlotTimeFilter(filter: SlotTimeFilter) {
+        _uiState.update { it.copy(selectedTimeFilter = filter) }
     }
 
     fun launchAndSaveRoute(onSuccess: (String) -> Unit) {
@@ -666,7 +856,8 @@ class RouteWizardViewModel(
                         isRoundTrip = state.isRoundTrip,
                         returnHour = state.returnHour,
                         returnMinute = state.returnMinute,
-                        returnDirection = state.returnDirection
+                        returnDirection = state.returnDirection,
+                        dailySchedulePlan = state.dailySchedulePlan
                     )
                 )
 

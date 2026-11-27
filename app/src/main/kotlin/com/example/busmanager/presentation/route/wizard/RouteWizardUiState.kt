@@ -3,17 +3,21 @@ package com.example.busmanager.presentation.route.wizard
 import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.model.DailySchedulePlan
+import com.example.busmanager.domain.route.model.RouteCategory
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.model.RouteSegment
 import com.example.busmanager.domain.route.model.Terminal
+import com.example.busmanager.domain.route.model.TerminalDepartureSlot
 import com.example.busmanager.domain.simulation.model.RouteDirection
 
 enum class RouteWizardStep(val stepNumber: Int, val title: String) {
     ORIGIN_DESTINATION(1, "Asal & Tujuan"),
     PATH_AND_STOPS(2, "Jalur & Halte"),
     PRICING_MATRIX(3, "Tarif Tiket"),
-    BUS_DRIVER_SCHEDULE(4, "Bus & Kru")
+    DEPARTURE_SCHEDULE(4, "Jadwal Slot"),
+    BUS_DRIVER_ASSIGNMENT(5, "Bus & Kru")
 }
 
 data class RouteWizardUiState(
@@ -33,6 +37,13 @@ data class RouteWizardUiState(
 
     val pricings: List<RoutePricing> = emptyList(),
     val editingPricing: RoutePricing? = null,
+
+    val routeCategory: RouteCategory = RouteCategory.AKDP,
+    val availableDepartureSlots: List<TerminalDepartureSlot> = emptyList(),
+    val selectedDepartureSlot: TerminalDepartureSlot? = null,
+    val selectedTimeFilter: SlotTimeFilter = SlotTimeFilter.MORNING,
+    val targetRitCount: Int = 2,
+    val dailySchedulePlan: DailySchedulePlan? = null,
 
     val availableBuses: List<Bus> = emptyList(),
     val selectedBus: Bus? = null,
@@ -136,6 +147,9 @@ data class RouteWizardUiState(
     val canProceedFromStep3: Boolean
         get() = pricings.isNotEmpty()
 
+    val canProceedFromStep4: Boolean
+        get() = selectedDepartureSlot != null && selectedDepartureSlot.isAvailable && dailySchedulePlan != null
+
     val isSelectedBusAvailable: Boolean
         get() {
             val bus = selectedBus ?: return false
@@ -151,6 +165,9 @@ data class RouteWizardUiState(
 
     val canLaunchFromStep4: Boolean
         get() = selectedBus != null && isSelectedBusAvailable && selectedDriver != null && isSelectedDriverAvailable && !hasConflict && !isSaving
+
+    val canLaunchFromStep5: Boolean
+        get() = canLaunchFromStep4 && canProceedFromStep4
 
     val canSaveStandby: Boolean
         get() = canProceedFromStep1 && canProceedFromStep2 && canProceedFromStep3 && !isSaving

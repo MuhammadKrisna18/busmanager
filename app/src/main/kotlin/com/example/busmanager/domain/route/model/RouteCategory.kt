@@ -15,5 +15,8 @@ enum class RouteCategory {
                 AKDP
             }
         }
+
+        fun fromRoute(route: BusRoute): RouteCategory =
+            determineCategory(route.totalEstimatedDurationMinutes, route.totalDistanceKm)
     }
 }

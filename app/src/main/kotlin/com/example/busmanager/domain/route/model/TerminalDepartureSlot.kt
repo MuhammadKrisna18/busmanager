@@ -19,6 +19,17 @@ data class TerminalDepartureSlot(
     val timeFormatted: String
         get() = String.format("%02d:%02d", hour, minute)
 
+    val formattedTime: String
+        get() = timeFormatted
+
+    val formattedClockPeriod: String
+        get() = when (hour) {
+            in 4..10 -> String.format("%02d.%02d Pagi", hour, minute)
+            in 11..14 -> String.format("%02d.%02d Siang", hour, minute)
+            in 15..18 -> String.format("%02d.%02d Sore", hour, minute)
+            else -> String.format("%02d.%02d Malam", hour, minute)
+        }
+
     val totalMinutesOfDay: Int
         get() = hour * 60 + minute
 }

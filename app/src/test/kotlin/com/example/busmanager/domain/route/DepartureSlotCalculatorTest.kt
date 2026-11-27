@@ -264,6 +264,41 @@ class DepartureSlotCalculatorTest {
     }
 
     @Test
+    fun calculateDailyPlan_reverseDirection_setsDestToOriginForOutboundLegs() {
+        val plan = DepartureSlotCalculator.calculateDailyPlan(
+            routeCategory = RouteCategory.AKDP,
+            originTerminalId = "term_purabaya",
+            destTerminalId = "term_arjosari",
+            estimatedDurationMinutes = 90,
+            departureHour = 7,
+            departureMinute = 0,
+            targetRitCount = 2,
+            initialDirection = RouteDirection.DESTINATION_TO_ORIGIN
+        )
+
+        assertEquals(4, plan.totalLegsCount)
+        val leg1 = plan.legs[0]
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, leg1.direction)
+        assertEquals("term_arjosari", leg1.departureTerminalId)
+        assertEquals("term_purabaya", leg1.arrivalTerminalId)
+
+        val leg2 = plan.legs[1]
+        assertEquals(RouteDirection.ORIGIN_TO_DESTINATION, leg2.direction)
+        assertEquals("term_purabaya", leg2.departureTerminalId)
+        assertEquals("term_arjosari", leg2.arrivalTerminalId)
+
+        val leg3 = plan.legs[2]
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, leg3.direction)
+        assertEquals("term_arjosari", leg3.departureTerminalId)
+        assertEquals("term_purabaya", leg3.arrivalTerminalId)
+
+        val leg4 = plan.legs[3]
+        assertEquals(RouteDirection.ORIGIN_TO_DESTINATION, leg4.direction)
+        assertEquals("term_purabaya", leg4.departureTerminalId)
+        assertEquals("term_arjosari", leg4.arrivalTerminalId)
+    }
+
+    @Test
     fun determineCategory_ensuresCurrentRoutesAreAkdp() {
         assertEquals(RouteCategory.AKDP, RouteCategory.determineCategory(90, 85.0))
         assertEquals(RouteCategory.AKDP, RouteCategory.determineCategory(150, 180.0))

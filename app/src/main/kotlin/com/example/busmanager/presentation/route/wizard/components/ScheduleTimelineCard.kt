@@ -65,7 +65,7 @@ fun ScheduleTimelineCard(
             Spacer(modifier = Modifier.height(10.dp))
 
             plan.legs.forEach { leg ->
-                val isOutbound = leg.direction == RouteDirection.ORIGIN_TO_DESTINATION
+                val isOutbound = leg.legIndex % 2 == 0
                 val label = "Rit ${leg.ritNumber} ${if (isOutbound) "Pergi" else "Pulang"}"
                 Row(
                     modifier = Modifier

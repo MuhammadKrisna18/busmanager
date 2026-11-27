@@ -8,8 +8,8 @@ class ReleaseVersionTest {
 
     @Test
     fun releaseVersion_matchesTargetReleaseSpecifications() {
-        assertEquals(36, BuildConfig.VERSION_CODE)
-        assertEquals("2.27.1", BuildConfig.VERSION_NAME)
+        assertEquals(37, BuildConfig.VERSION_CODE)
+        assertEquals("2.27.2", BuildConfig.VERSION_NAME)
         assertTrue(BuildConfig.VERSION_NAME.startsWith("2."))
     }
 }

@@ -272,12 +272,13 @@ class GarageViewModel(
         val plan = if (chosenSlot != null) {
             DepartureSlotCalculator.calculateDailyPlan(
                 routeCategory = category,
-                originTerminalId = depTerminal.id,
-                destTerminalId = destTerminal.id,
+                originTerminalId = route.originTerminal.id,
+                destTerminalId = route.destinationTerminal.id,
                 estimatedDurationMinutes = route.totalEstimatedDurationMinutes,
                 departureHour = chosenSlot.hour,
                 departureMinute = chosenSlot.minute,
-                targetRitCount = effectiveRitCount
+                targetRitCount = effectiveRitCount,
+                initialDirection = direction
             )
         } else null
 
@@ -425,19 +426,15 @@ class GarageViewModel(
     private fun applyQuickAssignSlot(slot: TerminalDepartureSlot, noticeMessage: String? = null) {
         val current = _uiState.value.quickAssignState ?: return
         val route = current.selectedRoute ?: return
-        val (depTerminal, destTerminal) = if (current.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
-            route.originTerminal to route.destinationTerminal
-        } else {
-            route.destinationTerminal to route.originTerminal
-        }
         val plan = DepartureSlotCalculator.calculateDailyPlan(
             routeCategory = current.routeCategory,
-            originTerminalId = depTerminal.id,
-            destTerminalId = destTerminal.id,
+            originTerminalId = route.originTerminal.id,
+            destTerminalId = route.destinationTerminal.id,
             estimatedDurationMinutes = route.totalEstimatedDurationMinutes,
             departureHour = slot.hour,
             departureMinute = slot.minute,
-            targetRitCount = current.targetRitCount
+            targetRitCount = current.targetRitCount,
+            initialDirection = current.direction
         )
         _uiState.update { state ->
             state.copy(
@@ -458,19 +455,15 @@ class GarageViewModel(
         val route = current.selectedRoute ?: return
         val slot = current.selectedSlot ?: return
         val safeCount = if (current.routeCategory == RouteCategory.AKAP) 1 else 2
-        val (depTerminal, destTerminal) = if (current.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
-            route.originTerminal to route.destinationTerminal
-        } else {
-            route.destinationTerminal to route.originTerminal
-        }
         val updatedPlan = DepartureSlotCalculator.calculateDailyPlan(
             routeCategory = current.routeCategory,
-            originTerminalId = depTerminal.id,
-            destTerminalId = destTerminal.id,
+            originTerminalId = route.originTerminal.id,
+            destTerminalId = route.destinationTerminal.id,
             estimatedDurationMinutes = route.totalEstimatedDurationMinutes,
             departureHour = slot.hour,
             departureMinute = slot.minute,
-            targetRitCount = safeCount
+            targetRitCount = safeCount,
+            initialDirection = current.direction
         )
         _uiState.update { state ->
             state.copy(

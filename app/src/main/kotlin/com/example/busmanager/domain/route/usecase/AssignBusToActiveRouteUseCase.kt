@@ -78,7 +78,15 @@ class AssignBusToActiveRouteUseCase(
                 val addResult = routeScheduleRepository.addSchedule(schedule)
                 if (addResult.isFailure) {
                     insertedScheduleIds.forEach { routeScheduleRepository.deleteSchedule(it) }
-                    return Result.failure(addResult.exceptionOrNull() ?: IllegalStateException("Gagal menambahkan jadwal keberangkatan"))
+                    val legCity = if (leg.direction == RouteDirection.ORIGIN_TO_DESTINATION) route.destinationTerminal.city else route.originTerminal.city
+                    val legType = if (index % 2 == 0) "Pergi" else "Pulang"
+                    val legNumber = (index / 2) + 1
+                    val customMsg = if (index > 0) {
+                        "Bentrok jadwal Rit $legNumber $legType arah $legCity pada jam ${leg.departureFormatted} WIB: slot sudah terisi armada lain."
+                    } else {
+                        addResult.exceptionOrNull()?.message ?: "Gagal menambahkan jadwal keberangkatan"
+                    }
+                    return Result.failure(IllegalStateException(customMsg))
                 }
                 insertedScheduleIds.add(scheduleId)
             }

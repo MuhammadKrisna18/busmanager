@@ -89,7 +89,8 @@ object DepartureSlotCalculator {
         estimatedDurationMinutes: Int,
         departureHour: Int,
         departureMinute: Int,
-        targetRitCount: Int = 2
+        targetRitCount: Int = 2,
+        initialDirection: RouteDirection = RouteDirection.ORIGIN_TO_DESTINATION
     ): DailySchedulePlan {
         val safeDuration = estimatedDurationMinutes.coerceAtLeast(15)
         val effectiveRitCount = if (routeCategory == RouteCategory.AKAP) 1 else targetRitCount.coerceIn(1, 2)
@@ -105,17 +106,22 @@ object DepartureSlotCalculator {
         val leg1ArrvTotal = leg1DeptTotal + safeDuration
         val (leg1ArrvH, leg1ArrvM) = alignMinutesToClock(leg1ArrvTotal)
 
+        val leg1OriginTerm = if (initialDirection == RouteDirection.ORIGIN_TO_DESTINATION) originTerminalId else destTerminalId
+        val leg1DestTerm = if (initialDirection == RouteDirection.ORIGIN_TO_DESTINATION) destTerminalId else originTerminalId
+        val leg1Dir = initialDirection
+        val leg2Dir = if (initialDirection == RouteDirection.ORIGIN_TO_DESTINATION) RouteDirection.DESTINATION_TO_ORIGIN else RouteDirection.ORIGIN_TO_DESTINATION
+
         legs.add(
             ScheduledTripLeg(
                 legIndex = 0,
                 ritNumber = 1,
-                direction = RouteDirection.ORIGIN_TO_DESTINATION,
+                direction = leg1Dir,
                 departureHour = departureHour,
                 departureMinute = departureMinute,
                 arrivalHour = leg1ArrvH,
                 arrivalMinute = leg1ArrvM,
-                departureTerminalId = originTerminalId,
-                arrivalTerminalId = destTerminalId,
+                departureTerminalId = leg1OriginTerm,
+                arrivalTerminalId = leg1DestTerm,
                 layoverMinutesAfterArrival = destLayover
             )
         )
@@ -132,13 +138,13 @@ object DepartureSlotCalculator {
             ScheduledTripLeg(
                 legIndex = 1,
                 ritNumber = 1,
-                direction = RouteDirection.DESTINATION_TO_ORIGIN,
+                direction = leg2Dir,
                 departureHour = leg2DeptH,
                 departureMinute = leg2DeptM,
                 arrivalHour = leg2ArrvH,
                 arrivalMinute = leg2ArrvM,
-                departureTerminalId = destTerminalId,
-                arrivalTerminalId = originTerminalId,
+                departureTerminalId = leg1DestTerm,
+                arrivalTerminalId = leg1OriginTerm,
                 layoverMinutesAfterArrival = originLayover
             )
         )
@@ -154,13 +160,13 @@ object DepartureSlotCalculator {
                 ScheduledTripLeg(
                     legIndex = 2,
                     ritNumber = 2,
-                    direction = RouteDirection.ORIGIN_TO_DESTINATION,
+                    direction = leg1Dir,
                     departureHour = leg3DeptH,
                     departureMinute = leg3DeptM,
                     arrivalHour = leg3ArrvH,
                     arrivalMinute = leg3ArrvM,
-                    departureTerminalId = originTerminalId,
-                    arrivalTerminalId = destTerminalId,
+                    departureTerminalId = leg1OriginTerm,
+                    arrivalTerminalId = leg1DestTerm,
                     layoverMinutesAfterArrival = destLayover
                 )
             )
@@ -175,13 +181,13 @@ object DepartureSlotCalculator {
                 ScheduledTripLeg(
                     legIndex = 3,
                     ritNumber = 2,
-                    direction = RouteDirection.DESTINATION_TO_ORIGIN,
+                    direction = leg2Dir,
                     departureHour = leg4DeptH,
                     departureMinute = leg4DeptM,
                     arrivalHour = leg4ArrvH,
                     arrivalMinute = leg4ArrvM,
-                    departureTerminalId = destTerminalId,
-                    arrivalTerminalId = originTerminalId,
+                    departureTerminalId = leg1DestTerm,
+                    arrivalTerminalId = leg1OriginTerm,
                     layoverMinutesAfterArrival = 0
                 )
             )

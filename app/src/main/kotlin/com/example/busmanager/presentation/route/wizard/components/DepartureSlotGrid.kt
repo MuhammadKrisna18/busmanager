@@ -85,9 +85,9 @@ fun DepartureSlotGrid(
                         color = textCol
                     )
                     if (!slot.isAvailable) {
-                        val occupiedLabel = slot.occupiedDestinationCity?.let { " ($it)" } ?: ""
+                        val occupiedLabel = slot.occupiedDestinationCity?.let { "Arah $it" } ?: "Terisi"
                         Text(
-                            text = "Terisi$occupiedLabel",
+                            text = occupiedLabel,
                             fontSize = 9.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFFDC2626)

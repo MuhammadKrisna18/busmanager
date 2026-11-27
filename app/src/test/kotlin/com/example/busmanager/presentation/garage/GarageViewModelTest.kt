@@ -438,6 +438,32 @@ class GarageViewModelTest {
     }
 
     @Test
+    fun setQuickAssignDirection_updatesDirectionAndPlanWithReverseDirection() = runTest {
+        advanceUntilIdle()
+        val standbyItem = viewModel.uiState.value.allBuses.first { it.bus.id == "bus-2" }
+        viewModel.openQuickAssignDialog(standbyItem)
+        advanceUntilIdle()
+
+        viewModel.setQuickAssignDirection(RouteDirection.DESTINATION_TO_ORIGIN)
+        advanceUntilIdle()
+
+        val state = viewModel.uiState.value.quickAssignState
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, state?.direction)
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, state?.dailySchedulePlan?.legs?.first()?.direction)
+
+        viewModel.confirmQuickAssign()
+        advanceUntilIdle()
+
+        val finalState = viewModel.uiState.value
+        assertNull(finalState.quickAssignState)
+
+        val schedules = fakeScheduleRepo.schedulesList.filter { it.assignedBusId == "bus-2" }
+        assertEquals(4, schedules.size)
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, schedules[0].direction)
+        assertEquals(RouteDirection.ORIGIN_TO_DESTINATION, schedules[1].direction)
+    }
+
+    @Test
     fun openQuickAssignDialog_whenBusAlreadyHasDriver_preselectsCurrentDriverAndIncludesInAvailableDrivers() = runTest {
         advanceUntilIdle()
         val busItemWithDriver = viewModel.uiState.value.allBuses.first { it.bus.id == "bus-1" }

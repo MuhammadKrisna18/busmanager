@@ -12,6 +12,7 @@ import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.fleet.usecase.ValidateBusOperationUseCase
 import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.model.DepartureSlotCalculator
 import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
@@ -38,13 +39,9 @@ class SimulationDispatchCoordinator(
         buses: List<Bus>,
         activeTrips: List<ActiveBusTrip>,
         routes: List<BusRoute>,
-        onDispatch: suspend (Bus, BusRoute, RouteDirection, GameCalendar) -> Unit
+        onDispatch: suspend (Bus, BusRoute, RouteDirection, GameCalendar, RouteSchedule) -> Unit
     ) {
-        val isOperatingHours = time.hour in 4..23
-        if (!isOperatingHours) return
-
         val currentTotalMinutes = time.day * 1440L + time.hour * 60L + time.minute
-        val currentDayMinutes = time.hour * 60 + time.minute
         val dispatchedBusIds = mutableSetOf<String>()
         val dispatchedRouteDirections = mutableSetOf<Pair<String, RouteDirection>>()
 
@@ -81,21 +78,21 @@ class SimulationDispatchCoordinator(
             val routeTripsInSameDirection = activeTrips.filter {
                 it.route.id == route.id && it.direction == schedule.direction && !it.isCompleted
             }
-            if (routeTripsInSameDirection.any { it.elapsedMinutes < 60 }) {
+            if (routeTripsInSameDirection.any { it.elapsedMinutes < DepartureSlotCalculator.SLOT_INTERVAL_MINUTES }) {
                 continue
             }
 
             val shouldDepart = if (schedule.nextDepartureEpochMinutes > 0L) {
                 currentTotalMinutes >= schedule.nextDepartureEpochMinutes
             } else {
-                val schedDayMinutes = schedule.departureHour * 60 + schedule.departureMinute
-                currentDayMinutes >= schedDayMinutes
+                val schedEpochToday = time.day * 1440L + schedule.departureHour * 60L + schedule.departureMinute
+                currentTotalMinutes >= schedEpochToday
             }
 
             if (shouldDepart) {
                 dispatchedBusIds.add(bus.id)
                 dispatchedRouteDirections.add(routeDirKey)
-                onDispatch(bus, route, schedule.direction, time)
+                onDispatch(bus, route, schedule.direction, time, schedule)
             }
         }
     }

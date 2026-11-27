@@ -84,7 +84,8 @@ class SimulationMapViewModelTest {
         simulationTripRepo = SimulationTripRepositoryImpl()
         simulationTimeRepo = SimulationTimeRepositoryImpl(
             initialTime = GameCalendar(2026, 11, 24, 8, 0),
-            simulationTripRepository = simulationTripRepo
+            simulationTripRepository = simulationTripRepo,
+            tickIntervalMillis = 0L
         )
         fakeCompanyRepo = FakeCompanyRepository()
         fakeFleetRepo = FakeFleetRepository()
@@ -111,6 +112,8 @@ class SimulationMapViewModelTest {
 
     @After
     fun tearDown() {
+        simulationTimeRepo.pause()
+        testDispatcher.scheduler.advanceUntilIdle()
         Dispatchers.resetMain()
     }
 
@@ -894,7 +897,8 @@ class SimulationMapViewModelTest {
         val customTripRepo = SimulationTripRepositoryImpl()
         val earlyTimeRepo = SimulationTimeRepositoryImpl(
             initialTime = GameCalendar(2026, 11, 24, 3, 30),
-            simulationTripRepository = customTripRepo
+            simulationTripRepository = customTripRepo,
+            tickIntervalMillis = 0L
         )
 
         val bus = createDummyBus("BUS-EARLY-01").copy(
@@ -940,6 +944,7 @@ class SimulationMapViewModelTest {
 
         assertEquals(1, customTripRepo.activeTrips.value.size)
         assertEquals(bus.id, customTripRepo.activeTrips.value.first().busId)
+        earlyTimeRepo.pause()
     }
 
     @Test
@@ -949,7 +954,8 @@ class SimulationMapViewModelTest {
         val customTripRepo = SimulationTripRepositoryImpl()
         val lateTimeRepo = SimulationTimeRepositoryImpl(
             initialTime = GameCalendar(2026, 11, 24, 23, 30),
-            simulationTripRepository = customTripRepo
+            simulationTripRepository = customTripRepo,
+            tickIntervalMillis = 0L
         )
 
         val bus = createDummyBus("BUS-LATE-01").copy(
@@ -1000,6 +1006,155 @@ class SimulationMapViewModelTest {
         assertEquals(0, nextSched.departureMinute)
         assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, nextSched.direction)
         assertTrue(nextSched.nextDepartureEpochMinutes >= lateTimeRepo.currentTime.value.day * 1440L + 4 * 60L)
+        lateTimeRepo.pause()
+    }
+
+    @Test
+    fun scheduledDeparture_multiRit_departsAtConfiguredSlotAndRestsOvernight() = runTest(testDispatcher) {
+        val scheduleRepo = FakeRouteScheduleRepository()
+        val fleetRepo = FakeFleetRepository()
+        val customTripRepo = SimulationTripRepositoryImpl()
+        val timeRepo = SimulationTimeRepositoryImpl(
+            initialTime = GameCalendar(2026, 11, 24, 7, 30),
+            simulationTripRepository = customTripRepo,
+            tickIntervalMillis = 0L
+        )
+
+        val bus = createDummyBus("BUS-MULTI-01").copy(
+            id = "bus-multi-01",
+            routeId = "route_sby_mlg_toll",
+            currentTerminalId = "term_purabaya"
+        )
+        fleetRepo.emitBuses(listOf(bus))
+
+        val sched1 = RouteSchedule(
+            id = "sched-r1-out",
+            routeId = "route_sby_mlg_toll",
+            departureHour = 8,
+            departureMinute = 0,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            assignedBusId = bus.id
+        )
+        val sched2 = RouteSchedule(
+            id = "sched-r1-ret",
+            routeId = "route_sby_mlg_toll",
+            departureHour = 10,
+            departureMinute = 30,
+            direction = RouteDirection.DESTINATION_TO_ORIGIN,
+            assignedBusId = bus.id
+        )
+        val sched3 = RouteSchedule(
+            id = "sched-r2-out",
+            routeId = "route_sby_mlg_toll",
+            departureHour = 13,
+            departureMinute = 30,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            assignedBusId = bus.id
+        )
+        val sched4 = RouteSchedule(
+            id = "sched-r2-ret",
+            routeId = "route_sby_mlg_toll",
+            departureHour = 16,
+            departureMinute = 0,
+            direction = RouteDirection.DESTINATION_TO_ORIGIN,
+            assignedBusId = bus.id
+        )
+        listOf(sched1, sched2, sched3, sched4).forEach { scheduleRepo.addSchedule(it) }
+
+        val vm = SimulationMapViewModel(
+            getSimulationTimeUseCase = GetSimulationTimeUseCase(timeRepo),
+            toggleSimulationPlayUseCase = ToggleSimulationPlayUseCase(timeRepo),
+            getCompanyUseCase = GetCompanyUseCase(fakeCompanyRepo),
+            getOwnedFleetUseCase = GetOwnedFleetUseCase(fleetRepo),
+            getAvailableTerminalsUseCase = GetAvailableTerminalsUseCase(terminalRepo),
+            routeRepository = routeRepo,
+            getActiveTripsUseCase = GetActiveTripsUseCase(customTripRepo),
+            dispatchBusUseCase = DispatchBusUseCase(customTripRepo),
+            routeScheduleRepository = scheduleRepo,
+            fleetRepository = fleetRepo
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        timeRepo.play()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(0, customTripRepo.activeTrips.value.size)
+
+        timeRepo.advanceMinutes(30)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, customTripRepo.activeTrips.value.size)
+        val trip1 = customTripRepo.activeTrips.value.first()
+        assertEquals(RouteDirection.ORIGIN_TO_DESTINATION, trip1.direction)
+
+        timeRepo.advanceMinutes(trip1.estimatedArrivalMinutes)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, customTripRepo.activeTrips.value.size)
+
+        val sched2Updated = scheduleRepo.getScheduleById("sched-r1-ret")
+        assertNotNull(sched2Updated)
+        assertEquals(10, sched2Updated?.departureHour)
+        assertEquals(30, sched2Updated?.departureMinute)
+
+        timeRepo.advanceMinutes(30)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, customTripRepo.activeTrips.value.size)
+
+        val minsToSched2 = ((timeRepo.currentTime.value.day * 1440L + 10 * 60 + 30) - (timeRepo.currentTime.value.day * 1440L + timeRepo.currentTime.value.hour * 60 + timeRepo.currentTime.value.minute)).toInt()
+        timeRepo.advanceMinutes(minsToSched2.coerceAtLeast(1))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, customTripRepo.activeTrips.value.size)
+        val trip2 = customTripRepo.activeTrips.value.first()
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, trip2.direction)
+
+        timeRepo.advanceMinutes(trip2.estimatedArrivalMinutes)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, customTripRepo.activeTrips.value.size)
+
+        val minsToSched3 = ((timeRepo.currentTime.value.day * 1440L + 13 * 60 + 30) - (timeRepo.currentTime.value.day * 1440L + timeRepo.currentTime.value.hour * 60 + timeRepo.currentTime.value.minute)).toInt()
+        timeRepo.advanceMinutes(minsToSched3.coerceAtLeast(1))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, customTripRepo.activeTrips.value.size)
+        val trip3 = customTripRepo.activeTrips.value.first()
+        assertEquals(RouteDirection.ORIGIN_TO_DESTINATION, trip3.direction)
+
+        timeRepo.advanceMinutes(trip3.estimatedArrivalMinutes)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, customTripRepo.activeTrips.value.size)
+
+        val minsToSched4 = ((timeRepo.currentTime.value.day * 1440L + 16 * 60) - (timeRepo.currentTime.value.day * 1440L + timeRepo.currentTime.value.hour * 60 + timeRepo.currentTime.value.minute)).toInt()
+        timeRepo.advanceMinutes(minsToSched4.coerceAtLeast(1))
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, customTripRepo.activeTrips.value.size)
+        val trip4 = customTripRepo.activeTrips.value.first()
+        assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, trip4.direction)
+
+        timeRepo.advanceMinutes(trip4.estimatedArrivalMinutes)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, customTripRepo.activeTrips.value.size)
+
+        timeRepo.advanceMinutes(120)
+        testDispatcher.scheduler.advanceUntilIdle()
+        assertEquals(0, customTripRepo.activeTrips.value.size)
+
+        val sched1Tomorrow = scheduleRepo.getScheduleById("sched-r1-out")
+        assertNotNull(sched1Tomorrow)
+        assertEquals(8, sched1Tomorrow?.departureHour)
+        assertEquals(0, sched1Tomorrow?.departureMinute)
+        assertTrue((sched1Tomorrow?.nextDepartureEpochMinutes ?: 0L) >= (25 * 1440L + 8 * 60L))
+
+        val minsToDay25Rit1 = ((25 * 1440L + 8 * 60L) - (timeRepo.currentTime.value.day * 1440L + timeRepo.currentTime.value.hour * 60L + timeRepo.currentTime.value.minute)).toInt()
+        timeRepo.advanceMinutes(minsToDay25Rit1)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(1, customTripRepo.activeTrips.value.size)
+        val nextDayTrip1 = customTripRepo.activeTrips.value.first()
+        assertEquals(RouteDirection.ORIGIN_TO_DESTINATION, nextDayTrip1.direction)
+
+        timeRepo.pause()
     }
 
     private class FakeFinancialTransactionRepository : FinancialTransactionRepository {

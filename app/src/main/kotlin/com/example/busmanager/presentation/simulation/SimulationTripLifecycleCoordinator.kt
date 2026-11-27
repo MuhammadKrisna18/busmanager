@@ -142,6 +142,11 @@ class SimulationTripLifecycleCoordinator(
                                 resolvedMinutes = scheduledEpochMinutes
                                 resolvedHour = returnSchedule.departureHour
                                 resolvedMin = returnSchedule.departureMinute
+                            } else {
+                                val nextDayEpoch = (currentTime.day + 1L) * 1440L + returnSchedule.departureHour * 60L + returnSchedule.departureMinute
+                                resolvedMinutes = nextDayEpoch
+                                resolvedHour = returnSchedule.departureHour
+                                resolvedMin = returnSchedule.departureMinute
                             }
                         }
 

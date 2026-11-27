@@ -129,6 +129,7 @@ class SimulationTimeRepositoryImpl(
 
     private fun startTicker() {
         tickerJob?.cancel()
+        if (tickIntervalMillis <= 0L) return
         val speed = _currentSpeed.value
         val interval = (tickIntervalMillis / speed.multiplier).coerceAtLeast(50L)
         tickerJob = scope.launch {

@@ -12,6 +12,7 @@ import com.example.busmanager.domain.fleet.usecase.BusOperationStatus
 import com.example.busmanager.domain.fleet.usecase.GetOwnedFleetUseCase
 import com.example.busmanager.domain.fleet.usecase.ValidateBusOperationUseCase
 import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
@@ -117,8 +118,8 @@ class SimulationMapViewModel(
                         buses = _uiState.value.ownedBuses,
                         activeTrips = _uiState.value.activeTrips,
                         routes = _uiState.value.routes,
-                        onDispatch = { bus, route, direction, currentTime ->
-                            executeDispatchAndRevenue(bus, route, direction, currentTime)
+                        onDispatch = { bus, route, direction, currentTime, schedule ->
+                            executeDispatchAndRevenue(bus, route, direction, currentTime, schedule)
                         }
                     )
                 }
@@ -268,7 +269,8 @@ class SimulationMapViewModel(
         bus: Bus,
         route: BusRoute,
         direction: RouteDirection,
-        currentTime: GameCalendar
+        currentTime: GameCalendar,
+        explicitSchedule: RouteSchedule? = null
     ) {
         val depTerminal = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
             route.originTerminal
@@ -277,13 +279,31 @@ class SimulationMapViewModel(
         }
 
         val optimisticBus = bus.copy(isOperating = true, currentTerminalId = depTerminal.id)
+        val matchedSchedule = explicitSchedule ?: _uiState.value.schedules.find {
+            it.assignedBusId == bus.id && it.routeId == route.id && it.direction == direction
+        } ?: _uiState.value.schedules.find {
+            it.assignedBusId == bus.id && it.routeId == route.id
+        }
+        val updatedSchedule = matchedSchedule?.let { sched ->
+            val nextDayEpoch = (currentTime.day + 1L) * 1440L + sched.departureHour * 60L + sched.departureMinute
+            sched.copy(nextDepartureEpochMinutes = nextDayEpoch)
+        }
+
         _uiState.update { current ->
             current.copy(
-                ownedBuses = current.ownedBuses.map { if (it.id == bus.id) optimisticBus else it }
+                ownedBuses = current.ownedBuses.map { if (it.id == bus.id) optimisticBus else it },
+                schedules = if (updatedSchedule != null) {
+                    current.schedules.map { if (it.id == updatedSchedule.id) updatedSchedule else it }
+                } else {
+                    current.schedules
+                }
             )
         }
 
         viewModelScope.launch {
+            if (updatedSchedule != null) {
+                routeScheduleRepository?.updateSchedule(updatedSchedule)
+            }
             val updatedBus = dispatchCoordinator.executeDispatchAndRevenue(
                 bus = optimisticBus,
                 route = route,

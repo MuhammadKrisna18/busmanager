@@ -47,7 +47,7 @@ data class QuickAssignState(
                 selectedDriver != null &&
                 selectedSlot != null &&
                 selectedSlot.isAvailable &&
-                conflictError == null &&
+                (conflictError == null || conflictError.contains("Dialihkan")) &&
                 !isSubmitting
 }
 

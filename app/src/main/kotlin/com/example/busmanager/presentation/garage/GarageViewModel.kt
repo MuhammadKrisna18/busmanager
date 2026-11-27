@@ -235,6 +235,7 @@ class GarageViewModel(
 
         val allSchedules = routeScheduleRepository?.getAllSchedules()?.firstOrNull() ?: emptyList()
         val allRoutes = routeRepository.getAllRoutes().associateBy { it.id }
+        val allBuses = fleetRepository.getOwnedBuses().firstOrNull()?.associateBy { it.id } ?: emptyMap()
 
         val occupiedSlots = allSchedules.mapNotNull { schedule ->
             val r = allRoutes[schedule.routeId] ?: return@mapNotNull null
@@ -248,13 +249,14 @@ class GarageViewModel(
             } else {
                 r.originTerminal.city
             }
+            val assignedBusCode = schedule.assignedBusId?.let { busId -> allBuses[busId]?.busCode } ?: schedule.assignedBusId
             OccupiedSlotInfo(
                 terminalId = scheduleOriginTerminalId,
                 hour = schedule.departureHour,
                 minute = schedule.departureMinute,
                 destinationCity = scheduleDestCity,
                 routeId = schedule.routeId,
-                busCode = schedule.assignedBusId,
+                busCode = assignedBusCode,
                 corridor = r.pathType
             )
         }
@@ -408,7 +410,8 @@ class GarageViewModel(
             val nextSlot = DepartureSlotCalculator.findNextAvailableSlot(slots, nextH, nextM)
                 ?: DepartureSlotCalculator.findNextAvailableSlot(slots, slot.hour, slot.minute)
             if (nextSlot != null) {
-                redirectNotice = "Slot ${slot.formattedTime} tujuan ${slot.occupiedDestinationCity ?: "sama"} telah terisi. Dialihkan ke slot ${nextSlot.formattedTime}."
+                val busInfo = slot.occupiedBusCode?.let { " oleh armada $it" } ?: ""
+                redirectNotice = "Slot ${slot.formattedTime} tujuan ${slot.occupiedDestinationCity ?: "sama"} telah terisi$busInfo. Dialihkan ke slot ${nextSlot.formattedTime}."
                 nextSlot
             } else {
                 _uiState.update { state ->

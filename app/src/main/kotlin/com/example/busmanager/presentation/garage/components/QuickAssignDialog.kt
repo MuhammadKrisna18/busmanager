@@ -509,26 +509,31 @@ private fun QuickAssignStatusCard(
     conflictError: String?,
     selectedSlot: TerminalDepartureSlot?
 ) {
-    val isError = conflictError != null
+    val isRedirectNotice = conflictError?.contains("Dialihkan") == true
+    val isRealError = conflictError != null && !isRedirectNotice
     val isMissingSlot = selectedSlot == null
 
     val bg = when {
-        isError -> Color(0xFFFEE2E2)
+        isRealError -> Color(0xFFFEE2E2)
+        isRedirectNotice -> Color(0xFFEFF6FF)
         isMissingSlot -> Color(0xFFFEF3C7)
         else -> Color(0xFFDCFCE7)
     }
     val borderCol = when {
-        isError -> Color(0xFFDC2626)
+        isRealError -> Color(0xFFDC2626)
+        isRedirectNotice -> Color(0xFF3B82F6)
         isMissingSlot -> Color(0xFFD97706)
         else -> Color(0xFF16A34A)
     }
     val textCol = when {
-        isError -> Color(0xFF991B1B)
+        isRealError -> Color(0xFF991B1B)
+        isRedirectNotice -> Color(0xFF1E40AF)
         isMissingSlot -> Color(0xFF92400E)
         else -> Color(0xFF166534)
     }
     val icon = when {
-        isError -> "⚠️"
+        isRealError -> "⚠️"
+        isRedirectNotice -> "ℹ️"
         isMissingSlot -> "ℹ️"
         else -> "✅"
     }

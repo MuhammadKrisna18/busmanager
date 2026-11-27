@@ -260,25 +260,20 @@ private fun ActiveRouteItemCard(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "📏 ${route.totalDistanceKm.toInt()} km • ⏱️ ${route.totalEstimatedDurationMinutes} mnt",
-                    color = PrimaryBlueDark,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+            Text(
+                text = "📏 ${route.totalDistanceKm.toInt()} km • ⏱️ ${route.totalEstimatedDurationMinutes} mnt",
+                color = PrimaryBlueDark,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold
+            )
 
-                if (route.transitTerminals.isNotEmpty()) {
-                    Text(
-                        text = "Via: ${route.transitTerminals.joinToString { it.city }}",
-                        color = TextMuted,
-                        fontSize = 11.sp
-                    )
-                }
+            if (route.transitTerminals.isNotEmpty() && !route.name.contains("via", ignoreCase = true)) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Via: ${route.transitTerminals.joinToString { it.city }}",
+                    color = TextMuted,
+                    fontSize = 11.sp
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))

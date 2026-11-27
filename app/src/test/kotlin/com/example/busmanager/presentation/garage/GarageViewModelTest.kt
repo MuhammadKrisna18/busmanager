@@ -400,6 +400,7 @@ class GarageViewModelTest {
         assertNotNull(state?.conflictError)
         assertTrue(state?.conflictError?.contains("Dialihkan ke slot") == true)
         assertTrue(state?.selectedSlot?.isAvailable == true)
+        assertTrue(state?.canSubmit == true)
     }
 
     @Test

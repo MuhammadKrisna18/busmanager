@@ -41,16 +41,14 @@ class RouteInfoViewModel(
 
     private fun observeRouteInfo() {
         val busesFlow = fleetRepository?.getOwnedBuses() ?: flowOf(emptyList())
-        val driversFlow = driverRepository?.getHiredDrivers() ?: flowOf(emptyList())
 
         viewModelScope.launch {
             combine(
                 getRouteOperationalStatusUseCase(),
                 routePricingRepository.getAllPricingsFlow(),
                 expandedRouteIds,
-                busesFlow,
-                driversFlow
-            ) { operationalList, allPricings, expandedIds, ownedBuses, hiredDrivers ->
+                busesFlow
+            ) { operationalList, allPricings, expandedIds, ownedBuses ->
                 val items = operationalList.map { opInfo ->
                     val routePricings = allPricings.filter { it.routeId == opInfo.route.id }
                     RouteDetailItem(
@@ -64,16 +62,11 @@ class RouteInfoViewModel(
                 val standbyCount = items.size - operatingCount
                 val currentFilter = _uiState.value.selectedFilter
 
-                val availableBuses = ownedBuses.filter { it.routeId == null && !it.isOperating }
-                val availableDrivers = hiredDrivers.filter { it.assignedBusId == null }
-
                 _uiState.update { state ->
                     state.copy(
                         allRoutes = items,
                         filteredRoutes = filterItems(items, currentFilter),
-                        availableBuses = availableBuses,
                         ownedBuses = ownedBuses,
-                        availableDrivers = availableDrivers,
                         selectedFilter = currentFilter,
                         totalRouteCount = items.size,
                         operatingRouteCount = operatingCount,
@@ -97,115 +90,6 @@ class RouteInfoViewModel(
     fun togglePricingsExpanded(routeId: String) {
         expandedRouteIds.update { current ->
             if (current.contains(routeId)) current - routeId else current + routeId
-        }
-    }
-
-    fun openAssignBusDialog(route: BusRoute) {
-        _uiState.update { it.copy(selectedRouteForBusAssign = route) }
-    }
-
-    fun closeAssignBusDialog() {
-        _uiState.update { it.copy(selectedRouteForBusAssign = null) }
-    }
-
-    fun assignBusToRoute(busId: String, routeId: String) {
-        viewModelScope.launch {
-            val bus = fleetRepository?.getBusById(busId) ?: return@launch
-            fleetRepository.updateBus(bus.copy(routeId = routeId))
-
-            val schedules = routeScheduleRepository?.getSchedulesListForRoute(routeId) ?: emptyList()
-            val unassignedSchedules = schedules.filter { it.assignedBusId == null }
-            if (unassignedSchedules.isNotEmpty()) {
-                unassignedSchedules.forEach { sched ->
-                    routeScheduleRepository?.assignBusToSchedule(sched.id, busId)
-                }
-            } else if (routeScheduleRepository != null) {
-                val existingOutbound = schedules.filter { it.direction == RouteDirection.ORIGIN_TO_DESTINATION }
-                val lastOutboundMinutes = existingOutbound.maxOfOrNull { it.departureHour * 60 + it.departureMinute }
-                val startMinutes = if (lastOutboundMinutes != null) {
-                    val candidate = lastOutboundMinutes + 60
-                    if (candidate <= 23 * 60 + 59) candidate else 4 * 60
-                } else {
-                    6 * 60
-                }
-                val outboundHour = startMinutes / 60
-                val outboundMin = startMinutes % 60
-                val baseTime = System.currentTimeMillis()
-                val outboundScheduleId = "sched-$routeId-outbound-$baseTime"
-                val outboundSchedule = RouteSchedule(
-                    id = outboundScheduleId,
-                    routeId = routeId,
-                    departureHour = outboundHour,
-                    departureMinute = outboundMin,
-                    direction = RouteDirection.ORIGIN_TO_DESTINATION,
-                    assignedBusId = busId,
-                    headwayMinutes = 60,
-                    transitDwellMinutes = 10
-                )
-                routeScheduleRepository.addSchedule(outboundSchedule)
-                routeScheduleRepository.assignBusToSchedule(outboundScheduleId, busId)
-
-                val returnRawMinutes = startMinutes + 180 + 30
-                val returnMinutes = if (returnRawMinutes <= 23 * 60 + 59 && returnRawMinutes >= 4 * 60) {
-                    returnRawMinutes
-                } else {
-                    4 * 60
-                }
-                val returnHour = returnMinutes / 60
-                val returnMin = returnMinutes % 60
-                val returnScheduleId = "sched-$routeId-return-${baseTime + 1}"
-                val returnSchedule = RouteSchedule(
-                    id = returnScheduleId,
-                    routeId = routeId,
-                    departureHour = returnHour,
-                    departureMinute = returnMin,
-                    direction = RouteDirection.DESTINATION_TO_ORIGIN,
-                    assignedBusId = busId,
-                    headwayMinutes = 60,
-                    transitDwellMinutes = 10
-                )
-                routeScheduleRepository.addSchedule(returnSchedule)
-                routeScheduleRepository.assignBusToSchedule(returnScheduleId, busId)
-            }
-
-            _uiState.update {
-                it.copy(
-                    selectedRouteForBusAssign = null,
-                    message = "Armada ${bus.busCode} berhasil ditugaskan ke trayek"
-                )
-            }
-        }
-    }
-
-    fun openAssignDriverDialog(route: BusRoute, bus: Bus?) {
-        _uiState.update {
-            it.copy(
-                selectedRouteForDriverAssign = route,
-                targetBusForDriverAssign = bus
-            )
-        }
-    }
-
-    fun closeAssignDriverDialog() {
-        _uiState.update {
-            it.copy(
-                selectedRouteForDriverAssign = null,
-                targetBusForDriverAssign = null
-            )
-        }
-    }
-
-    fun assignDriverToBus(driverId: String, busId: String) {
-        viewModelScope.launch {
-            driverRepository?.assignDriverToBus(driverId, busId)
-            val driver = driverRepository?.getDriverById(driverId)
-            _uiState.update {
-                it.copy(
-                    selectedRouteForDriverAssign = null,
-                    targetBusForDriverAssign = null,
-                    message = "Sopir ${driver?.name ?: ""} berhasil ditugaskan ke armada"
-                )
-            }
         }
     }
 

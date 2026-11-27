@@ -46,8 +46,6 @@ import com.example.busmanager.ui.theme.WarningAmberLight
 fun RouteDetailCard(
     item: RouteDetailItem,
     onTogglePricings: () -> Unit,
-    onAssignBusClick: (BusRoute) -> Unit,
-    onAssignDriverClick: (BusRoute, Bus?) -> Unit,
     onEditScheduleClick: (BusRoute) -> Unit,
     onDeleteRouteClick: (BusRoute) -> Unit
 ) {
@@ -224,38 +222,8 @@ fun RouteDetailCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = { onAssignBusClick(route) },
-                        shape = RoundedCornerShape(AppDimens.radiusPill),
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "Input Bus",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = PrimaryBlue
-                        )
-                    }
-
-                    val busNeedsDriver = info.assignedBuses.firstOrNull { it.driverId == null } ?: info.assignedBuses.firstOrNull()
-                    OutlinedButton(
-                        onClick = { onAssignDriverClick(route, busNeedsDriver) },
-                        shape = RoundedCornerShape(AppDimens.radiusPill),
-                        modifier = Modifier.weight(1f),
-                        enabled = info.assignedBuses.isNotEmpty(),
-                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = "Input Driver",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (info.assignedBuses.isNotEmpty()) PrimaryBlue else TextMuted
-                        )
-                    }
-
                     OutlinedButton(
                         onClick = { onEditScheduleClick(route) },
                         shape = RoundedCornerShape(AppDimens.radiusPill),
@@ -273,6 +241,7 @@ fun RouteDetailCard(
                     OutlinedButton(
                         onClick = { onDeleteRouteClick(route) },
                         shape = RoundedCornerShape(AppDimens.radiusPill),
+                        modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
                         border = BorderStroke(1.dp, Color(0xFFFCA5A5))
                     ) {

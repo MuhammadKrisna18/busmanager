@@ -292,9 +292,10 @@ class GarageViewModel(
         viewModelScope.launch {
             val allDrivers = driverRepository.getHiredDrivers().firstOrNull() ?: driverRepository.getAllDrivers().first()
             val allBuses = fleetRepository.getOwnedBuses().first()
-            val assignedDriverIds = allBuses.mapNotNull { it.driverId }.toSet()
-            val availableDrivers = allDrivers.filter { it.isHired && !assignedDriverIds.contains(it.id) }
-            val selectedDriver = availableDrivers.firstOrNull()
+            val otherAssignedDriverIds = allBuses.filter { it.id != item.bus.id }.mapNotNull { it.driverId }.toSet()
+            val currentBusDriver = item.bus.driverId?.let { dId -> allDrivers.find { it.id == dId } }
+            val availableDrivers = allDrivers.filter { it.isHired && (!otherAssignedDriverIds.contains(it.id) || it.id == item.bus.driverId) }
+            val selectedDriver = currentBusDriver ?: availableDrivers.firstOrNull()
 
             val operationalRoutes = getRouteOperationalStatusUseCase?.invoke()?.firstOrNull() ?: emptyList()
             val activeRoutes = operationalRoutes.filter { it.isActive }.map { it.route }

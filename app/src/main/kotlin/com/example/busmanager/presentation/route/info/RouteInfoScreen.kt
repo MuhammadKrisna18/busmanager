@@ -30,8 +30,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.busmanager.presentation.route.info.components.AssignBusModal
-import com.example.busmanager.presentation.route.info.components.AssignDriverModal
 import com.example.busmanager.presentation.route.info.components.DeleteRouteConfirmationDialog
 import com.example.busmanager.presentation.route.info.components.EditScheduleModal
 import com.example.busmanager.presentation.route.info.components.EmptyRouteInfoView
@@ -184,8 +182,6 @@ fun RouteInfoScreen(
                         RouteDetailCard(
                             item = item,
                             onTogglePricings = { viewModel.togglePricingsExpanded(item.operationalInfo.route.id) },
-                            onAssignBusClick = { viewModel.openAssignBusDialog(it) },
-                            onAssignDriverClick = { route, bus -> viewModel.openAssignDriverDialog(route, bus) },
                             onEditScheduleClick = { viewModel.openEditScheduleDialog(it) },
                             onDeleteRouteClick = { viewModel.requestDeleteRoute(it) }
                         )
@@ -205,29 +201,6 @@ fun RouteInfoScreen(
                 RouteInfoErrorDialog(
                     errorMessage = error,
                     onDismiss = { viewModel.clearErrorMessage() }
-                )
-            }
-
-            uiState.selectedRouteForBusAssign?.let { route ->
-                AssignBusModal(
-                    route = route,
-                    availableBuses = uiState.availableBuses,
-                    onDismiss = { viewModel.closeAssignBusDialog() },
-                    onBusSelected = { busId ->
-                        viewModel.assignBusToRoute(busId, route.id)
-                    }
-                )
-            }
-
-            uiState.selectedRouteForDriverAssign?.let { route ->
-                AssignDriverModal(
-                    route = route,
-                    targetBus = uiState.targetBusForDriverAssign,
-                    availableDrivers = uiState.availableDrivers,
-                    onDismiss = { viewModel.closeAssignDriverDialog() },
-                    onDriverSelected = { driverId, busId ->
-                        viewModel.assignDriverToBus(driverId, busId)
-                    }
                 )
             }
 

@@ -1,6 +1,5 @@
 package com.example.busmanager.presentation.route.info
 
-import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RouteOperationalInfo
@@ -22,13 +21,8 @@ data class RouteDetailItem(
 data class RouteInfoUiState(
     val allRoutes: List<RouteDetailItem> = emptyList(),
     val filteredRoutes: List<RouteDetailItem> = emptyList(),
-    val availableBuses: List<Bus> = emptyList(),
     val ownedBuses: List<Bus> = emptyList(),
-    val availableDrivers: List<Driver> = emptyList(),
     val selectedFilter: RouteInfoFilter = RouteInfoFilter.ALL,
-    val selectedRouteForBusAssign: BusRoute? = null,
-    val selectedRouteForDriverAssign: BusRoute? = null,
-    val targetBusForDriverAssign: Bus? = null,
     val selectedRouteForScheduleEdit: BusRoute? = null,
     val activeSchedulesForEditing: List<RouteSchedule> = emptyList(),
     val totalRouteCount: Int = 0,

@@ -430,6 +430,22 @@ class GarageViewModelTest {
         assertEquals(4, schedules.size)
     }
 
+    @Test
+    fun openQuickAssignDialog_whenBusAlreadyHasDriver_preselectsCurrentDriverAndIncludesInAvailableDrivers() = runTest {
+        advanceUntilIdle()
+        val busItemWithDriver = viewModel.uiState.value.allBuses.first { it.bus.id == "bus-1" }
+        assertNotNull(busItemWithDriver.bus.driverId)
+
+        viewModel.openQuickAssignDialog(busItemWithDriver)
+        advanceUntilIdle()
+
+        val assignState = viewModel.uiState.value.quickAssignState
+        assertNotNull(assignState)
+        assertEquals(busItemWithDriver.bus.driverId, assignState?.selectedDriver?.id)
+        assertTrue(assignState?.availableDrivers?.any { it.id == busItemWithDriver.bus.driverId } == true)
+        assertTrue(assignState?.canSubmit == true)
+    }
+
     private class FakeFleetRepository : FleetRepository {
         private val list = mutableListOf<Bus>()
         private val flow = MutableStateFlow<List<Bus>>(emptyList())

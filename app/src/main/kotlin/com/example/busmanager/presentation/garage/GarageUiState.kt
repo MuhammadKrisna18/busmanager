@@ -3,8 +3,12 @@ package com.example.busmanager.presentation.garage
 import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.model.DailySchedulePlan
+import com.example.busmanager.domain.route.model.RouteCategory
+import com.example.busmanager.domain.route.model.TerminalDepartureSlot
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import com.example.busmanager.presentation.common.FeedbackToastData
+import com.example.busmanager.presentation.route.wizard.SlotTimeFilter
 
 enum class GarageFilter(val displayName: String) {
     ALL("Semua"),
@@ -25,6 +29,12 @@ data class QuickAssignState(
     val selectedRoute: BusRoute? = null,
     val availableDrivers: List<Driver> = emptyList(),
     val selectedDriver: Driver? = null,
+    val routeCategory: RouteCategory = RouteCategory.AKDP,
+    val availableSlots: List<TerminalDepartureSlot> = emptyList(),
+    val selectedSlot: TerminalDepartureSlot? = null,
+    val selectedTimeFilter: SlotTimeFilter = SlotTimeFilter.MORNING,
+    val targetRitCount: Int = 2,
+    val dailySchedulePlan: DailySchedulePlan? = null,
     val departureHour: Int = 7,
     val departureMinute: Int = 0,
     val direction: RouteDirection = RouteDirection.ORIGIN_TO_DESTINATION,
@@ -34,7 +44,12 @@ data class QuickAssignState(
     val isSubmitting: Boolean = false
 ) {
     val canSubmit: Boolean
-        get() = selectedRoute != null && selectedDriver != null && conflictError == null && !isSubmitting
+        get() = selectedRoute != null &&
+                selectedDriver != null &&
+                selectedSlot != null &&
+                selectedSlot.isAvailable &&
+                conflictError == null &&
+                !isSubmitting
 }
 
 data class GarageBusItem(

@@ -3,28 +3,34 @@ package com.example.busmanager.presentation.garage
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.busmanager.domain.company.repository.CompanyRepository
+import com.example.busmanager.domain.driver.model.Driver
 import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.fleet.usecase.ReconcileBusOperatingStateUseCase
 import com.example.busmanager.domain.fleet.usecase.SellBusResult
 import com.example.busmanager.domain.fleet.usecase.SellBusUseCase
+import com.example.busmanager.domain.route.model.BusRoute
+import com.example.busmanager.domain.route.model.DailySchedulePlan
+import com.example.busmanager.domain.route.model.DepartureSlotCalculator
+import com.example.busmanager.domain.route.model.OccupiedSlotInfo
+import com.example.busmanager.domain.route.model.RouteCategory
+import com.example.busmanager.domain.route.model.TerminalDepartureSlot
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
-import com.example.busmanager.domain.simulation.model.ActiveBusTrip
-import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import com.example.busmanager.domain.driver.model.Driver
-import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.usecase.AssignBusToActiveRouteUseCase
 import com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase
 import com.example.busmanager.domain.route.usecase.ScheduleConflictResult
 import com.example.busmanager.domain.route.usecase.ValidateScheduleConflictUseCase
+import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.RouteDirection
+import com.example.busmanager.domain.simulation.usecase.GetActiveTripsUseCase
 import com.example.busmanager.presentation.common.FeedbackToastData
+import com.example.busmanager.presentation.route.wizard.SlotTimeFilter
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -194,6 +200,94 @@ class GarageViewModel(
         }
     }
 
+    private data class SlotsAndPlanResult(
+        val category: RouteCategory,
+        val slots: List<TerminalDepartureSlot>,
+        val selectedSlot: TerminalDepartureSlot?,
+        val targetRitCount: Int,
+        val plan: DailySchedulePlan?
+    )
+
+    private suspend fun computeSlotsAndPlan(
+        route: BusRoute?,
+        direction: RouteDirection,
+        preferredHour: Int,
+        preferredMinute: Int,
+        targetRitCount: Int
+    ): SlotsAndPlanResult {
+        if (route == null) {
+            return SlotsAndPlanResult(
+                category = RouteCategory.AKDP,
+                slots = emptyList(),
+                selectedSlot = null,
+                targetRitCount = 2,
+                plan = null
+            )
+        }
+
+        val category = RouteCategory.fromRoute(route)
+        val (depTerminal, destTerminal) = if (direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+            route.originTerminal to route.destinationTerminal
+        } else {
+            route.destinationTerminal to route.originTerminal
+        }
+
+        val allSchedules = routeScheduleRepository?.getAllSchedules()?.firstOrNull() ?: emptyList()
+        val allRoutes = routeRepository.getAllRoutes().associateBy { it.id }
+
+        val occupiedSlots = allSchedules.mapNotNull { schedule ->
+            val r = allRoutes[schedule.routeId] ?: return@mapNotNull null
+            val scheduleOriginTerminalId = if (schedule.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                r.originTerminal.id
+            } else {
+                r.destinationTerminal.id
+            }
+            val scheduleDestCity = if (schedule.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                r.destinationTerminal.city
+            } else {
+                r.originTerminal.city
+            }
+            OccupiedSlotInfo(
+                terminalId = scheduleOriginTerminalId,
+                hour = schedule.departureHour,
+                minute = schedule.departureMinute,
+                destinationCity = scheduleDestCity,
+                routeId = schedule.routeId,
+                busCode = schedule.assignedBusId
+            )
+        }
+
+        val slots = DepartureSlotCalculator.generate24HourSlots(
+            terminalId = depTerminal.id,
+            targetDestinationCity = destTerminal.city,
+            existingOccupiedSlots = occupiedSlots
+        )
+
+        val chosenSlot = DepartureSlotCalculator.findNextAvailableSlot(slots, preferredHour, preferredMinute)
+            ?: slots.firstOrNull { it.isAvailable }
+
+        val effectiveRitCount = if (category == RouteCategory.AKAP) 1 else targetRitCount.coerceIn(1, 2)
+        val plan = if (chosenSlot != null) {
+            DepartureSlotCalculator.calculateDailyPlan(
+                routeCategory = category,
+                originTerminalId = depTerminal.id,
+                destTerminalId = destTerminal.id,
+                estimatedDurationMinutes = route.totalEstimatedDurationMinutes,
+                departureHour = chosenSlot.hour,
+                departureMinute = chosenSlot.minute,
+                targetRitCount = effectiveRitCount
+            )
+        } else null
+
+        return SlotsAndPlanResult(
+            category = category,
+            slots = slots,
+            selectedSlot = chosenSlot,
+            targetRitCount = effectiveRitCount,
+            plan = plan
+        )
+    }
+
     fun openQuickAssignDialog(item: GarageBusItem) {
         viewModelScope.launch {
             val allDrivers = driverRepository.getHiredDrivers().firstOrNull() ?: driverRepository.getAllDrivers().first()
@@ -205,7 +299,17 @@ class GarageViewModel(
             val operationalRoutes = getRouteOperationalStatusUseCase?.invoke()?.firstOrNull() ?: emptyList()
             val activeRoutes = operationalRoutes.filter { it.isActive }.map { it.route }
             val availableRoutes = if (activeRoutes.isNotEmpty()) activeRoutes else routeRepository.getAllRoutes()
-            val selectedRoute = availableRoutes.firstOrNull()
+            val selectedRoute = item.bus.routeId?.let { rId -> availableRoutes.find { it.id == rId } }
+                ?: availableRoutes.firstOrNull()
+
+            val initialDirection = RouteDirection.ORIGIN_TO_DESTINATION
+            val initialSlotsAndPlan = computeSlotsAndPlan(
+                route = selectedRoute,
+                direction = initialDirection,
+                preferredHour = 7,
+                preferredMinute = 0,
+                targetRitCount = 2
+            )
 
             val initialAssignState = QuickAssignState(
                 bus = item.bus,
@@ -213,22 +317,47 @@ class GarageViewModel(
                 selectedRoute = selectedRoute,
                 availableDrivers = availableDrivers,
                 selectedDriver = selectedDriver,
-                departureHour = 7,
-                departureMinute = 0,
-                direction = RouteDirection.ORIGIN_TO_DESTINATION,
-                headwayMinutes = item.headwayMinutes,
+                routeCategory = initialSlotsAndPlan.category,
+                availableSlots = initialSlotsAndPlan.slots,
+                selectedSlot = initialSlotsAndPlan.selectedSlot,
+                selectedTimeFilter = SlotTimeFilter.MORNING,
+                targetRitCount = initialSlotsAndPlan.targetRitCount,
+                dailySchedulePlan = initialSlotsAndPlan.plan,
+                departureHour = initialSlotsAndPlan.selectedSlot?.hour ?: 7,
+                departureMinute = initialSlotsAndPlan.selectedSlot?.minute ?: 0,
+                direction = initialDirection,
                 transitDwellMinutes = item.transitDwellMinutes
             )
             _uiState.update { it.copy(quickAssignState = initialAssignState) }
-            checkQuickAssignConflictInternal(initialAssignState)
         }
     }
 
     fun selectQuickAssignRoute(route: BusRoute) {
         val current = _uiState.value.quickAssignState ?: return
-        val updated = current.copy(selectedRoute = route)
-        _uiState.update { it.copy(quickAssignState = updated) }
-        checkQuickAssignConflictInternal(updated)
+        viewModelScope.launch {
+            val res = computeSlotsAndPlan(
+                route = route,
+                direction = current.direction,
+                preferredHour = current.departureHour,
+                preferredMinute = current.departureMinute,
+                targetRitCount = current.targetRitCount
+            )
+            _uiState.update { state ->
+                state.copy(
+                    quickAssignState = state.quickAssignState?.copy(
+                        selectedRoute = route,
+                        routeCategory = res.category,
+                        availableSlots = res.slots,
+                        selectedSlot = res.selectedSlot,
+                        targetRitCount = res.targetRitCount,
+                        dailySchedulePlan = res.plan,
+                        departureHour = res.selectedSlot?.hour ?: current.departureHour,
+                        departureMinute = res.selectedSlot?.minute ?: current.departureMinute,
+                        conflictError = null
+                    )
+                )
+            }
+        }
     }
 
     fun selectQuickAssignDriver(driver: Driver) {
@@ -237,21 +366,141 @@ class GarageViewModel(
         }
     }
 
-    fun setQuickAssignDepartureTime(hour: Int, minute: Int) {
-        val current = _uiState.value.quickAssignState ?: return
-        val updated = current.copy(
-            departureHour = hour.coerceIn(0, 23),
-            departureMinute = minute.coerceIn(0, 59)
-        )
-        _uiState.update { it.copy(quickAssignState = updated) }
-        checkQuickAssignConflictInternal(updated)
-    }
-
     fun setQuickAssignDirection(direction: RouteDirection) {
         val current = _uiState.value.quickAssignState ?: return
-        val updated = current.copy(direction = direction)
-        _uiState.update { it.copy(quickAssignState = updated) }
-        checkQuickAssignConflictInternal(updated)
+        val route = current.selectedRoute ?: return
+        viewModelScope.launch {
+            val res = computeSlotsAndPlan(
+                route = route,
+                direction = direction,
+                preferredHour = current.departureHour,
+                preferredMinute = current.departureMinute,
+                targetRitCount = current.targetRitCount
+            )
+            _uiState.update { state ->
+                state.copy(
+                    quickAssignState = state.quickAssignState?.copy(
+                        direction = direction,
+                        availableSlots = res.slots,
+                        selectedSlot = res.selectedSlot,
+                        dailySchedulePlan = res.plan,
+                        departureHour = res.selectedSlot?.hour ?: current.departureHour,
+                        departureMinute = res.selectedSlot?.minute ?: current.departureMinute,
+                        conflictError = null
+                    )
+                )
+            }
+        }
+    }
+
+    fun selectQuickAssignSlot(slot: TerminalDepartureSlot) {
+        val current = _uiState.value.quickAssignState ?: return
+        val slots = current.availableSlots
+        var redirectNotice: String? = null
+        val effectiveSlot = if (slot.isAvailable) {
+            slot
+        } else {
+            val (nextH, nextM) = DepartureSlotCalculator.alignToNext15MinuteSlot(slot.totalMinutesOfDay + DepartureSlotCalculator.SLOT_INTERVAL_MINUTES)
+            val nextSlot = DepartureSlotCalculator.findNextAvailableSlot(slots, nextH, nextM)
+                ?: DepartureSlotCalculator.findNextAvailableSlot(slots, slot.hour, slot.minute)
+            if (nextSlot != null) {
+                redirectNotice = "Slot ${slot.formattedTime} tujuan ${slot.occupiedDestinationCity ?: "sama"} telah terisi. Dialihkan ke slot ${nextSlot.formattedTime}."
+                nextSlot
+            } else {
+                _uiState.update { state ->
+                    state.copy(
+                        quickAssignState = state.quickAssignState?.copy(
+                            conflictError = "Slot ${slot.formattedTime} telah terisi dan tidak ada slot alternatif."
+                        )
+                    )
+                }
+                return
+            }
+        }
+        applyQuickAssignSlot(effectiveSlot, redirectNotice)
+    }
+
+    private fun applyQuickAssignSlot(slot: TerminalDepartureSlot, noticeMessage: String? = null) {
+        val current = _uiState.value.quickAssignState ?: return
+        val route = current.selectedRoute ?: return
+        val (depTerminal, destTerminal) = if (current.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+            route.originTerminal to route.destinationTerminal
+        } else {
+            route.destinationTerminal to route.originTerminal
+        }
+        val plan = DepartureSlotCalculator.calculateDailyPlan(
+            routeCategory = current.routeCategory,
+            originTerminalId = depTerminal.id,
+            destTerminalId = destTerminal.id,
+            estimatedDurationMinutes = route.totalEstimatedDurationMinutes,
+            departureHour = slot.hour,
+            departureMinute = slot.minute,
+            targetRitCount = current.targetRitCount
+        )
+        _uiState.update { state ->
+            state.copy(
+                quickAssignState = state.quickAssignState?.copy(
+                    selectedSlot = slot,
+                    departureHour = slot.hour,
+                    departureMinute = slot.minute,
+                    dailySchedulePlan = plan,
+                    conflictError = noticeMessage
+                )
+            )
+        }
+    }
+
+    fun setQuickAssignTargetRitCount(ritCount: Int) {
+        val current = _uiState.value.quickAssignState ?: return
+        if (current.routeCategory == RouteCategory.AKAP) return
+        val route = current.selectedRoute ?: return
+        val slot = current.selectedSlot ?: return
+        val safeCount = ritCount.coerceIn(1, 2)
+        val (depTerminal, destTerminal) = if (current.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+            route.originTerminal to route.destinationTerminal
+        } else {
+            route.destinationTerminal to route.originTerminal
+        }
+        val updatedPlan = DepartureSlotCalculator.calculateDailyPlan(
+            routeCategory = current.routeCategory,
+            originTerminalId = depTerminal.id,
+            destTerminalId = destTerminal.id,
+            estimatedDurationMinutes = route.totalEstimatedDurationMinutes,
+            departureHour = slot.hour,
+            departureMinute = slot.minute,
+            targetRitCount = safeCount
+        )
+        _uiState.update { state ->
+            state.copy(
+                quickAssignState = state.quickAssignState?.copy(
+                    targetRitCount = safeCount,
+                    dailySchedulePlan = updatedPlan
+                )
+            )
+        }
+    }
+
+    fun setQuickAssignTimeFilter(filter: SlotTimeFilter) {
+        _uiState.update { state ->
+            state.copy(quickAssignState = state.quickAssignState?.copy(selectedTimeFilter = filter))
+        }
+    }
+
+    fun setQuickAssignDepartureTime(hour: Int, minute: Int) {
+        val current = _uiState.value.quickAssignState ?: return
+        val matchingSlot = current.availableSlots.find { it.hour == hour && it.minute == minute }
+        if (matchingSlot != null) {
+            selectQuickAssignSlot(matchingSlot)
+        } else {
+            _uiState.update { state ->
+                state.copy(
+                    quickAssignState = state.quickAssignState?.copy(
+                        departureHour = hour.coerceIn(0, 23),
+                        departureMinute = minute.coerceIn(0, 59)
+                    )
+                )
+            }
+        }
     }
 
     fun setQuickAssignHeadway(minutes: Int) {
@@ -266,35 +515,11 @@ class GarageViewModel(
         }
     }
 
-    private fun checkQuickAssignConflictInternal(target: QuickAssignState) {
-        val route = target.selectedRoute ?: return
-        val validator = validateScheduleConflictUseCase ?: return
-        viewModelScope.launch {
-            val result = validator(
-                route = route,
-                direction = target.direction,
-                departureHour = target.departureHour,
-                departureMinute = target.departureMinute
-            )
-            val conflictMsg = when (result) {
-                is ScheduleConflictResult.Conflict -> result.errorMessage
-                is ScheduleConflictResult.Valid -> null
-            }
-            _uiState.update { state ->
-                val currentAssign = state.quickAssignState
-                if (currentAssign != null && currentAssign.bus.id == target.bus.id) {
-                    state.copy(quickAssignState = currentAssign.copy(conflictError = conflictMsg))
-                } else {
-                    state
-                }
-            }
-        }
-    }
-
     fun confirmQuickAssign() {
         val target = _uiState.value.quickAssignState ?: return
         val route = target.selectedRoute ?: return
         val driver = target.selectedDriver ?: return
+        val slot = target.selectedSlot ?: return
         val useCase = assignBusToActiveRouteUseCase ?: return
 
         viewModelScope.launch {
@@ -303,11 +528,12 @@ class GarageViewModel(
                 busId = target.bus.id,
                 routeId = route.id,
                 driverId = driver.id,
-                departureHour = target.departureHour,
-                departureMinute = target.departureMinute,
+                departureHour = slot.hour,
+                departureMinute = slot.minute,
                 direction = target.direction,
                 headwayMinutes = target.headwayMinutes,
-                transitDwellMinutes = target.transitDwellMinutes
+                transitDwellMinutes = target.transitDwellMinutes,
+                dailySchedulePlan = target.dailySchedulePlan
             )
 
             if (result.isSuccess) {

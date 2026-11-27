@@ -2,6 +2,8 @@ package com.example.busmanager.domain.route.usecase
 
 import com.example.busmanager.domain.driver.repository.DriverRepository
 import com.example.busmanager.domain.fleet.repository.FleetRepository
+import com.example.busmanager.domain.route.model.DailySchedulePlan
+import com.example.busmanager.domain.route.model.DepartureSlotCalculator
 import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
@@ -22,7 +24,8 @@ class AssignBusToActiveRouteUseCase(
         departureMinute: Int,
         direction: RouteDirection,
         headwayMinutes: Int = 60,
-        transitDwellMinutes: Int = 10
+        transitDwellMinutes: Int = 10,
+        dailySchedulePlan: DailySchedulePlan? = null
     ): Result<Unit> {
         val bus = fleetRepository.getBusById(busId)
             ?: return Result.failure(IllegalArgumentException("Armada bus tidak ditemukan"))
@@ -41,7 +44,8 @@ class AssignBusToActiveRouteUseCase(
             route = route,
             direction = direction,
             departureHour = departureHour,
-            departureMinute = departureMinute
+            departureMinute = departureMinute,
+            minHeadwayBufferMinutes = DepartureSlotCalculator.SLOT_INTERVAL_MINUTES
         )
 
         if (conflictCheck is ScheduleConflictResult.Conflict) {
@@ -63,18 +67,40 @@ class AssignBusToActiveRouteUseCase(
         )
         fleetRepository.updateBus(updatedBus)
 
-        val scheduleId = "sched-${route.id}-$busId-${System.currentTimeMillis()}"
-        val schedule = RouteSchedule(
-            id = scheduleId,
-            routeId = route.id,
-            departureHour = departureHour,
-            departureMinute = departureMinute,
-            direction = direction,
-            assignedBusId = busId,
-            headwayMinutes = headwayMinutes,
-            transitDwellMinutes = transitDwellMinutes
-        )
-
-        return routeScheduleRepository.addSchedule(schedule)
+        val baseTime = System.currentTimeMillis()
+        if (dailySchedulePlan != null && dailySchedulePlan.legs.isNotEmpty()) {
+            dailySchedulePlan.legs.forEachIndexed { index, leg ->
+                val scheduleId = "sched-${route.id}-$busId-$index-${baseTime + index}"
+                val schedule = RouteSchedule(
+                    id = scheduleId,
+                    routeId = route.id,
+                    departureHour = leg.departureHour,
+                    departureMinute = leg.departureMinute,
+                    direction = leg.direction,
+                    assignedBusId = busId,
+                    headwayMinutes = headwayMinutes,
+                    transitDwellMinutes = transitDwellMinutes
+                )
+                routeScheduleRepository.addSchedule(schedule)
+                routeScheduleRepository.assignBusToSchedule(scheduleId, busId)
+            }
+            return Result.success(Unit)
+        } else {
+            val scheduleId = "sched-${route.id}-$busId-$baseTime"
+            val schedule = RouteSchedule(
+                id = scheduleId,
+                routeId = route.id,
+                departureHour = departureHour,
+                departureMinute = departureMinute,
+                direction = direction,
+                assignedBusId = busId,
+                headwayMinutes = headwayMinutes,
+                transitDwellMinutes = transitDwellMinutes
+            )
+            val addResult = routeScheduleRepository.addSchedule(schedule)
+            if (addResult.isFailure) return addResult
+            routeScheduleRepository.assignBusToSchedule(scheduleId, busId)
+            return Result.success(Unit)
+        }
     }
 }

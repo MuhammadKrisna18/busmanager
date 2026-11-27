@@ -100,9 +100,10 @@ fun GarageScreen(
             onDismiss = { viewModel.dismissQuickAssignDialog() },
             onSelectRoute = { viewModel.selectQuickAssignRoute(it) },
             onSelectDriver = { viewModel.selectQuickAssignDriver(it) },
-            onSetTime = { h, m -> viewModel.setQuickAssignDepartureTime(h, m) },
             onSetDirection = { viewModel.setQuickAssignDirection(it) },
-            onSetHeadway = { viewModel.setQuickAssignHeadway(it) },
+            onSelectSlot = { viewModel.selectQuickAssignSlot(it) },
+            onSetTargetRitCount = { viewModel.setQuickAssignTargetRitCount(it) },
+            onSetTimeFilter = { viewModel.setQuickAssignTimeFilter(it) },
             onSetTransitDwell = { viewModel.setQuickAssignTransitDwell(it) },
             onConfirm = { viewModel.confirmQuickAssign() }
         )

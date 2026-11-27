@@ -3,6 +3,7 @@ package com.example.busmanager.presentation.route.wizard.components
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -55,7 +56,8 @@ fun Slide4DepartureSlots(
     LazyColumn(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        contentPadding = PaddingValues(bottom = 48.dp)
     ) {
         item {
             ModeBadgeBanner(
@@ -64,53 +66,6 @@ fun Slide4DepartureSlots(
                 destCity = destCity
             )
             Spacer(modifier = Modifier.height(14.dp))
-        }
-
-        if (!isAkap) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(AppDimens.radiusMedium),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
-                    border = CardDefaults.outlinedCardBorder()
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = "Target Ritase Harian (AKDP)",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextDark
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            FilterChip(
-                                selected = uiState.targetRitCount == 1,
-                                onClick = { onSetTargetRitCount(1) },
-                                label = { Text("1 PP (1x Pulang-Pergi)", fontSize = 11.sp) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = IceBlue,
-                                    selectedLabelColor = PrimaryBlueDark
-                                ),
-                                modifier = Modifier.weight(1f)
-                            )
-                            FilterChip(
-                                selected = uiState.targetRitCount == 2,
-                                onClick = { onSetTargetRitCount(2) },
-                                label = { Text("2 PP (Jeda 1 Jam di Asal)", fontSize = 11.sp) },
-                                colors = FilterChipDefaults.filterChipColors(
-                                    selectedContainerColor = IceBlue,
-                                    selectedLabelColor = PrimaryBlueDark
-                                ),
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-                Spacer(modifier = Modifier.height(14.dp))
-            }
         }
 
         item {
@@ -147,7 +102,7 @@ fun Slide4DepartureSlots(
         uiState.dailySchedulePlan?.let { plan ->
             item {
                 ScheduleTimelineCard(plan = plan)
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }

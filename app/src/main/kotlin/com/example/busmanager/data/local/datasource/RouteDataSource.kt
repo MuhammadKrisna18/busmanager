@@ -44,9 +44,9 @@ class RouteDataSource(
         tollFee = Money.rupiah(60000),
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.46f, 0.38f, -7.50, 112.71),
-            MapCoordinate(0.46f, 0.44f, -7.60, 112.70),
-            MapCoordinate(0.45f, 0.55f, -7.78, 112.69),
+            MapCoordinate.fromGeo(-7.50, 112.71),
+            MapCoordinate.fromGeo(-7.60, 112.70),
+            MapCoordinate.fromGeo(-7.78, 112.69),
             arjosari.coordinate
         )
     )
@@ -62,10 +62,10 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.46f, 0.34f, -7.45, 112.72),
-            MapCoordinate(0.46f, 0.41f, -7.56, 112.70),
-            MapCoordinate(0.46f, 0.53f, -7.75, 112.71),
-            MapCoordinate(0.45f, 0.61f, -7.88, 112.67),
+            MapCoordinate.fromGeo(-7.45, 112.72),
+            MapCoordinate.fromGeo(-7.56, 112.70),
+            MapCoordinate.fromGeo(-7.75, 112.71),
+            MapCoordinate.fromGeo(-7.88, 112.67),
             arjosari.coordinate
         )
     )
@@ -105,9 +105,9 @@ class RouteDataSource(
         tollFee = Money.rupiah(65000),
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.46f, 0.42f, -7.57, 112.71),
-            MapCoordinate(0.51f, 0.46f, -7.64, 112.90),
-            MapCoordinate(0.57f, 0.51f, -7.71, 113.08),
+            MapCoordinate.fromGeo(-7.57, 112.71),
+            MapCoordinate.fromGeo(-7.64, 112.90),
+            MapCoordinate.fromGeo(-7.71, 113.08),
             bayuangga.coordinate
         )
     )
@@ -123,10 +123,10 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.48f, 0.39f, -7.52, 112.77),
-            MapCoordinate(0.52f, 0.46f, -7.63, 112.91),
-            MapCoordinate(0.55f, 0.49f, -7.68, 113.03),
-            MapCoordinate(0.58f, 0.52f, -7.73, 113.13),
+            MapCoordinate.fromGeo(-7.52, 112.77),
+            MapCoordinate.fromGeo(-7.63, 112.91),
+            MapCoordinate.fromGeo(-7.68, 113.03),
+            MapCoordinate.fromGeo(-7.73, 113.13),
             bayuangga.coordinate
         )
     )
@@ -166,9 +166,9 @@ class RouteDataSource(
         tollFee = Money.rupiah(55000),
         waypoints = listOf(
             bayuangga.coordinate,
-            MapCoordinate(0.66f, 0.53f, -7.74, 113.40),
-            MapCoordinate(0.72f, 0.51f, -7.71, 113.63),
-            MapCoordinate(0.78f, 0.51f, -7.72, 113.82),
+            MapCoordinate.fromGeo(-7.74, 113.40),
+            MapCoordinate.fromGeo(-7.71, 113.63),
+            MapCoordinate.fromGeo(-7.72, 113.82),
             situbondo.coordinate
         )
     )
@@ -184,10 +184,10 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             bayuangga.coordinate,
-            MapCoordinate(0.62f, 0.53f, -7.75, 113.28),
-            MapCoordinate(0.67f, 0.52f, -7.73, 113.45),
-            MapCoordinate(0.74f, 0.50f, -7.70, 113.68),
-            MapCoordinate(0.79f, 0.51f, -7.71, 113.88),
+            MapCoordinate.fromGeo(-7.75, 113.28),
+            MapCoordinate.fromGeo(-7.73, 113.45),
+            MapCoordinate.fromGeo(-7.70, 113.68),
+            MapCoordinate.fromGeo(-7.71, 113.88),
             situbondo.coordinate
         )
     )
@@ -227,10 +227,10 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             situbondo.coordinate,
-            MapCoordinate(0.88f, 0.52f, -7.75, 114.15),
-            MapCoordinate(0.93f, 0.58f, -7.85, 114.38),
-            MapCoordinate(0.95f, 0.65f, -7.95, 114.42),
-            MapCoordinate(0.945f, 0.72f, -8.05, 114.40),
+            MapCoordinate.fromGeo(-7.75, 114.15),
+            MapCoordinate.fromGeo(-7.85, 114.38),
+            MapCoordinate.fromGeo(-7.95, 114.42),
+            MapCoordinate.fromGeo(-8.05, 114.40),
             sritanjung.coordinate
         )
     )
@@ -258,12 +258,12 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             bayuangga.coordinate,
-            MapCoordinate(0.605f, 0.58f, -7.88, 113.20),
-            MapCoordinate(0.61f, 0.64f, -7.99, 113.21),
-            MapCoordinate(0.61f, 0.72f, -8.13, 113.22),
-            MapCoordinate(0.65f, 0.75f, -8.15, 113.34),
-            MapCoordinate(0.68f, 0.77f, -8.16, 113.45),
-            MapCoordinate(0.71f, 0.79f, -8.18, 113.56),
+            MapCoordinate.fromGeo(-7.88, 113.20),
+            MapCoordinate.fromGeo(-7.99, 113.21),
+            MapCoordinate.fromGeo(-8.13, 113.22),
+            MapCoordinate.fromGeo(-8.15, 113.34),
+            MapCoordinate.fromGeo(-8.16, 113.45),
+            MapCoordinate.fromGeo(-8.18, 113.56),
             tawangAlun.coordinate
         )
     )
@@ -291,11 +291,11 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             tawangAlun.coordinate,
-            MapCoordinate(0.76f, 0.81f, -8.19, 113.78),
-            MapCoordinate(0.79f, 0.83f, -8.25, 113.91),
-            MapCoordinate(0.83f, 0.82f, -8.28, 114.02),
-            MapCoordinate(0.87f, 0.80f, -8.32, 114.15),
-            MapCoordinate(0.91f, 0.78f, -8.30, 114.28),
+            MapCoordinate.fromGeo(-8.19, 113.78),
+            MapCoordinate.fromGeo(-8.25, 113.91),
+            MapCoordinate.fromGeo(-8.28, 114.02),
+            MapCoordinate.fromGeo(-8.32, 114.15),
+            MapCoordinate.fromGeo(-8.30, 114.28),
             sritanjung.coordinate
         )
     )
@@ -323,8 +323,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             arjosari.coordinate,
-            MapCoordinate(0.46f, 0.53f, -7.75, 112.71),
-            MapCoordinate(0.51f, 0.46f, -7.64, 112.90),
+            MapCoordinate.fromGeo(-7.75, 112.71),
+            MapCoordinate.fromGeo(-7.64, 112.90),
             bayuangga.coordinate
         )
     )
@@ -352,8 +352,8 @@ class RouteDataSource(
         tollFee = Money.rupiah(39000),
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.43f, 0.31f, -7.40, 112.60),
-            MapCoordinate(0.41f, 0.34f, -7.44, 112.52),
+            MapCoordinate.fromGeo(-7.40, 112.60),
+            MapCoordinate.fromGeo(-7.44, 112.52),
             kertajaya.coordinate
         )
     )
@@ -381,8 +381,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             purabaya.coordinate,
-            MapCoordinate(0.43f, 0.33f, -7.42, 112.62),
-            MapCoordinate(0.41f, 0.34f, -7.45, 112.54),
+            MapCoordinate.fromGeo(-7.42, 112.62),
+            MapCoordinate.fromGeo(-7.45, 112.54),
             kertajaya.coordinate
         )
     )
@@ -410,8 +410,8 @@ class RouteDataSource(
         tollFee = Money.rupiah(55000),
         waypoints = listOf(
             kertajaya.coordinate,
-            MapCoordinate(0.33f, 0.41f, -7.56, 112.25),
-            MapCoordinate(0.29f, 0.49f, -7.69, 112.12),
+            MapCoordinate.fromGeo(-7.56, 112.25),
+            MapCoordinate.fromGeo(-7.69, 112.12),
             tamanan.coordinate
         )
     )
@@ -439,8 +439,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             kertajaya.coordinate,
-            MapCoordinate(0.33f, 0.42f, -7.57, 112.24),
-            MapCoordinate(0.29f, 0.50f, -7.70, 112.13),
+            MapCoordinate.fromGeo(-7.57, 112.24),
+            MapCoordinate.fromGeo(-7.70, 112.13),
             tamanan.coordinate
         )
     )
@@ -468,7 +468,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             tamanan.coordinate,
-            MapCoordinate(0.24f, 0.66f, -7.95, 111.95),
+            MapCoordinate.fromGeo(-7.95, 111.95),
             gayatri.coordinate
         )
     )
@@ -496,7 +496,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             gayatri.coordinate,
-            MapCoordinate(0.27f, 0.74f, -8.08, 112.03),
+            MapCoordinate.fromGeo(-8.08, 112.03),
             patria.coordinate
         )
     )
@@ -524,8 +524,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             patria.coordinate,
-            MapCoordinate(0.36f, 0.75f, -8.10, 112.35),
-            MapCoordinate(0.42f, 0.77f, -8.13, 112.56),
+            MapCoordinate.fromGeo(-8.10, 112.35),
+            MapCoordinate.fromGeo(-8.13, 112.56),
             arjosari.coordinate
         )
     )
@@ -553,7 +553,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             gayatri.coordinate,
-            MapCoordinate(0.20f, 0.72f, -8.06, 111.81),
+            MapCoordinate.fromGeo(-8.06, 111.81),
             surodakan.coordinate
         )
     )
@@ -581,7 +581,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             surodakan.coordinate,
-            MapCoordinate(0.15f, 0.66f, -7.95, 111.60),
+            MapCoordinate.fromGeo(-7.95, 111.60),
             seloaji.coordinate
         )
     )
@@ -609,7 +609,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             seloaji.coordinate,
-            MapCoordinate(0.115f, 0.51f, -7.72, 111.50),
+            MapCoordinate.fromGeo(-7.72, 111.50),
             purboyo.coordinate
         )
     )
@@ -637,7 +637,7 @@ class RouteDataSource(
         tollFee = Money.rupiah(26000),
         waypoints = listOf(
             purboyo.coordinate,
-            MapCoordinate(0.11f, 0.38f, -7.50, 111.48),
+            MapCoordinate.fromGeo(-7.50, 111.48),
             kertonegoro.coordinate
         )
     )
@@ -665,7 +665,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             purboyo.coordinate,
-            MapCoordinate(0.11f, 0.38f, -7.51, 111.47),
+            MapCoordinate.fromGeo(-7.51, 111.47),
             kertonegoro.coordinate
         )
     )
@@ -693,7 +693,7 @@ class RouteDataSource(
         tollFee = Money.rupiah(38000),
         waypoints = listOf(
             purboyo.coordinate,
-            MapCoordinate(0.17f, 0.44f, -7.58, 111.72),
+            MapCoordinate.fromGeo(-7.58, 111.72),
             anjukLadang.coordinate
         )
     )
@@ -721,7 +721,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             purboyo.coordinate,
-            MapCoordinate(0.17f, 0.45f, -7.59, 111.70),
+            MapCoordinate.fromGeo(-7.59, 111.70),
             anjukLadang.coordinate
         )
     )
@@ -749,7 +749,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             anjukLadang.coordinate,
-            MapCoordinate(0.25f, 0.51f, -7.71, 111.96),
+            MapCoordinate.fromGeo(-7.71, 111.96),
             tamanan.coordinate
         )
     )
@@ -777,7 +777,7 @@ class RouteDataSource(
         tollFee = Money.rupiah(54000),
         waypoints = listOf(
             anjukLadang.coordinate,
-            MapCoordinate(0.31f, 0.40f, -7.54, 112.18),
+            MapCoordinate.fromGeo(-7.54, 112.18),
             kertajaya.coordinate
         )
     )
@@ -805,7 +805,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             anjukLadang.coordinate,
-            MapCoordinate(0.30f, 0.41f, -7.55, 112.15),
+            MapCoordinate.fromGeo(-7.55, 112.15),
             kertajaya.coordinate
         )
     )
@@ -833,7 +833,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             kertonegoro.coordinate,
-            MapCoordinate(0.16f, 0.23f, -7.28, 111.66),
+            MapCoordinate.fromGeo(-7.28, 111.66),
             rajekwesi.coordinate
         )
     )
@@ -861,7 +861,7 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             rajekwesi.coordinate,
-            MapCoordinate(0.23f, 0.30f, -7.38, 111.90),
+            MapCoordinate.fromGeo(-7.38, 111.90),
             anjukLadang.coordinate
         )
     )
@@ -889,8 +889,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             bayuangga.coordinate,
-            MapCoordinate(0.605f, 0.58f, -7.88, 113.20),
-            MapCoordinate(0.61f, 0.64f, -7.99, 113.21),
+            MapCoordinate.fromGeo(-7.88, 113.20),
+            MapCoordinate.fromGeo(-7.99, 113.21),
             minakKoncar.coordinate
         )
     )
@@ -918,9 +918,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             minakKoncar.coordinate,
-            MapCoordinate(0.65f, 0.75f, -8.15, 113.34),
-            MapCoordinate(0.68f, 0.77f, -8.16, 113.45),
-            MapCoordinate(0.71f, 0.79f, -8.18, 113.56),
+            MapCoordinate.fromGeo(-8.15, 113.34),
+            MapCoordinate.fromGeo(-8.16, 113.45),
+            MapCoordinate.fromGeo(-8.18, 113.56),
             tawangAlun.coordinate
         )
     )
@@ -948,9 +948,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             arjosari.coordinate,
-            MapCoordinate(0.48f, 0.68f, -8.05, 112.72),
-            MapCoordinate(0.52f, 0.71f, -8.20, 112.87),
-            MapCoordinate(0.56f, 0.73f, -8.22, 112.98),
+            MapCoordinate.fromGeo(-8.05, 112.72),
+            MapCoordinate.fromGeo(-8.20, 112.87),
+            MapCoordinate.fromGeo(-8.22, 112.98),
             minakKoncar.coordinate
         )
     )
@@ -978,8 +978,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             situbondo.coordinate,
-            MapCoordinate(0.81f, 0.56f, -7.80, 113.92),
-            MapCoordinate(0.795f, 0.60f, -7.86, 113.88),
+            MapCoordinate.fromGeo(-7.80, 113.92),
+            MapCoordinate.fromGeo(-7.86, 113.88),
             bondowoso.coordinate
         )
     )
@@ -1007,8 +1007,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             bondowoso.coordinate,
-            MapCoordinate(0.76f, 0.69f, -8.01, 113.78),
-            MapCoordinate(0.745f, 0.75f, -8.11, 113.71),
+            MapCoordinate.fromGeo(-8.01, 113.78),
+            MapCoordinate.fromGeo(-8.11, 113.71),
             tawangAlun.coordinate
         )
     )
@@ -1036,9 +1036,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             bayuangga.coordinate,
-            MapCoordinate(0.66f, 0.53f, -7.74, 113.35),
-            MapCoordinate(0.72f, 0.51f, -7.72, 113.68),
-            MapCoordinate(0.75f, 0.57f, -7.82, 113.75),
+            MapCoordinate.fromGeo(-7.74, 113.35),
+            MapCoordinate.fromGeo(-7.72, 113.68),
+            MapCoordinate.fromGeo(-7.82, 113.75),
             bondowoso.coordinate
         )
     )
@@ -1066,9 +1066,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             seloaji.coordinate,
-            MapCoordinate(0.09f, 0.66f, -7.95, 111.38),
-            MapCoordinate(0.075f, 0.72f, -8.05, 111.25),
-            MapCoordinate(0.06f, 0.76f, -8.12, 111.15),
+            MapCoordinate.fromGeo(-7.95, 111.38),
+            MapCoordinate.fromGeo(-8.05, 111.25),
+            MapCoordinate.fromGeo(-8.12, 111.15),
             pacitan.coordinate
         )
     )
@@ -1096,9 +1096,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             surodakan.coordinate,
-            MapCoordinate(0.14f, 0.76f, -8.12, 111.55),
-            MapCoordinate(0.10f, 0.79f, -8.21, 111.32),
-            MapCoordinate(0.07f, 0.81f, -8.22, 111.19),
+            MapCoordinate.fromGeo(-8.12, 111.55),
+            MapCoordinate.fromGeo(-8.21, 111.32),
+            MapCoordinate.fromGeo(-8.22, 111.19),
             pacitan.coordinate
         )
     )
@@ -1126,8 +1126,8 @@ class RouteDataSource(
         tollFee = Money.rupiah(45000),
         waypoints = listOf(
             kertonegoro.coordinate,
-            MapCoordinate(0.08f, 0.325f, -7.42, 111.23),
-            MapCoordinate(0.06f, 0.328f, -7.43, 111.12),
+            MapCoordinate.fromGeo(-7.42, 111.23),
+            MapCoordinate.fromGeo(-7.43, 111.12),
             pilangsari.coordinate
         )
     )
@@ -1155,8 +1155,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             kertonegoro.coordinate,
-            MapCoordinate(0.08f, 0.335f, -7.43, 111.22),
-            MapCoordinate(0.06f, 0.338f, -7.44, 111.11),
+            MapCoordinate.fromGeo(-7.43, 111.22),
+            MapCoordinate.fromGeo(-7.44, 111.11),
             pilangsari.coordinate
         )
     )
@@ -1184,9 +1184,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             rajekwesi.coordinate,
-            MapCoordinate(0.18f, 0.21f, -7.15, 111.60),
-            MapCoordinate(0.13f, 0.17f, -6.97, 111.41),
-            MapCoordinate(0.09f, 0.14f, -6.71, 111.34),
+            MapCoordinate.fromGeo(-7.15, 111.60),
+            MapCoordinate.fromGeo(-6.97, 111.41),
+            MapCoordinate.fromGeo(-6.71, 111.34),
             kembangJoyo.coordinate
         )
     )
@@ -1214,8 +1214,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             pilangsari.coordinate,
-            MapCoordinate(0.045f, 0.26f, -7.22, 110.98),
-            MapCoordinate(0.05f, 0.19f, -7.08, 110.92),
+            MapCoordinate.fromGeo(-7.22, 110.98),
+            MapCoordinate.fromGeo(-7.08, 110.92),
             kembangJoyo.coordinate
         )
     )

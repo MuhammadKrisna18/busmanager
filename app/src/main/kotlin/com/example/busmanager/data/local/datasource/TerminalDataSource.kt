@@ -12,9 +12,7 @@ class TerminalDataSource {
         name = "Terminal Purabaya",
         city = "Surabaya",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.46f,
-            y = 0.28f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.3523,
             longitude = 112.7262
         ),
@@ -27,9 +25,7 @@ class TerminalDataSource {
         name = "Terminal Arjosari",
         city = "Malang",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.45f,
-            y = 0.64f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.9315,
             longitude = 112.6582
         ),
@@ -42,9 +38,7 @@ class TerminalDataSource {
         name = "Terminal Bayuangga",
         city = "Probolinggo",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.60f,
-            y = 0.54f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.7655,
             longitude = 113.1952
         ),
@@ -57,9 +51,7 @@ class TerminalDataSource {
         name = "Terminal Tawang Alun",
         city = "Jember",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.73f,
-            y = 0.81f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -8.1884,
             longitude = 113.6391
         ),
@@ -72,9 +64,7 @@ class TerminalDataSource {
         name = "Terminal Situbondo",
         city = "Situbondo",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.83f,
-            y = 0.50f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.7051,
             longitude = 114.0044
         ),
@@ -87,9 +77,7 @@ class TerminalDataSource {
         name = "Terminal Sritanjung",
         city = "Banyuwangi",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.94f,
-            y = 0.77f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -8.1342,
             longitude = 114.3912
         ),
@@ -102,9 +90,7 @@ class TerminalDataSource {
         name = "Terminal Kertajaya",
         city = "Mojokerto",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.38f,
-            y = 0.36f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.4725,
             longitude = 112.4411
         ),
@@ -117,9 +103,7 @@ class TerminalDataSource {
         name = "Terminal Tamanan",
         city = "Kediri",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.26f,
-            y = 0.58f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.8286,
             longitude = 111.9961
         ),
@@ -132,9 +116,7 @@ class TerminalDataSource {
         name = "Terminal Gayatri",
         city = "Tulungagung",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.25f,
-            y = 0.73f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -8.0645,
             longitude = 111.9056
         ),
@@ -147,9 +129,7 @@ class TerminalDataSource {
         name = "Terminal Patria",
         city = "Blitar",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.33f,
-            y = 0.73f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -8.0983,
             longitude = 112.1608
         ),
@@ -162,9 +142,7 @@ class TerminalDataSource {
         name = "Terminal Surodakan",
         city = "Trenggalek",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.17f,
-            y = 0.70f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -8.0580,
             longitude = 111.7160
         ),
@@ -177,9 +155,7 @@ class TerminalDataSource {
         name = "Terminal Seloaji",
         city = "Ponorogo",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.11f,
-            y = 0.59f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.8420,
             longitude = 111.4780
         ),
@@ -192,9 +168,7 @@ class TerminalDataSource {
         name = "Terminal Purboyo",
         city = "Madiun",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.12f,
-            y = 0.44f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.6080,
             longitude = 111.5280
         ),
@@ -207,9 +181,7 @@ class TerminalDataSource {
         name = "Terminal Kertonegoro",
         city = "Ngawi",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.10f,
-            y = 0.32f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.4110,
             longitude = 111.4350
         ),
@@ -222,9 +194,7 @@ class TerminalDataSource {
         name = "Terminal Anjuk Ladang",
         city = "Nganjuk",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.23f,
-            y = 0.44f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.6020,
             longitude = 111.9120
         ),
@@ -237,9 +207,7 @@ class TerminalDataSource {
         name = "Terminal Rajekwesi",
         city = "Bojonegoro",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.23f,
-            y = 0.16f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.1620,
             longitude = 111.8900
         ),
@@ -252,9 +220,7 @@ class TerminalDataSource {
         name = "Terminal Minak Koncar",
         city = "Lumajang",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.61f,
-            y = 0.72f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -8.1331,
             longitude = 113.2248
         ),
@@ -267,9 +233,7 @@ class TerminalDataSource {
         name = "Terminal Bondowoso",
         city = "Bondowoso",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.78f,
-            y = 0.63f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.9130,
             longitude = 113.8210
         ),
@@ -282,9 +246,7 @@ class TerminalDataSource {
         name = "Terminal Pacitan",
         city = "Pacitan",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.05f,
-            y = 0.80f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -8.1970,
             longitude = 111.0980
         ),
@@ -297,9 +259,7 @@ class TerminalDataSource {
         name = "Terminal Pilangsari",
         city = "Sragen",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.04f,
-            y = 0.33f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -7.4290,
             longitude = 111.0180
         ),
@@ -312,9 +272,7 @@ class TerminalDataSource {
         name = "Terminal Kembang Joyo",
         city = "Pati",
         type = TerminalType.TIPE_A,
-        coordinate = MapCoordinate(
-            x = 0.06f,
-            y = 0.13f,
+        coordinate = MapCoordinate.fromGeo(
             latitude = -6.7560,
             longitude = 111.0380
         ),

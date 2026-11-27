@@ -132,6 +132,20 @@ fun EastJavaMapCanvas(
             }
         }
 
+        var hasCenteredInitialView by remember { mutableStateOf(false) }
+        LaunchedEffect(worldWidth, viewportWidth, worldHeight, viewportHeight) {
+            if (!hasCenteredInitialView && worldWidth > 0f && viewportWidth > 0f && trackedTripId == null) {
+                hasCenteredInitialView = true
+                val initialScale = EastJavaMapProjection.DEFAULT_ZOOM
+                val maxPx = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, initialScale)
+                val maxPy = EastJavaMapProjection.calculateMaxPanY(worldHeight, viewportHeight, initialScale)
+                val targetPanX = EastJavaMapProjection.calculateTargetPanX(0.76f, worldWidth, initialScale, maxPx)
+                val targetPanY = EastJavaMapProjection.calculateTargetPanY(0.60f, worldHeight, initialScale, maxPy)
+                panXAnim.snapTo(targetPanX)
+                panYAnim.snapTo(targetPanY)
+            }
+        }
+
         fun zoomIn() {
             val newZoom = (zoomAnim.value + 0.35f).coerceAtMost(EastJavaMapProjection.MAX_ZOOM)
             val maxPx = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, newZoom)
@@ -160,10 +174,15 @@ fun EastJavaMapCanvas(
 
         fun resetMap() {
             isTrackingLocked = false
+            val targetScale = EastJavaMapProjection.DEFAULT_ZOOM
+            val maxPx = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, targetScale)
+            val maxPy = EastJavaMapProjection.calculateMaxPanY(worldHeight, viewportHeight, targetScale)
+            val targetPanX = EastJavaMapProjection.calculateTargetPanX(0.76f, worldWidth, targetScale, maxPx)
+            val targetPanY = EastJavaMapProjection.calculateTargetPanY(0.60f, worldHeight, targetScale, maxPy)
             coroutineScope.launch {
-                launch { zoomAnim.animateTo(EastJavaMapProjection.DEFAULT_ZOOM, animationSpec = tween(300)) }
-                launch { panXAnim.animateTo(0f, animationSpec = tween(300)) }
-                launch { panYAnim.animateTo(0f, animationSpec = tween(300)) }
+                launch { zoomAnim.animateTo(targetScale, animationSpec = tween(300)) }
+                launch { panXAnim.animateTo(targetPanX, animationSpec = tween(300)) }
+                launch { panYAnim.animateTo(targetPanY, animationSpec = tween(300)) }
             }
         }
 
@@ -252,7 +271,7 @@ fun EastJavaMapCanvas(
                     }
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawEastJavaLandmass()
+                    drawJavaIslandLandmass()
                     drawMaduraIsland()
 
                     allSegments.forEach { segment ->

@@ -48,7 +48,6 @@ import com.example.busmanager.presentation.dashboard.components.OfflineProgressi
 import com.example.busmanager.presentation.dashboard.components.PlaySimulationCard
 import com.example.busmanager.presentation.dashboard.components.RouteInfoDialog
 import com.example.busmanager.presentation.dashboard.components.SimulationLogCenterDialog
-import com.example.busmanager.presentation.dashboard.components.StarterQuestsCard
 import com.example.busmanager.presentation.update.UpdateDialog
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -183,51 +182,6 @@ fun HomeScreen(
             EventTickerBanner(
                 recentLogs = state.recentLogs,
                 onOpenLogCenter = { viewModel.openLogCenterModal() }
-            )
-
-            state.questMessage?.let { msg ->
-                Spacer(modifier = Modifier.height(AppDimens.paddingSmall))
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { viewModel.dismissQuestMessage() },
-                    shape = RoundedCornerShape(AppDimens.radiusSmall),
-                    colors = CardDefaults.cardColors(containerColor = SuccessGreenLight)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = msg,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = SuccessGreen,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = "Tutup",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = SuccessGreen
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(AppDimens.paddingMedium))
-
-            StarterQuestsCard(
-                quests = state.starterQuests,
-                onClaimReward = { viewModel.claimQuestReward(it) },
-                onNavigateToShowroom = onNavigateToShowroom,
-                onNavigateToDrivers = onNavigateToDrivers,
-                onNavigateToRoutes = onNavigateToRoutes,
-                onOpenRouteInfo = onNavigateToRouteInfo,
-                onNavigateToSimulationMap = onNavigateToSimulationMap
             )
 
             Spacer(modifier = Modifier.height(AppDimens.paddingMedium))

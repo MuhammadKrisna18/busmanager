@@ -266,7 +266,7 @@ class GarageViewModel(
         val chosenSlot = DepartureSlotCalculator.findNextAvailableSlot(slots, preferredHour, preferredMinute)
             ?: slots.firstOrNull { it.isAvailable }
 
-        val effectiveRitCount = if (category == RouteCategory.AKAP) 1 else targetRitCount.coerceIn(1, 2)
+        val effectiveRitCount = if (category == RouteCategory.AKAP) 1 else 2
         val plan = if (chosenSlot != null) {
             DepartureSlotCalculator.calculateDailyPlan(
                 routeCategory = category,
@@ -298,8 +298,7 @@ class GarageViewModel(
             val selectedDriver = currentBusDriver ?: availableDrivers.firstOrNull()
 
             val operationalRoutes = getRouteOperationalStatusUseCase?.invoke()?.firstOrNull() ?: emptyList()
-            val openedRoutes = operationalRoutes.map { it.route }
-            val availableRoutes = if (openedRoutes.isNotEmpty()) openedRoutes else routeRepository.getAllRoutes()
+            val availableRoutes = operationalRoutes.map { it.route }
             val selectedRoute = item.bus.routeId?.let { rId -> availableRoutes.find { it.id == rId } }
                 ?: availableRoutes.firstOrNull()
 
@@ -456,7 +455,7 @@ class GarageViewModel(
         if (current.routeCategory == RouteCategory.AKAP) return
         val route = current.selectedRoute ?: return
         val slot = current.selectedSlot ?: return
-        val safeCount = ritCount.coerceIn(1, 2)
+        val safeCount = if (current.routeCategory == RouteCategory.AKAP) 1 else 2
         val (depTerminal, destTerminal) = if (current.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
             route.originTerminal to route.destinationTerminal
         } else {

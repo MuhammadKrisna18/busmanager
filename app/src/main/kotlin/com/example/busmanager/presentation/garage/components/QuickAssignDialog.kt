@@ -66,7 +66,6 @@ fun QuickAssignDialog(
     onSelectDriver: (Driver) -> Unit,
     onSetDirection: (RouteDirection) -> Unit,
     onSelectSlot: (TerminalDepartureSlot) -> Unit,
-    onSetTargetRitCount: (Int) -> Unit,
     onSetTimeFilter: (SlotTimeFilter) -> Unit,
     onSetTransitDwell: (Int) -> Unit,
     onConfirm: () -> Unit
@@ -136,10 +135,8 @@ fun QuickAssignDialog(
                         QuickAssignScheduleSection(
                             plan = state.dailySchedulePlan,
                             category = state.routeCategory,
-                            targetRitCount = state.targetRitCount,
                             transitDwellMinutes = state.transitDwellMinutes,
                             hasStops = state.selectedRoute?.transitTerminals?.isNotEmpty() == true,
-                            onSetTargetRitCount = onSetTargetRitCount,
                             onSetTransitDwell = onSetTransitDwell
                         )
                     }
@@ -224,11 +221,20 @@ private fun QuickAssignRouteSection(
         )
         Spacer(modifier = Modifier.height(6.dp))
         if (routes.isEmpty()) {
-            Text(
-                text = "Belum ada trayek aktif. Buat trayek terlebih dahulu di Wizard Rute.",
-                fontSize = 12.sp,
-                color = Color(0xFFDC2626)
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFFEF2F2))
+                    .padding(12.dp)
+            ) {
+                Text(
+                    text = "⚠️ Belum ada trayek aktif. Silakan buka trayek terlebih dahulu di menu Buka Trayek.",
+                    fontSize = 12.sp,
+                    color = Color(0xFFDC2626),
+                    fontWeight = FontWeight.Medium
+                )
+            }
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 routes.forEach { route ->
@@ -501,14 +507,10 @@ private fun QuickAssignSlotSection(
 private fun QuickAssignScheduleSection(
     plan: DailySchedulePlan?,
     category: RouteCategory,
-    targetRitCount: Int,
     transitDwellMinutes: Int,
     hasStops: Boolean,
-    onSetTargetRitCount: (Int) -> Unit,
     onSetTransitDwell: (Int) -> Unit
 ) {
-    val isAkap = category == RouteCategory.AKAP
-
     Column {
         Text(
             text = "4. Jadwal Operasional & Istirahat",
@@ -517,51 +519,6 @@ private fun QuickAssignScheduleSection(
             color = TextDark
         )
         Spacer(modifier = Modifier.height(6.dp))
-
-        if (!isAkap) {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
-                border = CardDefaults.outlinedCardBorder()
-            ) {
-                Column(modifier = Modifier.padding(10.dp)) {
-                    Text(
-                        text = "Target Ritase Harian (AKDP)",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextDark
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        FilterChip(
-                            selected = targetRitCount == 1,
-                            onClick = { onSetTargetRitCount(1) },
-                            label = { Text("1 PP (1x Pulang-Pergi)", fontSize = 10.sp) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = IceBlue,
-                                selectedLabelColor = PrimaryBlueDark
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
-                        FilterChip(
-                            selected = targetRitCount == 2,
-                            onClick = { onSetTargetRitCount(2) },
-                            label = { Text("2 PP (Jeda 1 Jam Asal)", fontSize = 10.sp) },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = IceBlue,
-                                selectedLabelColor = PrimaryBlueDark
-                            ),
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-        }
 
         plan?.let {
             ScheduleTimelineCard(plan = it)

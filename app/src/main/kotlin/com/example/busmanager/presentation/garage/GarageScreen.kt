@@ -102,7 +102,6 @@ fun GarageScreen(
             onSelectDriver = { viewModel.selectQuickAssignDriver(it) },
             onSetDirection = { viewModel.setQuickAssignDirection(it) },
             onSelectSlot = { viewModel.selectQuickAssignSlot(it) },
-            onSetTargetRitCount = { viewModel.setQuickAssignTargetRitCount(it) },
             onSetTimeFilter = { viewModel.setQuickAssignTimeFilter(it) },
             onSetTransitDwell = { viewModel.setQuickAssignTransitDwell(it) },
             onConfirm = { viewModel.confirmQuickAssign() }

@@ -131,6 +131,14 @@ class GarageViewModelTest {
             validateScheduleConflictUseCase = validateConflictUseCase
         )
 
+        val operationalStatusUseCase = com.example.busmanager.domain.route.usecase.GetRouteOperationalStatusUseCase(
+            routeRepository = routeRepository,
+            routeScheduleRepository = fakeScheduleRepo,
+            routePricingRepository = fakePricingRepo,
+            fleetRepository = fakeFleetRepo,
+            driverRepository = fakeDriverRepo
+        )
+
         viewModel = GarageViewModel(
             fleetRepository = fakeFleetRepo,
             driverRepository = fakeDriverRepo,
@@ -140,7 +148,8 @@ class GarageViewModelTest {
             sellBusUseCase = sellBusUseCase,
             routeScheduleRepository = fakeScheduleRepo,
             assignBusToActiveRouteUseCase = assignBusUseCase,
-            validateScheduleConflictUseCase = validateConflictUseCase
+            validateScheduleConflictUseCase = validateConflictUseCase,
+            getRouteOperationalStatusUseCase = operationalStatusUseCase
         )
     }
 
@@ -394,19 +403,14 @@ class GarageViewModelTest {
     }
 
     @Test
-    fun setQuickAssignTargetRitCount_updatesPlanToSingleOrDoubleRit() = runTest {
+    fun setQuickAssignTargetRitCount_locksAkdpToDoubleRit() = runTest {
         advanceUntilIdle()
         val standbyItem = viewModel.uiState.value.allBuses.first { it.bus.id == "bus-2" }
         viewModel.openQuickAssignDialog(standbyItem)
         advanceUntilIdle()
 
         viewModel.setQuickAssignTargetRitCount(1)
-        var state = viewModel.uiState.value.quickAssignState
-        assertEquals(1, state?.targetRitCount)
-        assertEquals(2, state?.dailySchedulePlan?.legs?.size)
-
-        viewModel.setQuickAssignTargetRitCount(2)
-        state = viewModel.uiState.value.quickAssignState
+        val state = viewModel.uiState.value.quickAssignState
         assertEquals(2, state?.targetRitCount)
         assertEquals(4, state?.dailySchedulePlan?.legs?.size)
     }
@@ -495,6 +499,8 @@ class GarageViewModelTest {
         val availableRouteIds = vmWithOperationalStatus.uiState.value.quickAssignState?.availableRoutes?.map { it.id } ?: emptyList()
         assertTrue(availableRouteIds.contains(customRoute.id))
         assertTrue(availableRouteIds.contains("route_sby_mlg_toll"))
+        val unOpenedRoute = routeRepository.getAllRoutes().first { it.id != customRoute.id && it.id != "route_sby_mlg_toll" }
+        assertFalse(availableRouteIds.contains(unOpenedRoute.id))
     }
 
     private class FakeFleetRepository : FleetRepository {

@@ -50,6 +50,7 @@ import com.example.busmanager.domain.fleet.usecase.BusOperationStatus
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
+import com.example.busmanager.domain.simulation.model.RouteDirection
 import com.example.busmanager.ui.theme.AccentBlue
 import com.example.busmanager.ui.theme.AppDimens
 import com.example.busmanager.ui.theme.BackgroundWhite
@@ -266,6 +267,7 @@ fun FleetOverviewBottomSheet(
                                 assignedRoute = assignedRoute,
                                 operationStatus = status,
                                 availableRoutes = availableRoutes,
+                                schedules = schedules.filter { it.assignedBusId == bus.id },
                                 onDispatch = { route -> onDispatchBus?.invoke(bus, route) },
                                 onTrack = {
                                     if (activeTrip != null) {
@@ -477,11 +479,26 @@ private fun FleetBusItemCard(
     assignedRoute: BusRoute?,
     operationStatus: BusOperationStatus?,
     availableRoutes: List<BusRoute>,
+    schedules: List<RouteSchedule> = emptyList(),
     onDispatch: ((BusRoute) -> Unit)? = null,
     onTrack: () -> Unit
 ) {
     val isOperating = activeTrip != null
     val canOperate = operationStatus?.canOperate ?: false
+    val busSchedules = schedules.sortedWith(compareBy({ it.departureHour }, { it.departureMinute }))
+    val scheduleText = if (busSchedules.isNotEmpty()) {
+        busSchedules.joinToString(separator = ", ") { sched ->
+            val destName = if (sched.direction == RouteDirection.ORIGIN_TO_DESTINATION) {
+                assignedRoute?.destinationTerminal?.city ?: assignedRoute?.destinationTerminal?.name ?: "Tujuan"
+            } else {
+                assignedRoute?.originTerminal?.city ?: assignedRoute?.originTerminal?.name ?: "Asal"
+            }
+            val timeFormatted = String.format("%02d:%02d WIB", sched.departureHour, sched.departureMinute)
+            "Jam $timeFormatted arah $destName"
+        }
+    } else {
+        "Belum ada jadwal penugasan"
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -590,6 +607,26 @@ private fun FleetBusItemCard(
                     label = "Tarif",
                     isSatisfied = operationStatus?.hasPricings ?: false,
                     detail = if (operationStatus?.hasPricings == true) "Sudah ada" else "Belum set"
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color(0xFFF1F5F9))
+                    .padding(horizontal = 8.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "🕒", fontSize = 11.sp)
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = scheduleText,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (busSchedules.isNotEmpty()) TextDark else TextMuted
                 )
             }
 

@@ -8,6 +8,7 @@ import com.example.busmanager.domain.finance.model.TransactionCategory
 import com.example.busmanager.domain.finance.model.TransactionType
 import com.example.busmanager.domain.finance.repository.FinancialTransactionRepository
 import com.example.busmanager.domain.fleet.repository.FleetRepository
+import com.example.busmanager.domain.route.model.RouteCategory
 import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
 import com.example.busmanager.domain.route.repository.RouteScheduleRepository
@@ -65,8 +66,11 @@ class ProcessOfflineProgressionUseCase(
             val route = routeRepository.getRouteById(routeId) ?: continue
             val driver = drivers.find { it.id == driverId } ?: continue
 
+            val category = RouteCategory.fromRoute(route)
+            val maxTripsPerDay = if (category == RouteCategory.AKAP) 2 else 4
+            val maxAllowedTrips = ((cappedMinutes.toDouble() / 1440.0) * maxTripsPerDay).toInt().coerceAtLeast(1)
             val tripDuration = route.totalEstimatedDurationMinutes.coerceAtLeast(60)
-            val tripsCompleted = (cappedMinutes / tripDuration).coerceAtLeast(0)
+            val tripsCompleted = minOf((cappedMinutes / tripDuration).coerceAtLeast(0), maxAllowedTrips)
             if (tripsCompleted <= 0) continue
 
             val passengersPerTrip = (bus.body.passengerCapacity * 0.85f).toInt().coerceAtLeast(10)

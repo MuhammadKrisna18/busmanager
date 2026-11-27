@@ -117,12 +117,6 @@ class SimulationTripLifecycleCoordinator(
                     val currentTotalMinutes = currentTime.day * 1440L + currentTime.hour * 60L + currentTime.minute
                     val effectiveHeadway = trip.headwayMinutes.coerceAtLeast(minLayover)
                     val rawNextDeparture = currentTotalMinutes + effectiveHeadway
-                    var resolvedMinutes = calculateNextOperatingDeparture(rawNextDeparture)
-                    val (alignedH, alignedM) = DepartureSlotCalculator.alignToNext15MinuteSlot((resolvedMinutes % 1440L).toInt())
-                    var resolvedHour = alignedH
-                    var resolvedMin = alignedM
-                    resolvedMinutes = (resolvedMinutes / 1440L) * 1440L + resolvedHour * 60L + resolvedMin
-
                     val effectiveDwell = trip.transitDwellMinutes.coerceIn(0, 15)
 
                     if (busSchedules.isNotEmpty()) {
@@ -135,52 +129,33 @@ class SimulationTripLifecycleCoordinator(
                             schedEpochMinutes >= rawNextDeparture
                         } ?: upcomingReturnSchedules.firstOrNull()
 
-                        val targetScheduleId = returnSchedule?.id ?: busSchedules.first().id
                         if (returnSchedule != null) {
                             val scheduledEpochMinutes = currentTime.day * 1440L + returnSchedule.departureHour * 60L + returnSchedule.departureMinute
-                            if (scheduledEpochMinutes >= rawNextDeparture) {
-                                resolvedMinutes = scheduledEpochMinutes
-                                resolvedHour = returnSchedule.departureHour
-                                resolvedMin = returnSchedule.departureMinute
+                            val targetEpochMinutes = if (scheduledEpochMinutes >= rawNextDeparture) {
+                                scheduledEpochMinutes
                             } else {
-                                val nextDayEpoch = (currentTime.day + 1L) * 1440L + returnSchedule.departureHour * 60L + returnSchedule.departureMinute
-                                resolvedMinutes = nextDayEpoch
-                                resolvedHour = returnSchedule.departureHour
-                                resolvedMin = returnSchedule.departureMinute
+                                (currentTime.day + 1L) * 1440L + returnSchedule.departureHour * 60L + returnSchedule.departureMinute
                             }
-                        }
-
-                        if (routeScheduleRepository != null) {
-                            while (routeScheduleRepository.checkConflict(trip.route.id, returnDir, resolvedHour, resolvedMin, targetScheduleId)) {
-                                resolvedMinutes += DepartureSlotCalculator.SLOT_INTERVAL_MINUTES
-                                resolvedMinutes = calculateNextOperatingDeparture(resolvedMinutes)
-                                val (adjH, adjM) = DepartureSlotCalculator.alignToNext15MinuteSlot((resolvedMinutes % 1440L).toInt())
-                                resolvedHour = adjH
-                                resolvedMin = adjM
-                                resolvedMinutes = (resolvedMinutes / 1440L) * 1440L + resolvedHour * 60L + resolvedMin
-                            }
-                        }
-
-                        if (returnSchedule != null) {
                             val updatedReturnSchedule = returnSchedule.copy(
-                                departureHour = resolvedHour,
-                                departureMinute = resolvedMin,
                                 direction = returnDir,
                                 headwayMinutes = effectiveHeadway,
                                 transitDwellMinutes = effectiveDwell,
-                                nextDepartureEpochMinutes = resolvedMinutes
+                                nextDepartureEpochMinutes = targetEpochMinutes
                             )
                             routeScheduleRepository?.updateSchedule(updatedReturnSchedule)
                             onScheduleUpdated(updatedReturnSchedule)
                         } else {
                             val activeSchedule = busSchedules.first()
+                            val targetEpochMinutes = calculateNextOperatingDeparture(rawNextDeparture)
+                            val resolvedHour = (((targetEpochMinutes) % 1440L) / 60L).toInt()
+                            val resolvedMin = ((targetEpochMinutes) % 60L).toInt()
                             val updatedSchedule = activeSchedule.copy(
                                 departureHour = resolvedHour,
                                 departureMinute = resolvedMin,
                                 direction = returnDir,
                                 headwayMinutes = effectiveHeadway,
                                 transitDwellMinutes = effectiveDwell,
-                                nextDepartureEpochMinutes = resolvedMinutes
+                                nextDepartureEpochMinutes = targetEpochMinutes
                             )
                             routeScheduleRepository?.updateSchedule(updatedSchedule)
                             onScheduleUpdated(updatedSchedule)

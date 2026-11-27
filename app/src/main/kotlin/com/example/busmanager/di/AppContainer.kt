@@ -198,7 +198,13 @@ class AppContainer(context: Context) {
     val findAvailablePathsUseCase = FindAvailablePathsUseCase(terminalRepository, routeRepository)
     val buildCustomRouteUseCase = BuildCustomRouteUseCase(routeRepository)
     val saveCustomRouteUseCase = SaveCustomRouteUseCase(routeRepository)
-    val deleteRouteUseCase = DeleteRouteUseCase(routeRepository, fleetRepository, simulationTripRepository)
+    val deleteRouteUseCase = DeleteRouteUseCase(
+        routeRepository,
+        fleetRepository,
+        simulationTripRepository,
+        routeScheduleRepository,
+        routePricingRepository
+    )
 
     val getRoutePricingsUseCase = GetRoutePricingsUseCase(routePricingRepository)
     val saveRoutePricingUseCase = SaveRoutePricingUseCase(routePricingRepository)

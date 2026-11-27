@@ -1,7 +1,9 @@
 package com.example.busmanager.domain.route.usecase
 
 import com.example.busmanager.domain.fleet.repository.FleetRepository
+import com.example.busmanager.domain.route.repository.RoutePricingRepository
 import com.example.busmanager.domain.route.repository.RouteRepository
+import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.simulation.repository.SimulationTripRepository
 import kotlinx.coroutines.flow.first
 
@@ -14,7 +16,9 @@ sealed class DeleteRouteResult {
 class DeleteRouteUseCase(
     private val routeRepository: RouteRepository,
     private val fleetRepository: FleetRepository,
-    private val simulationTripRepository: SimulationTripRepository? = null
+    private val simulationTripRepository: SimulationTripRepository? = null,
+    private val routeScheduleRepository: RouteScheduleRepository? = null,
+    private val routePricingRepository: RoutePricingRepository? = null
 ) {
     suspend operator fun invoke(routeId: String): DeleteRouteResult {
         val route = routeRepository.getRouteById(routeId) ?: return DeleteRouteResult.RouteNotFound
@@ -27,6 +31,9 @@ class DeleteRouteUseCase(
         buses.filter { it.routeId == routeId }.forEach { bus ->
             fleetRepository.updateBus(bus.copy(routeId = null, isOperating = false))
         }
+
+        routeScheduleRepository?.deleteSchedulesForRoute(routeId)
+        routePricingRepository?.deletePricingsForRoute(routeId)
 
         routeRepository.deleteRoute(routeId)
         return DeleteRouteResult.Success(route.name)

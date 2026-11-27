@@ -21,6 +21,7 @@ import com.example.busmanager.domain.fleet.model.TransmissionType
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.MapCoordinate
+import com.example.busmanager.domain.route.model.RoadCharacteristic
 import com.example.busmanager.domain.route.model.RoutePathType
 import com.example.busmanager.domain.route.model.RoutePricing
 import com.example.busmanager.domain.route.model.RouteSchedule
@@ -225,6 +226,164 @@ class ProcessOfflineProgressionUseCaseTest {
         assertTrue(fakeTimeRepo.isPlaying.value)
     }
 
+    @Test
+    fun invoke_capsTripsForAkdpRouteToDailyLimit() = runBlocking {
+        val pastCalendar = GameCalendar(2026, 11, 24, 8, 0)
+        fakeStateRepo.state = SavedSimulationState(
+            lastWallClockMillis = System.currentTimeMillis() - 2_880_000L,
+            isPlaying = true,
+            speed = SimulationSpeed.NORMAL,
+            gameCalendar = pastCalendar
+        )
+
+        val chassis = Chassis(
+            id = "c1",
+            modelName = "Chassis 1",
+            brand = ChassisBrand.HINO,
+            engineLocation = EngineLocation.REAR,
+            suspension = SuspensionType.LEAF_SPRING,
+            axleType = AxleType.SINGLE_4X2,
+            transmission = TransmissionType.MANUAL,
+            horsepower = 260,
+            torqueNm = 750,
+            price = Money.rupiah(1_000_000_000L)
+        )
+        val body = KaroseriBody(
+            id = "b1",
+            modelName = "Jetbus 3+",
+            brand = KaroseriBrand.ADIPUTRO,
+            bodyType = BusBodyType.SHD,
+            busClass = BusClass.EKSEKUTIF,
+            passengerCapacity = 32,
+            luggageCapacityKg = 1500,
+            comfortRating = 8,
+            price = Money.rupiah(500_000_000L)
+        )
+        val bus = Bus(
+            id = "bus-1",
+            busCode = "MK01",
+            chassis = chassis,
+            body = body,
+            routeId = "route-1",
+            driverId = "drv-1"
+        )
+        fakeFleetRepo.buses = listOf(bus)
+
+        val driver = Driver(
+            id = "drv-1",
+            name = "Mas Joko",
+            wagePerDay = Money.rupiah(200_000L),
+            assignedBusId = "bus-1",
+            isHired = true
+        )
+        fakeDriverRepo.drivers = listOf(driver)
+
+        fakePricingRepo.pricings = listOf(
+            RoutePricing(
+                id = "p1",
+                routeId = "route-1",
+                originTerminalId = "t-sby",
+                destinationTerminalId = "t-mlg",
+                originCity = "Surabaya",
+                destinationCity = "Malang",
+                price = Money.rupiah(100_000L)
+            )
+        )
+
+        val result = useCase()
+        assertNotNull(result)
+        assertEquals(8, result!!.totalTripsCompleted)
+    }
+
+    @Test
+    fun invoke_capsTripsForAkapRouteToDailyLimit() = runBlocking {
+        val pastCalendar = GameCalendar(2026, 11, 24, 8, 0)
+        fakeStateRepo.state = SavedSimulationState(
+            lastWallClockMillis = System.currentTimeMillis() - 2_880_000L,
+            isPlaying = true,
+            speed = SimulationSpeed.NORMAL,
+            gameCalendar = pastCalendar
+        )
+
+        val akapRoute = BusRoute(
+            id = "route-akap",
+            name = "Surabaya - Jakarta",
+            originTerminal = terminalOrigin,
+            destinationTerminal = terminalDest,
+            segments = listOf(
+                RouteSegment(
+                    id = "seg-akap",
+                    fromTerminalId = terminalOrigin.id,
+                    toTerminalId = terminalDest.id,
+                    pathType = RoutePathType.TOLL,
+                    characteristic = RoadCharacteristic.FLAT,
+                    distanceKm = 800.0,
+                    baseDurationMinutes = 600
+                )
+            ),
+            pathType = RoutePathType.TOLL
+        )
+        fakeRouteRepo.routesList = listOf(testRoute, akapRoute)
+
+        val chassis = Chassis(
+            id = "c1",
+            modelName = "Chassis 1",
+            brand = ChassisBrand.HINO,
+            engineLocation = EngineLocation.REAR,
+            suspension = SuspensionType.LEAF_SPRING,
+            axleType = AxleType.SINGLE_4X2,
+            transmission = TransmissionType.MANUAL,
+            horsepower = 260,
+            torqueNm = 750,
+            price = Money.rupiah(1_000_000_000L)
+        )
+        val body = KaroseriBody(
+            id = "b1",
+            modelName = "Jetbus 3+",
+            brand = KaroseriBrand.ADIPUTRO,
+            bodyType = BusBodyType.SHD,
+            busClass = BusClass.EKSEKUTIF,
+            passengerCapacity = 32,
+            luggageCapacityKg = 1500,
+            comfortRating = 8,
+            price = Money.rupiah(500_000_000L)
+        )
+        val bus = Bus(
+            id = "bus-akap",
+            busCode = "MK01",
+            chassis = chassis,
+            body = body,
+            routeId = "route-akap",
+            driverId = "drv-1"
+        )
+        fakeFleetRepo.buses = listOf(bus)
+
+        val driver = Driver(
+            id = "drv-1",
+            name = "Mas Joko",
+            wagePerDay = Money.rupiah(200_000L),
+            assignedBusId = "bus-akap",
+            isHired = true
+        )
+        fakeDriverRepo.drivers = listOf(driver)
+
+        fakePricingRepo.pricings = listOf(
+            RoutePricing(
+                id = "p-akap",
+                routeId = "route-akap",
+                originTerminalId = terminalOrigin.id,
+                destinationTerminalId = terminalDest.id,
+                originCity = "Surabaya",
+                destinationCity = "Jakarta",
+                price = Money.rupiah(300_000L)
+            )
+        )
+
+        val result = useCase()
+        assertNotNull(result)
+        assertEquals(4, result!!.totalTripsCompleted)
+    }
+
     private class FakeSimulationStateRepository : SimulationStateRepository {
         var state: SavedSimulationState? = null
         override fun saveState(state: SavedSimulationState) {
@@ -312,7 +471,7 @@ class ProcessOfflineProgressionUseCaseTest {
         override suspend fun setPendingRelease(driverId: String, isPending: Boolean) {}
 }
 
-    private class FakeRouteRepository(val routesList: List<BusRoute>) : RouteRepository {
+    private class FakeRouteRepository(var routesList: List<BusRoute>) : RouteRepository {
         override fun getAllSegments(): List<RouteSegment> = emptyList()
         override fun getSegmentById(id: String): RouteSegment? = null
         override fun getSegmentsBetween(fromTerminalId: String, toTerminalId: String): List<RouteSegment> = emptyList()

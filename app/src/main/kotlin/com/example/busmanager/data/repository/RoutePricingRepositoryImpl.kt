@@ -95,6 +95,10 @@ class RoutePricingRepositoryImpl(
         return generatedPricings
     }
 
+    override suspend fun deletePricingsForRoute(routeId: String) {
+        pricingDao.deletePricingsByRoute(routeId)
+    }
+
     override suspend fun deleteAllPricings() {
         pricingDao.deleteAllPricings()
     }

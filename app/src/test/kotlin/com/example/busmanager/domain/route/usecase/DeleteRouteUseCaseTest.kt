@@ -9,6 +9,10 @@ import com.example.busmanager.domain.fleet.model.Bus
 import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.RoutePathType
+import com.example.busmanager.domain.route.model.RoutePricing
+import com.example.busmanager.domain.route.model.RouteSchedule
+import com.example.busmanager.domain.route.repository.RoutePricingRepository
+import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.RouteDirection
 import kotlinx.coroutines.flow.Flow
@@ -26,8 +30,53 @@ class DeleteRouteUseCaseTest {
     private lateinit var routeRepository: RouteCatalogRepositoryImpl
     private lateinit var fleetRepository: FakeFleetRepository
     private lateinit var simulationTripRepository: SimulationTripRepositoryImpl
+    private lateinit var scheduleRepository: FakeRouteScheduleRepository
+    private lateinit var pricingRepository: FakeRoutePricingRepository
     private lateinit var useCase: DeleteRouteUseCase
     private lateinit var testRoute: BusRoute
+
+    private class FakeRouteScheduleRepository : RouteScheduleRepository {
+        var deletedRouteId: String? = null
+        override fun getSchedulesForRoute(routeId: String): Flow<List<RouteSchedule>> = MutableStateFlow(emptyList())
+        override fun getAllSchedules(): Flow<List<RouteSchedule>> = MutableStateFlow(emptyList())
+        override suspend fun getSchedulesListForRoute(routeId: String): List<RouteSchedule> = emptyList()
+        override suspend fun getScheduleById(id: String): RouteSchedule? = null
+        override suspend fun getSchedulesForBus(busId: String): List<RouteSchedule> = emptyList()
+        override fun getSchedulesForBusFlow(busId: String): Flow<List<RouteSchedule>> = MutableStateFlow(emptyList())
+        override suspend fun addSchedule(schedule: RouteSchedule): Result<Unit> = Result.success(Unit)
+        override suspend fun updateSchedule(schedule: RouteSchedule): Result<Unit> = Result.success(Unit)
+        override suspend fun assignBusToSchedule(scheduleId: String, busId: String): Boolean = true
+        override suspend fun unassignBusFromSchedule(scheduleId: String) {}
+        override suspend fun deleteSchedule(scheduleId: String) {}
+        override suspend fun deleteSchedulesForBus(busId: String) {}
+        override suspend fun deleteSchedulesForRoute(routeId: String) {
+            deletedRouteId = routeId
+        }
+        override suspend fun deleteAllSchedules() {}
+        override suspend fun checkConflict(
+            routeId: String,
+            direction: RouteDirection,
+            hour: Int,
+            minute: Int,
+            excludeScheduleId: String?
+        ): Boolean = false
+    }
+
+    private class FakeRoutePricingRepository : RoutePricingRepository {
+        var deletedRouteId: String? = null
+        override fun getPricingsForRoute(routeId: String): Flow<List<RoutePricing>> = MutableStateFlow(emptyList())
+        override suspend fun getPricingsListForRoute(routeId: String): List<RoutePricing> = emptyList()
+        override fun getAllPricingsFlow(): Flow<List<RoutePricing>> = MutableStateFlow(emptyList())
+        override suspend fun getAllPricings(): List<RoutePricing> = emptyList()
+        override suspend fun savePricing(pricing: RoutePricing) {}
+        override suspend fun savePricings(pricings: List<RoutePricing>) {}
+        override suspend fun getPricingBetween(routeId: String, originTerminalId: String, destinationTerminalId: String): RoutePricing? = null
+        override suspend fun generateAndSaveDefaultPricings(route: BusRoute): List<RoutePricing> = emptyList()
+        override suspend fun deletePricingsForRoute(routeId: String) {
+            deletedRouteId = routeId
+        }
+        override suspend fun deleteAllPricings() {}
+    }
 
     private class FakeFleetRepository : FleetRepository {
         private val _buses = MutableStateFlow<List<Bus>>(emptyList())
@@ -50,7 +99,15 @@ class DeleteRouteUseCaseTest {
         routeRepository = RouteCatalogRepositoryImpl()
         fleetRepository = FakeFleetRepository()
         simulationTripRepository = SimulationTripRepositoryImpl()
-        useCase = DeleteRouteUseCase(routeRepository, fleetRepository, simulationTripRepository)
+        scheduleRepository = FakeRouteScheduleRepository()
+        pricingRepository = FakeRoutePricingRepository()
+        useCase = DeleteRouteUseCase(
+            routeRepository,
+            fleetRepository,
+            simulationTripRepository,
+            scheduleRepository,
+            pricingRepository
+        )
 
         val terminals = TerminalDataSource()
         val sby = terminals.getTerminalById("term_purabaya")!!
@@ -128,6 +185,9 @@ class DeleteRouteUseCaseTest {
         val result = useCase(testRoute.id)
         assertTrue(result is DeleteRouteResult.Success)
         assertEquals(testRoute.name, (result as DeleteRouteResult.Success).routeName)
+
+        assertEquals(testRoute.id, scheduleRepository.deletedRouteId)
+        assertEquals(testRoute.id, pricingRepository.deletedRouteId)
 
         assertNull(routeRepository.getRouteById(testRoute.id))
 

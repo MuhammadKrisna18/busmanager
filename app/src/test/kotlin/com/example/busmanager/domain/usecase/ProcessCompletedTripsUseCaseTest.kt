@@ -20,8 +20,10 @@ import com.example.busmanager.domain.fleet.repository.FleetRepository
 import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.MapCoordinate
 import com.example.busmanager.domain.route.model.RoutePathType
+import com.example.busmanager.domain.route.model.RouteSchedule
 import com.example.busmanager.domain.route.model.Terminal
 import com.example.busmanager.domain.route.model.TerminalType
+import com.example.busmanager.domain.route.repository.RouteScheduleRepository
 import com.example.busmanager.domain.simulation.model.ActiveBusTrip
 import com.example.busmanager.domain.simulation.model.GameCalendar
 import com.example.busmanager.domain.simulation.model.PassengerQueueManager
@@ -38,6 +40,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -49,6 +52,7 @@ class ProcessCompletedTripsUseCaseTest {
     private lateinit var fakeTripRepo: FakeSimulationTripRepository
     private lateinit var fakeTxRepo: FakeFinancialTransactionRepository
     private lateinit var fakePassengerRepo: FakeTerminalPassengerRepository
+    private lateinit var fakeScheduleRepo: FakeRouteScheduleRepository
     private lateinit var useCase: ProcessCompletedTripsUseCase
 
     private val originTerminal = Terminal(
@@ -116,6 +120,7 @@ class ProcessCompletedTripsUseCaseTest {
         fakeTripRepo = FakeSimulationTripRepository()
         fakeTxRepo = FakeFinancialTransactionRepository()
         fakePassengerRepo = FakeTerminalPassengerRepository()
+        fakeScheduleRepo = FakeRouteScheduleRepository()
 
         useCase = ProcessCompletedTripsUseCase(
             fleetRepository = fakeFleetRepo,
@@ -123,7 +128,7 @@ class ProcessCompletedTripsUseCaseTest {
             companyRepository = fakeCompanyRepo,
             financialTransactionRepository = fakeTxRepo,
             terminalPassengerRepository = fakePassengerRepo,
-            routeScheduleRepository = null,
+            routeScheduleRepository = fakeScheduleRepo,
             driverRepository = null
         )
     }
@@ -170,6 +175,80 @@ class ProcessCompletedTripsUseCaseTest {
         assertEquals(30, fakePassengerRepo.records[0].alightedCount)
 
         assertTrue(fakeTripRepo.activeTrips.value.isEmpty())
+    }
+
+    @Test
+    fun processCompletedTripsPreservesFixedScheduleDepartureHourAndMinute() = runBlocking {
+        val returnSchedule = RouteSchedule(
+            id = "sched-2",
+            routeId = testRoute.id,
+            assignedBusId = testBus.id,
+            direction = RouteDirection.DESTINATION_TO_ORIGIN,
+            departureHour = 12,
+            departureMinute = 45
+        )
+        fakeScheduleRepo.schedules = listOf(returnSchedule)
+
+        val completedTrip = ActiveBusTrip(
+            id = "trip-2",
+            busId = testBus.id,
+            busCode = testBus.busCode,
+            route = testRoute,
+            direction = RouteDirection.ORIGIN_TO_DESTINATION,
+            departureTime = GameCalendar.initial(),
+            estimatedArrivalMinutes = 90,
+            elapsedMinutes = 90,
+            progressFraction = 1.0f,
+            currentCoordinate = destTerminal.coordinate,
+            passengerCount = 20,
+            ticketEarnings = Money.rupiah(2_000_000L),
+            isCompleted = true,
+            maxCapacity = 40,
+            visitedTransitStopIndices = emptySet(),
+            totalBoardedPassengers = 20,
+            totalAlightedPassengers = 20
+        )
+        fakeTripRepo.setTrips(listOf(completedTrip))
+
+        val calendar = GameCalendar(2026, 11, 24, 10, 0)
+        useCase(listOf(completedTrip), calendar)
+
+        val updatedSchedule = fakeScheduleRepo.updatedSchedule
+        assertNotNull(updatedSchedule)
+        assertEquals(12, updatedSchedule!!.departureHour)
+        assertEquals(45, updatedSchedule.departureMinute)
+        val expectedEpoch = 24 * 1440L + 12 * 60L + 45L
+        assertEquals(expectedEpoch, updatedSchedule.nextDepartureEpochMinutes)
+    }
+
+    private class FakeRouteScheduleRepository : RouteScheduleRepository {
+        var schedules = listOf<RouteSchedule>()
+        var updatedSchedule: RouteSchedule? = null
+
+        override fun getSchedulesForRoute(routeId: String): Flow<List<RouteSchedule>> = flowOf(schedules)
+        override fun getAllSchedules(): Flow<List<RouteSchedule>> = flowOf(schedules)
+        override suspend fun getSchedulesListForRoute(routeId: String): List<RouteSchedule> = schedules
+        override suspend fun getScheduleById(id: String): RouteSchedule? = schedules.find { it.id == id }
+        override suspend fun getSchedulesForBus(busId: String): List<RouteSchedule> = schedules.filter { it.assignedBusId == busId }
+        override fun getSchedulesForBusFlow(busId: String): Flow<List<RouteSchedule>> = flowOf(schedules.filter { it.assignedBusId == busId })
+        override suspend fun addSchedule(schedule: RouteSchedule): Result<Unit> = Result.success(Unit)
+        override suspend fun updateSchedule(schedule: RouteSchedule): Result<Unit> {
+            updatedSchedule = schedule
+            return Result.success(Unit)
+        }
+        override suspend fun assignBusToSchedule(scheduleId: String, busId: String): Boolean = true
+        override suspend fun unassignBusFromSchedule(scheduleId: String) {}
+        override suspend fun deleteSchedule(scheduleId: String) {}
+        override suspend fun deleteSchedulesForBus(busId: String) {}
+        override suspend fun deleteSchedulesForRoute(routeId: String) {}
+        override suspend fun deleteAllSchedules() {}
+        override suspend fun checkConflict(
+            routeId: String,
+            direction: RouteDirection,
+            hour: Int,
+            minute: Int,
+            excludeScheduleId: String?
+        ): Boolean = false
     }
 
     private class FakeCompanyRepository : CompanyRepository {

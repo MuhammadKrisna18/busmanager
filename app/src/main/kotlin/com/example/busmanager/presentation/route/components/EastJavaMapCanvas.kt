@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -29,6 +30,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.busmanager.domain.fleet.model.Bus
@@ -71,7 +73,7 @@ fun EastJavaMapCanvas(
     onTerminalToggleClick: (terminalId: String) -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val zoomAnim = remember { Animatable(1.0f) }
+    val zoomAnim = remember { Animatable(EastJavaMapProjection.MIN_ZOOM) }
     val panXAnim = remember { Animatable(0f) }
     val panYAnim = remember { Animatable(0f) }
     var isTrackingLocked by remember { mutableStateOf(trackedTripId != null) }
@@ -88,8 +90,17 @@ fun EastJavaMapCanvas(
             .background(Color(0xFFE8F3FC))
             .border(1.dp, CardBorder, RoundedCornerShape(AppDimens.radiusLarge))
     ) {
-        val canvasWidth = constraints.maxWidth.toFloat()
-        val canvasHeight = constraints.maxHeight.toFloat()
+        val density = LocalDensity.current
+        val viewportWidth = constraints.maxWidth.toFloat()
+        val viewportHeight = constraints.maxHeight.toFloat()
+        val worldDimensions = remember(viewportWidth, viewportHeight) {
+            EastJavaMapProjection.calculateWorldDimensions(viewportWidth, viewportHeight)
+        }
+        val worldWidth = worldDimensions.width
+        val worldHeight = worldDimensions.height
+        val worldWidthDp = with(density) { worldWidth.toDp() }
+        val worldHeightDp = with(density) { worldHeight.toDp() }
+
         val trackedTrip = activeTrips.find { it.id == trackedTripId }
         val activeNavigationRoute = trackedTrip?.route ?: selectedRoute
         val activeNavigationSegmentIds = activeNavigationRoute?.segments?.map { it.id }?.toSet() ?: emptySet()
@@ -98,13 +109,23 @@ fun EastJavaMapCanvas(
         val currentPanX = panXAnim.value
         val currentPanY = panYAnim.value
 
-        LaunchedEffect(trackedTrip?.currentCoordinate, isTrackingLocked, canvasWidth, canvasHeight) {
-            if (isTrackingLocked && trackedTrip != null && canvasWidth > 0f && canvasHeight > 0f) {
-                val targetScale = currentZoom.coerceAtLeast(2.0f)
-                val maxPx = (canvasWidth * (targetScale - 1f)) / 2f
-                val maxPy = (canvasHeight * (targetScale - 1f)) / 2f
-                val targetPanX = ((0.5f - trackedTrip.currentCoordinate.x) * canvasWidth * targetScale).coerceIn(-maxPx, maxPx)
-                val targetPanY = ((0.5f - trackedTrip.currentCoordinate.y) * canvasHeight * targetScale).coerceIn(-maxPy, maxPy)
+        LaunchedEffect(trackedTrip?.currentCoordinate, isTrackingLocked, worldWidth, worldHeight) {
+            if (isTrackingLocked && trackedTrip != null && worldWidth > 0f && worldHeight > 0f) {
+                val targetScale = currentZoom.coerceAtLeast(1.5f)
+                val maxPx = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, targetScale)
+                val maxPy = EastJavaMapProjection.calculateMaxPanY(worldHeight, viewportHeight, targetScale)
+                val targetPanX = EastJavaMapProjection.calculateTargetPanX(
+                    trackedTrip.currentCoordinate.x,
+                    worldWidth,
+                    targetScale,
+                    maxPx
+                )
+                val targetPanY = EastJavaMapProjection.calculateTargetPanY(
+                    trackedTrip.currentCoordinate.y,
+                    worldHeight,
+                    targetScale,
+                    maxPy
+                )
                 launch { zoomAnim.animateTo(targetScale, animationSpec = tween(500)) }
                 launch { panXAnim.animateTo(targetPanX, animationSpec = tween(500)) }
                 launch { panYAnim.animateTo(targetPanY, animationSpec = tween(500)) }
@@ -112,9 +133,9 @@ fun EastJavaMapCanvas(
         }
 
         fun zoomIn() {
-            val newZoom = (zoomAnim.value + 0.5f).coerceAtMost(4.0f)
-            val maxPx = (canvasWidth * (newZoom - 1f)) / 2f
-            val maxPy = (canvasHeight * (newZoom - 1f)) / 2f
+            val newZoom = (zoomAnim.value + 0.5f).coerceAtMost(EastJavaMapProjection.MAX_ZOOM)
+            val maxPx = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, newZoom)
+            val maxPy = EastJavaMapProjection.calculateMaxPanY(worldHeight, viewportHeight, newZoom)
             val newPanX = panXAnim.value.coerceIn(-maxPx, maxPx)
             val newPanY = panYAnim.value.coerceIn(-maxPy, maxPy)
             coroutineScope.launch {
@@ -125,11 +146,11 @@ fun EastJavaMapCanvas(
         }
 
         fun zoomOut() {
-            val newZoom = (zoomAnim.value - 0.5f).coerceAtLeast(1.0f)
-            val maxPx = (canvasWidth * (newZoom - 1f)) / 2f
-            val maxPy = (canvasHeight * (newZoom - 1f)) / 2f
-            val newPanX = if (newZoom <= 1.0f) 0f else panXAnim.value.coerceIn(-maxPx, maxPx)
-            val newPanY = if (newZoom <= 1.0f) 0f else panYAnim.value.coerceIn(-maxPy, maxPy)
+            val newZoom = (zoomAnim.value - 0.5f).coerceAtLeast(EastJavaMapProjection.MIN_ZOOM)
+            val maxPx = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, newZoom)
+            val maxPy = EastJavaMapProjection.calculateMaxPanY(worldHeight, viewportHeight, newZoom)
+            val newPanX = panXAnim.value.coerceIn(-maxPx, maxPx)
+            val newPanY = panYAnim.value.coerceIn(-maxPy, maxPy)
             coroutineScope.launch {
                 launch { zoomAnim.animateTo(newZoom, animationSpec = tween(250)) }
                 launch { panXAnim.animateTo(newPanX, animationSpec = tween(250)) }
@@ -140,7 +161,7 @@ fun EastJavaMapCanvas(
         fun resetMap() {
             isTrackingLocked = false
             coroutineScope.launch {
-                launch { zoomAnim.animateTo(1.0f, animationSpec = tween(300)) }
+                launch { zoomAnim.animateTo(EastJavaMapProjection.MIN_ZOOM, animationSpec = tween(300)) }
                 launch { panXAnim.animateTo(0f, animationSpec = tween(300)) }
                 launch { panYAnim.animateTo(0f, animationSpec = tween(300)) }
             }
@@ -153,11 +174,21 @@ fun EastJavaMapCanvas(
                     onTripClick(targetTrip)
                 }
                 isTrackingLocked = true
-                val targetScale = zoomAnim.value.coerceAtLeast(2.0f)
-                val maxPx = (canvasWidth * (targetScale - 1f)) / 2f
-                val maxPy = (canvasHeight * (targetScale - 1f)) / 2f
-                val tPanX = ((0.5f - targetTrip.currentCoordinate.x) * canvasWidth * targetScale).coerceIn(-maxPx, maxPx)
-                val tPanY = ((0.5f - targetTrip.currentCoordinate.y) * canvasHeight * targetScale).coerceIn(-maxPy, maxPy)
+                val targetScale = zoomAnim.value.coerceAtLeast(1.5f)
+                val maxPx = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, targetScale)
+                val maxPy = EastJavaMapProjection.calculateMaxPanY(worldHeight, viewportHeight, targetScale)
+                val tPanX = EastJavaMapProjection.calculateTargetPanX(
+                    targetTrip.currentCoordinate.x,
+                    worldWidth,
+                    targetScale,
+                    maxPx
+                )
+                val tPanY = EastJavaMapProjection.calculateTargetPanY(
+                    targetTrip.currentCoordinate.y,
+                    worldHeight,
+                    targetScale,
+                    maxPy
+                )
                 coroutineScope.launch {
                     launch { zoomAnim.animateTo(targetScale, animationSpec = tween(500)) }
                     launch { panXAnim.animateTo(tPanX, animationSpec = tween(500)) }
@@ -178,175 +209,188 @@ fun EastJavaMapCanvas(
             }
         }
 
-        val contentModifier = if (enableZoomAndPan) {
+        val viewportGestureModifier = if (enableZoomAndPan) {
             Modifier
                 .fillMaxSize()
                 .clipToBounds()
-                .pointerInput(canvasWidth, canvasHeight) {
+                .pointerInput(worldWidth, worldHeight, viewportWidth, viewportHeight) {
                     detectTransformGestures { _, pan, zoom, _ ->
                         isTrackingLocked = false
-                        val newZoom = (zoomAnim.value * zoom).coerceIn(1.0f, 4.0f)
-                        val maxPanX = (canvasWidth * (newZoom - 1f)) / 2f
-                        val maxPanY = (canvasHeight * (newZoom - 1f)) / 2f
+                        val newZoom = (zoomAnim.value * zoom).coerceIn(
+                            EastJavaMapProjection.MIN_ZOOM,
+                            EastJavaMapProjection.MAX_ZOOM
+                        )
+                        val maxPanX = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, newZoom)
+                        val maxPanY = EastJavaMapProjection.calculateMaxPanY(worldHeight, viewportHeight, newZoom)
                         val newPanX = (panXAnim.value + pan.x).coerceIn(-maxPanX, maxPanX)
                         val newPanY = (panYAnim.value + pan.y).coerceIn(-maxPanY, maxPanY)
                         coroutineScope.launch {
                             zoomAnim.snapTo(newZoom)
-                            panXAnim.snapTo(if (newZoom <= 1.0f) 0f else newPanX)
-                            panYAnim.snapTo(if (newZoom <= 1.0f) 0f else newPanY)
+                            panXAnim.snapTo(newPanX)
+                            panYAnim.snapTo(newPanY)
                         }
                     }
-                }
-                .graphicsLayer {
-                    scaleX = currentZoom
-                    scaleY = currentZoom
-                    translationX = currentPanX
-                    translationY = currentPanY
                 }
         } else {
-            Modifier.fillMaxSize()
+            Modifier
+                .fillMaxSize()
+                .clipToBounds()
         }
 
-        Box(modifier = contentModifier) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                drawEastJavaLandmass()
-                drawMaduraIsland()
-
-                allSegments.forEach { segment ->
-                    if (!activeNavigationSegmentIds.contains(segment.id)) {
-                        val openedColor = openedSegmentColorMap[segment.id]
-                        if (openedColor != null) {
-                            drawOpenedRouteSegment(
-                                segment = segment,
-                                routeColor = openedColor,
-                                canvasWidth = canvasWidth,
-                                canvasHeight = canvasHeight
-                            )
-                        } else {
-                            drawBackgroundSegment(
-                                segment = segment,
-                                canvasWidth = canvasWidth,
-                                canvasHeight = canvasHeight
-                            )
-                        }
+        Box(
+            modifier = viewportGestureModifier,
+            contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .requiredSize(worldWidthDp, worldHeightDp)
+                    .graphicsLayer {
+                        scaleX = currentZoom
+                        scaleY = currentZoom
+                        translationX = currentPanX
+                        translationY = currentPanY
                     }
-                }
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    drawEastJavaLandmass()
+                    drawMaduraIsland()
 
-                activeNavigationRoute?.segments?.forEach { segment ->
-                    drawGoogleMapsTrackedSegment(
-                        segment = segment,
-                        canvasWidth = canvasWidth,
-                        canvasHeight = canvasHeight
-                    )
-                }
-            }
-
-            terminals.forEach { terminal ->
-                val role = when {
-                    selectedOrigin?.id == terminal.id -> TerminalNodeRole.ORIGIN
-                    selectedDestination?.id == terminal.id -> TerminalNodeRole.DESTINATION
-                    transitTerminals.any { it.id == terminal.id } -> TerminalNodeRole.TRANSIT
-                    candidateTerminalIds.contains(terminal.id) -> TerminalNodeRole.NEXT_CANDIDATE
-                    else -> TerminalNodeRole.DEFAULT
-                }
-
-                val xPx = (terminal.coordinate.x * canvasWidth) - 24.dp.value
-                val yPx = (terminal.coordinate.y * canvasHeight) - 28.dp.value
-
-                Box(
-                    modifier = Modifier.offset {
-                        IntOffset(xPx.roundToInt(), yPx.roundToInt())
-                    }
-                ) {
-                    TerminalMarker(
-                        terminal = terminal,
-                        role = role,
-                        onClick = {
-                            if (availablePaths.size > 1) {
-                                val targetIdx = availablePaths.indexOfFirst { path -> path.any { it.id == terminal.id } }
-                                if (targetIdx >= 0 && targetIdx != selectedPathIndex) {
-                                    onSelectPath(targetIdx)
-                                }
+                    allSegments.forEach { segment ->
+                        if (!activeNavigationSegmentIds.contains(segment.id)) {
+                            val openedColor = openedSegmentColorMap[segment.id]
+                            if (openedColor != null) {
+                                drawOpenedRouteSegment(
+                                    segment = segment,
+                                    routeColor = openedColor,
+                                    canvasWidth = worldWidth,
+                                    canvasHeight = worldHeight
+                                )
+                            } else {
+                                drawBackgroundSegment(
+                                    segment = segment,
+                                    canvasWidth = worldWidth,
+                                    canvasHeight = worldHeight
+                                )
                             }
-                            onTerminalClick(terminal)
-                        },
-                        zoomScale = currentZoom
-                    )
-                }
-            }
-
-            val tripOffsets = remember(activeTrips, canvasWidth, canvasHeight) {
-                BusMarkerAntiOverlapCalculator.calculateOffsets(
-                    items = activeTrips,
-                    coordinateSelector = { it.currentCoordinate },
-                    canvasWidth = canvasWidth,
-                    canvasHeight = canvasHeight
-                )
-            }
-
-            activeTrips.forEach { trip ->
-                val isTracked = trip.id == trackedTripId
-                val offset = tripOffsets[trip] ?: DisplayMarkerOffset()
-                val xPx = (trip.currentCoordinate.x * canvasWidth) + offset.dxPx
-                val yPx = (trip.currentCoordinate.y * canvasHeight) + offset.dyPx
-
-                Box(
-                    modifier = Modifier
-                        .offset {
-                            IntOffset(xPx.roundToInt(), yPx.roundToInt())
                         }
-                        .size(0.dp)
-                        .wrapContentSize(Alignment.Center, unbounded = true)
-                ) {
-                    MovingBusMarker(
-                        trip = trip,
-                        isTracking = isTracked,
-                        onClick = { onTripClick(trip) },
-                        zoomScale = currentZoom
-                    )
-                }
-            }
+                    }
 
-            val parkedGroupedByTerminal = parkedBuses.groupBy { it.terminal.id }
-            parkedGroupedByTerminal.forEach { (_, busesAtTerminal) ->
-                busesAtTerminal.forEachIndexed { index, parked ->
-                    val baseXPx = parked.terminal.coordinate.x * canvasWidth
-                    val baseYPx = parked.terminal.coordinate.y * canvasHeight
-                    val offsetXPx = baseXPx + 20.dp.value + (index * 22.dp.value)
-                    val posYPx = baseYPx - 10.dp.value
+                    activeNavigationRoute?.segments?.forEach { segment ->
+                        drawGoogleMapsTrackedSegment(
+                            segment = segment,
+                            canvasWidth = worldWidth,
+                            canvasHeight = worldHeight
+                        )
+                    }
+                }
+
+                terminals.forEach { terminal ->
+                    val role = when {
+                        selectedOrigin?.id == terminal.id -> TerminalNodeRole.ORIGIN
+                        selectedDestination?.id == terminal.id -> TerminalNodeRole.DESTINATION
+                        transitTerminals.any { it.id == terminal.id } -> TerminalNodeRole.TRANSIT
+                        candidateTerminalIds.contains(terminal.id) -> TerminalNodeRole.NEXT_CANDIDATE
+                        else -> TerminalNodeRole.DEFAULT
+                    }
+
+                    val xPx = (terminal.coordinate.x * worldWidth) - 24.dp.value
+                    val yPx = (terminal.coordinate.y * worldHeight) - 28.dp.value
 
                     Box(
-                        modifier = Modifier
-                            .offset {
-                                IntOffset(offsetXPx.roundToInt(), posYPx.roundToInt())
-                            }
-                            .size(0.dp)
-                            .wrapContentSize(Alignment.Center, unbounded = true)
+                        modifier = Modifier.offset {
+                            IntOffset(xPx.roundToInt(), yPx.roundToInt())
+                        }
                     ) {
-                        ParkedBusMarker(
-                            bus = parked.bus,
-                            terminal = parked.terminal,
-                            route = parked.route,
-                            onClick = { onParkedBusClick(parked.bus) },
+                        TerminalMarker(
+                            terminal = terminal,
+                            role = role,
+                            onClick = {
+                                if (availablePaths.size > 1) {
+                                    val targetIdx = availablePaths.indexOfFirst { path -> path.any { it.id == terminal.id } }
+                                    if (targetIdx >= 0 && targetIdx != selectedPathIndex) {
+                                        onSelectPath(targetIdx)
+                                    }
+                                }
+                                onTerminalClick(terminal)
+                            },
                             zoomScale = currentZoom
                         )
                     }
                 }
+
+                val tripOffsets = remember(activeTrips, worldWidth, worldHeight) {
+                    BusMarkerAntiOverlapCalculator.calculateOffsets(
+                        items = activeTrips,
+                        coordinateSelector = { it.currentCoordinate },
+                        canvasWidth = worldWidth,
+                        canvasHeight = worldHeight
+                    )
+                }
+
+                activeTrips.forEach { trip ->
+                    val isTracked = trip.id == trackedTripId
+                    val offset = tripOffsets[trip] ?: DisplayMarkerOffset()
+                    val xPx = (trip.currentCoordinate.x * worldWidth) + offset.dxPx
+                    val yPx = (trip.currentCoordinate.y * worldHeight) + offset.dyPx
+
+                    Box(
+                        modifier = Modifier
+                            .offset {
+                                IntOffset(xPx.roundToInt(), yPx.roundToInt())
+                            }
+                            .size(0.dp)
+                            .wrapContentSize(Alignment.Center, unbounded = true)
+                    ) {
+                        MovingBusMarker(
+                            trip = trip,
+                            isTracking = isTracked,
+                            onClick = { onTripClick(trip) },
+                            zoomScale = currentZoom
+                        )
+                    }
+                }
+
+                val parkedGroupedByTerminal = parkedBuses.groupBy { it.terminal.id }
+                parkedGroupedByTerminal.forEach { (_, busesAtTerminal) ->
+                    busesAtTerminal.forEachIndexed { index, parked ->
+                        val baseXPx = parked.terminal.coordinate.x * worldWidth
+                        val baseYPx = parked.terminal.coordinate.y * worldHeight
+                        val offsetXPx = baseXPx + 20.dp.value + (index * 22.dp.value)
+                        val posYPx = baseYPx - 10.dp.value
+
+                        Box(
+                            modifier = Modifier
+                                .offset {
+                                    IntOffset(offsetXPx.roundToInt(), posYPx.roundToInt())
+                                }
+                                .size(0.dp)
+                                .wrapContentSize(Alignment.Center, unbounded = true)
+                        ) {
+                            ParkedBusMarker(
+                                bus = parked.bus,
+                                terminal = parked.terminal,
+                                route = parked.route,
+                                onClick = { onParkedBusClick(parked.bus) },
+                                zoomScale = currentZoom
+                            )
+                        }
+                    }
+                }
+
+                MapSegmentTogglesOverlay(
+                    segmentToggles = segmentToggles,
+                    canvasWidth = worldWidth,
+                    canvasHeight = worldHeight,
+                    onSegmentToggleClick = onSegmentToggleClick
+                )
+
+                MapTerminalTogglesOverlay(
+                    terminalToggles = terminalToggles,
+                    canvasWidth = worldWidth,
+                    canvasHeight = worldHeight,
+                    onTerminalToggleClick = onTerminalToggleClick
+                )
             }
-
-            MapSegmentTogglesOverlay(
-                segmentToggles = segmentToggles,
-                canvasWidth = canvasWidth,
-                canvasHeight = canvasHeight,
-                onSegmentToggleClick = onSegmentToggleClick
-            )
-
-            MapTerminalTogglesOverlay(
-                terminalToggles = terminalToggles,
-                canvasWidth = canvasWidth,
-                canvasHeight = canvasHeight,
-                onTerminalToggleClick = onTerminalToggleClick
-            )
         }
 
         MapCorridorSelector(

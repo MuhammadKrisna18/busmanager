@@ -122,23 +122,12 @@ fun ActiveRoutesSummarySection(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "${item.route.originTerminal.city} - ${item.route.destinationTerminal.city}",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextDark
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(if (item.route.pathType == RoutePathType.TOLL) PrimaryBlue else Color(0xFF64748B))
-                                        .padding(horizontal = 5.dp, vertical = 1.dp)
-                                ) {
-                                    Text(text = corridor, fontSize = 9.sp, color = Color.White, fontWeight = FontWeight.Bold)
-                                }
-                            }
+                            Text(
+                                text = "${item.route.originTerminal.city} - ${item.route.destinationTerminal.city}",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextDark
+                            )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
                                 text = "Armada: $busCodes • $schedText",

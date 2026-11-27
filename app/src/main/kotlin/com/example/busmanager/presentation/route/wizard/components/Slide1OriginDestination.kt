@@ -664,7 +664,7 @@ fun Slide1OriginDestination(
                         Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = "Tekan 'Lanjut' di bar bawah untuk memilih variasi jalur (Tol / Arteri) dan menentukan terminal singgah di Slide 2.",
+                            text = "Tekan 'Lanjut' di bar bawah untuk mengatur jalur dan terminal singgah di Slide 2.",
                             fontSize = 11.sp,
                             color = Color(0xFF166534),
                             fontWeight = FontWeight.Medium

@@ -235,7 +235,7 @@ fun RouteOperationalItemCard(item: RouteOperationalInfo) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "${item.route.totalDistanceKm.toInt()} km • ${item.route.totalEstimatedDurationMinutes} mnt • ${if (item.route.pathType == RoutePathType.TOLL) "Tol" else "Non-Tol"}",
+                text = "${item.route.totalDistanceKm.toInt()} km • ${item.route.totalEstimatedDurationMinutes} mnt",
                 color = PrimaryBlueDark,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold

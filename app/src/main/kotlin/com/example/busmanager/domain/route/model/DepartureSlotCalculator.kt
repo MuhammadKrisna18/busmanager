@@ -10,7 +10,7 @@ object DepartureSlotCalculator {
     const val MINUTES_PER_DAY = 1440
 
     const val AKDP_DESTINATION_LAYOVER_MINUTES = 30
-    const val AKDP_ORIGIN_INTER_PP_LAYOVER_MINUTES = 60
+    const val AKDP_ORIGIN_INTER_PP_LAYOVER_MINUTES = 45
     const val AKAP_DESTINATION_LAYOVER_MINUTES = 300
 
     fun generate24HourSlots(

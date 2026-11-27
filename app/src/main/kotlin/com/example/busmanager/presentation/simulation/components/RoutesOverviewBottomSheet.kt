@@ -248,20 +248,6 @@ private fun ActiveRouteItemCard(
                     fontSize = 15.sp,
                     fontWeight = FontWeight.ExtraBold
                 )
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(AppDimens.radiusPill))
-                        .background(if (route.pathType == RoutePathType.TOLL) PrimaryBlue else SkyBlue)
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text = if (route.pathType == RoutePathType.TOLL) "JALUR TOL" else "NON-TOL",
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -316,6 +302,7 @@ private fun ActiveRouteItemCard(
                     val isRunning = activeTrips.any { it.busCode == bus.busCode }
                     val busDriver = drivers.find { it.id == bus.driverId || it.assignedBusId == bus.id }
                     val busSchedules = schedules.filter { it.assignedBusId == bus.id }
+                        .sortedWith(compareBy({ it.departureHour }, { it.departureMinute }))
                     val currentTerminalName = if (bus.currentTerminalId == route.destinationTerminal.id) {
                         route.destinationTerminal.name
                     } else {

@@ -234,7 +234,6 @@ private fun QuickAssignRouteSection(
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 routes.forEach { route ->
                     val isSelected = selectedRoute?.id == route.id
-                    val corridorName = if (route.pathType == RoutePathType.TOLL) "Jalan Tol" else "Arteri Non-Tol"
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -266,19 +265,6 @@ private fun QuickAssignRouteSection(
                                     text = "${route.originTerminal.city} ➔ ${route.destinationTerminal.city}",
                                     fontSize = 11.sp,
                                     color = TextMuted
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(if (route.pathType == RoutePathType.TOLL) PrimaryBlue else Color(0xFF64748B))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    text = corridorName,
-                                    fontSize = 10.sp,
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }

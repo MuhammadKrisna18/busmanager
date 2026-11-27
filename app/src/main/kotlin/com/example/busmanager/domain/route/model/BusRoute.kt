@@ -16,16 +16,40 @@ data class BusRoute(
 ) {
     companion object {
         const val STANDARD_TRANSIT_DWELL_MINUTES = 10
+
+        fun compressRouteDuration(rawMinutes: Int): Int {
+            return when {
+                rawMinutes <= 45 -> 30
+                rawMinutes <= 65 -> 45
+                rawMinutes <= 85 -> 60
+                rawMinutes <= 105 -> 75
+                rawMinutes <= 125 -> 90
+                rawMinutes <= 145 -> 105
+                rawMinutes <= 165 -> 120
+                rawMinutes <= 185 -> 135
+                rawMinutes <= 205 -> 150
+                rawMinutes <= 225 -> 165
+                rawMinutes <= 245 -> 180
+                rawMinutes <= 265 -> 195
+                rawMinutes <= 285 -> 210
+                rawMinutes <= 305 -> 225
+                rawMinutes <= 325 -> 240
+                rawMinutes <= 345 -> 255
+                else -> 270
+            }
+        }
     }
     val totalDistanceKm: Double get() = segments.sumOf { it.distanceKm }
 
     val totalTollFee: Money get() = segments.fold(Money.ZERO) { acc, segment -> acc + segment.tollFee }
 
-    val totalEstimatedDurationMinutes: Int get() = segments.sumOf { it.baseDurationMinutes }
+    val rawDurationMinutes: Int get() = segments.sumOf { it.baseDurationMinutes }
+
+    val totalEstimatedDurationMinutes: Int get() = compressRouteDuration(rawDurationMinutes)
 
     val totalTransitDwellMinutes: Int get() = transitTerminals.size * STANDARD_TRANSIT_DWELL_MINUTES
 
-    val totalDurationWithDwellMinutes: Int get() = totalEstimatedDurationMinutes + totalTransitDwellMinutes
+    val totalDurationWithDwellMinutes: Int get() = compressRouteDuration(rawDurationMinutes + totalTransitDwellMinutes)
 
     val allWaypoints: List<MapCoordinate>
         get() {

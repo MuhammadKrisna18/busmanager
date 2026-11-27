@@ -84,20 +84,6 @@ fun RouteDetailCard(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(AppDimens.radiusPill))
-                            .background(if (route.pathType == RoutePathType.TOLL) PrimaryBlue else SkyBlue)
-                            .padding(horizontal = 8.dp, vertical = 3.dp)
-                    ) {
-                        Text(
-                            text = if (route.pathType == RoutePathType.TOLL) "JALUR TOL" else "NON-TOL",
-                            color = Color.White,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(AppDimens.radiusPill))
                             .background(if (isOperating) SuccessGreenLight else IceBlue)
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
@@ -135,10 +121,7 @@ fun RouteDetailCard(
             ) {
                 InfoSpecItem(label = "Jarak", value = "${route.totalDistanceKm.toInt()} km")
                 InfoSpecItem(label = "Waktu", value = durationStr)
-                InfoSpecItem(
-                    label = "Tarif Tol",
-                    value = if (route.totalTollFee.amount > 0) route.totalTollFee.formatRupiah() else "Gratis"
-                )
+                InfoSpecItem(label = "Jalur", value = "Jalan Utama")
             }
 
             if (route.transitTerminals.isNotEmpty()) {

@@ -123,9 +123,10 @@ class RouteModelTest {
 
         assertEquals(290.0, route.totalDistanceKm, 0.001)
         assertEquals(Money.rupiah(65000), route.totalTollFee)
-        assertEquals(315, route.totalEstimatedDurationMinutes)
+        assertEquals(315, route.rawDurationMinutes)
+        assertEquals(240, route.totalEstimatedDurationMinutes)
         assertEquals(10, route.totalTransitDwellMinutes)
-        assertEquals(325, route.totalDurationWithDwellMinutes)
+        assertEquals(240, route.totalDurationWithDwellMinutes)
         assertEquals(10, BusRoute.STANDARD_TRANSIT_DWELL_MINUTES)
         assertEquals(2, route.allWaypoints.size)
 
@@ -148,5 +149,61 @@ class RouteModelTest {
         assertTrue(stops[2].isDestination)
         assertFalse(stops[2].isTransit)
         assertEquals(sritanjungTerminal, stops[2].terminal)
+    }
+
+    @Test
+    fun compressRouteDuration_all17BvaPartitionsAndBoundaries() {
+        assertEquals(30, BusRoute.compressRouteDuration(0))
+        assertEquals(30, BusRoute.compressRouteDuration(25))
+        assertEquals(30, BusRoute.compressRouteDuration(45))
+
+        assertEquals(45, BusRoute.compressRouteDuration(46))
+        assertEquals(45, BusRoute.compressRouteDuration(65))
+
+        assertEquals(60, BusRoute.compressRouteDuration(66))
+        assertEquals(60, BusRoute.compressRouteDuration(85))
+
+        assertEquals(75, BusRoute.compressRouteDuration(86))
+        assertEquals(75, BusRoute.compressRouteDuration(105))
+
+        assertEquals(90, BusRoute.compressRouteDuration(106))
+        assertEquals(90, BusRoute.compressRouteDuration(125))
+
+        assertEquals(105, BusRoute.compressRouteDuration(126))
+        assertEquals(105, BusRoute.compressRouteDuration(145))
+
+        assertEquals(120, BusRoute.compressRouteDuration(146))
+        assertEquals(120, BusRoute.compressRouteDuration(165))
+
+        assertEquals(135, BusRoute.compressRouteDuration(166))
+        assertEquals(135, BusRoute.compressRouteDuration(185))
+
+        assertEquals(150, BusRoute.compressRouteDuration(186))
+        assertEquals(150, BusRoute.compressRouteDuration(205))
+
+        assertEquals(165, BusRoute.compressRouteDuration(206))
+        assertEquals(165, BusRoute.compressRouteDuration(225))
+
+        assertEquals(180, BusRoute.compressRouteDuration(226))
+        assertEquals(180, BusRoute.compressRouteDuration(245))
+
+        assertEquals(195, BusRoute.compressRouteDuration(246))
+        assertEquals(195, BusRoute.compressRouteDuration(265))
+
+        assertEquals(210, BusRoute.compressRouteDuration(266))
+        assertEquals(210, BusRoute.compressRouteDuration(285))
+
+        assertEquals(225, BusRoute.compressRouteDuration(286))
+        assertEquals(225, BusRoute.compressRouteDuration(305))
+
+        assertEquals(240, BusRoute.compressRouteDuration(306))
+        assertEquals(240, BusRoute.compressRouteDuration(325))
+
+        assertEquals(255, BusRoute.compressRouteDuration(326))
+        assertEquals(255, BusRoute.compressRouteDuration(345))
+
+        assertEquals(270, BusRoute.compressRouteDuration(346))
+        assertEquals(270, BusRoute.compressRouteDuration(360))
+        assertEquals(270, BusRoute.compressRouteDuration(500))
     }
 }

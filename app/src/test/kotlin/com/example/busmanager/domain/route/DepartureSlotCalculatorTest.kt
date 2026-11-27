@@ -1,5 +1,6 @@
 package com.example.busmanager.domain.route
 
+import com.example.busmanager.domain.route.model.BusRoute
 import com.example.busmanager.domain.route.model.DailySchedulePlan
 import com.example.busmanager.domain.route.model.DepartureSlotCalculator
 import com.example.busmanager.domain.route.model.OccupiedSlotInfo
@@ -198,25 +199,74 @@ class DepartureSlotCalculatorTest {
         assertEquals(0, leg2.departureMinute)
         assertEquals(10, leg2.arrivalHour)
         assertEquals(30, leg2.arrivalMinute)
-        assertEquals(60, leg2.layoverMinutesAfterArrival)
+        assertEquals(45, leg2.layoverMinutesAfterArrival)
 
         val leg3 = plan.outboundLeg2!!
         assertEquals(2, leg3.ritNumber)
         assertEquals(RouteDirection.ORIGIN_TO_DESTINATION, leg3.direction)
         assertEquals(11, leg3.departureHour)
-        assertEquals(30, leg3.departureMinute)
-        assertEquals(13, leg3.arrivalHour)
-        assertEquals(0, leg3.arrivalMinute)
+        assertEquals(15, leg3.departureMinute)
+        assertEquals(12, leg3.arrivalHour)
+        assertEquals(45, leg3.arrivalMinute)
         assertEquals(30, leg3.layoverMinutesAfterArrival)
 
         val leg4 = plan.returnLeg2!!
         assertEquals(2, leg4.ritNumber)
         assertEquals(RouteDirection.DESTINATION_TO_ORIGIN, leg4.direction)
         assertEquals(13, leg4.departureHour)
-        assertEquals(30, leg4.departureMinute)
-        assertEquals(15, leg4.arrivalHour)
-        assertEquals(0, leg4.arrivalMinute)
+        assertEquals(15, leg4.departureMinute)
+        assertEquals(14, leg4.arrivalHour)
+        assertEquals(45, leg4.arrivalMinute)
         assertEquals(0, leg4.layoverMinutesAfterArrival)
+    }
+
+    @Test
+    fun calculateDailyPlan_longestRoute270Min_completesWithinDayWithUnder5HoursRemaining() {
+        val plan = DepartureSlotCalculator.calculateDailyPlan(
+            routeCategory = RouteCategory.AKDP,
+            originTerminalId = "term_purabaya",
+            destTerminalId = "term_sritanjung",
+            estimatedDurationMinutes = BusRoute.compressRouteDuration(360),
+            departureHour = 4,
+            departureMinute = 0,
+            targetRitCount = 2
+        )
+
+        assertEquals(4, plan.totalLegsCount)
+
+        val leg1 = plan.legs[0]
+        assertEquals(4, leg1.departureHour)
+        assertEquals(0, leg1.departureMinute)
+        assertEquals(8, leg1.arrivalHour)
+        assertEquals(30, leg1.arrivalMinute)
+        assertEquals(30, leg1.layoverMinutesAfterArrival)
+
+        val leg2 = plan.legs[1]
+        assertEquals(9, leg2.departureHour)
+        assertEquals(0, leg2.departureMinute)
+        assertEquals(13, leg2.arrivalHour)
+        assertEquals(30, leg2.arrivalMinute)
+        assertEquals(45, leg2.layoverMinutesAfterArrival)
+
+        val leg3 = plan.legs[2]
+        assertEquals(14, leg3.departureHour)
+        assertEquals(15, leg3.departureMinute)
+        assertEquals(18, leg3.arrivalHour)
+        assertEquals(45, leg3.arrivalMinute)
+        assertEquals(30, leg3.layoverMinutesAfterArrival)
+
+        val leg4 = plan.legs[3]
+        assertEquals(19, leg4.departureHour)
+        assertEquals(15, leg4.departureMinute)
+        assertEquals(23, leg4.arrivalHour)
+        assertEquals(45, leg4.arrivalMinute)
+        assertEquals(0, leg4.layoverMinutesAfterArrival)
+
+        val lastArrivalMinutes = 23 * 60 + 45
+        val firstDepartureMinutes = 4 * 60 + 0
+        val remainingNightMinutes = (24 * 60 - lastArrivalMinutes) + firstDepartureMinutes
+        assertEquals(255, remainingNightMinutes)
+        assertTrue(remainingNightMinutes < 300)
     }
 
     @Test

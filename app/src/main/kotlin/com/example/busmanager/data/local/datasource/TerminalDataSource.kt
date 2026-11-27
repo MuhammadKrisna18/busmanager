@@ -313,8 +313,8 @@ class TerminalDataSource {
         city = "Pati",
         type = TerminalType.TIPE_A,
         coordinate = MapCoordinate(
-            x = 0.05f,
-            y = 0.10f,
+            x = 0.06f,
+            y = 0.13f,
             latitude = -6.7560,
             longitude = 111.0380
         ),

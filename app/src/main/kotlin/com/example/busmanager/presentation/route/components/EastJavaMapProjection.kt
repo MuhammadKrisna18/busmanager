@@ -7,7 +7,8 @@ data class MapWorldDimensions(
 
 object EastJavaMapProjection {
     const val ASPECT_RATIO = 2.0f
-    const val MIN_ZOOM = 1.0f
+    const val MIN_ZOOM = 0.48f
+    const val DEFAULT_ZOOM = 0.85f
     const val MAX_ZOOM = 4.0f
 
     fun calculateWorldDimensions(viewportWidth: Float, viewportHeight: Float): MapWorldDimensions {

@@ -12,8 +12,10 @@ import com.example.busmanager.domain.route.model.RouteSegment
 
 fun DrawScope.drawEastJavaLandmass() {
     val path = Path().apply {
-        moveTo(size.width * 0.02f, size.height * 0.12f)
-        lineTo(size.width * 0.06f, size.height * 0.08f)
+        moveTo(size.width * 0.01f, size.height * 0.18f)
+        lineTo(size.width * 0.02f, size.height * 0.10f)
+        lineTo(size.width * 0.05f, size.height * 0.06f)
+        lineTo(size.width * 0.08f, size.height * 0.07f)
         lineTo(size.width * 0.14f, size.height * 0.09f)
         lineTo(size.width * 0.22f, size.height * 0.12f)
         lineTo(size.width * 0.34f, size.height * 0.13f)
@@ -43,7 +45,7 @@ fun DrawScope.drawEastJavaLandmass() {
         lineTo(size.width * 0.02f, size.height * 0.70f)
         lineTo(size.width * 0.02f, size.height * 0.50f)
         lineTo(size.width * 0.02f, size.height * 0.35f)
-        lineTo(size.width * 0.03f, size.height * 0.22f)
+        lineTo(size.width * 0.01f, size.height * 0.22f)
         close()
     }
 

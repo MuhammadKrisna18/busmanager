@@ -1184,10 +1184,9 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             rajekwesi.coordinate,
-            MapCoordinate(0.18f, 0.165f, -7.15, 111.60),
-            MapCoordinate(0.13f, 0.15f, -6.97, 111.41),
-            MapCoordinate(0.09f, 0.11f, -6.71, 111.34),
-            MapCoordinate(0.07f, 0.105f, -6.73, 111.18),
+            MapCoordinate(0.18f, 0.21f, -7.15, 111.60),
+            MapCoordinate(0.13f, 0.17f, -6.97, 111.41),
+            MapCoordinate(0.09f, 0.14f, -6.71, 111.34),
             kembangJoyo.coordinate
         )
     )
@@ -1215,9 +1214,8 @@ class RouteDataSource(
         tollFee = Money.ZERO,
         waypoints = listOf(
             pilangsari.coordinate,
-            MapCoordinate(0.04f, 0.25f, -7.22, 110.98),
-            MapCoordinate(0.045f, 0.18f, -7.08, 110.92),
-            MapCoordinate(0.048f, 0.14f, -6.90, 111.00),
+            MapCoordinate(0.045f, 0.26f, -7.22, 110.98),
+            MapCoordinate(0.05f, 0.19f, -7.08, 110.92),
             kembangJoyo.coordinate
         )
     )

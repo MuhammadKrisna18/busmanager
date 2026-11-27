@@ -73,7 +73,7 @@ fun EastJavaMapCanvas(
     onTerminalToggleClick: (terminalId: String) -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val zoomAnim = remember { Animatable(EastJavaMapProjection.MIN_ZOOM) }
+    val zoomAnim = remember { Animatable(EastJavaMapProjection.DEFAULT_ZOOM) }
     val panXAnim = remember { Animatable(0f) }
     val panYAnim = remember { Animatable(0f) }
     var isTrackingLocked by remember { mutableStateOf(trackedTripId != null) }
@@ -133,7 +133,7 @@ fun EastJavaMapCanvas(
         }
 
         fun zoomIn() {
-            val newZoom = (zoomAnim.value + 0.5f).coerceAtMost(EastJavaMapProjection.MAX_ZOOM)
+            val newZoom = (zoomAnim.value + 0.35f).coerceAtMost(EastJavaMapProjection.MAX_ZOOM)
             val maxPx = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, newZoom)
             val maxPy = EastJavaMapProjection.calculateMaxPanY(worldHeight, viewportHeight, newZoom)
             val newPanX = panXAnim.value.coerceIn(-maxPx, maxPx)
@@ -146,7 +146,7 @@ fun EastJavaMapCanvas(
         }
 
         fun zoomOut() {
-            val newZoom = (zoomAnim.value - 0.5f).coerceAtLeast(EastJavaMapProjection.MIN_ZOOM)
+            val newZoom = (zoomAnim.value - 0.35f).coerceAtLeast(EastJavaMapProjection.MIN_ZOOM)
             val maxPx = EastJavaMapProjection.calculateMaxPanX(worldWidth, viewportWidth, newZoom)
             val maxPy = EastJavaMapProjection.calculateMaxPanY(worldHeight, viewportHeight, newZoom)
             val newPanX = panXAnim.value.coerceIn(-maxPx, maxPx)
@@ -161,7 +161,7 @@ fun EastJavaMapCanvas(
         fun resetMap() {
             isTrackingLocked = false
             coroutineScope.launch {
-                launch { zoomAnim.animateTo(EastJavaMapProjection.MIN_ZOOM, animationSpec = tween(300)) }
+                launch { zoomAnim.animateTo(EastJavaMapProjection.DEFAULT_ZOOM, animationSpec = tween(300)) }
                 launch { panXAnim.animateTo(0f, animationSpec = tween(300)) }
                 launch { panYAnim.animateTo(0f, animationSpec = tween(300)) }
             }
